@@ -1,10 +1,11 @@
 import React from "react";
 import { PricingCard } from "@/components/PricingCard";
+import { cn } from "@/lib/utils";
 
 const pricingPlans = [
   {
     name: "Starter",
-    price: 497,
+    price: 397,
     description: "Perfect for small businesses and personal projects",
     features: [
       { text: "Up to 5 pages", included: true },
@@ -20,7 +21,7 @@ const pricingPlans = [
   },
   {
     name: "Professional", 
-    price: 997,
+    price: 797,
     description: "Ideal for growing businesses that need more features",
     popular: true,
     features: [
@@ -38,7 +39,7 @@ const pricingPlans = [
   },
   {
     name: "Premium",
-    price: 1497, 
+    price: 1197, 
     description: "Comprehensive solution for established businesses",
     features: [
       { text: "Unlimited pages", included: true },
@@ -75,8 +76,8 @@ const pricingPlans = [
 
 export const Pricing = () => {
   return (
-    <div className="min-h-screen bg-gradient-os py-16 px-4">
-      <div className="max-w-7xl mx-auto pt-8">
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
+      <div className="max-w-7xl mx-auto pt-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Simple, Transparent Pricing
@@ -87,36 +88,55 @@ export const Pricing = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {pricingPlans.map((plan, index) => (
             <PricingCard 
               key={plan.name} 
               plan={plan}
-              className={index === 3 ? "md:col-span-2 lg:col-span-1" : ""}
+              className={cn(
+                "animate-slide-up-premium hover:scale-105",
+                index === 3 ? "md:col-span-2 lg:col-span-1" : ""
+              )}
+              style={{ animationDelay: `${index * 0.1}s` }}
             />
           ))}
         </div>
 
-        <div className="mt-16 bg-gradient-window border border-border rounded-lg p-8 text-center shadow-window">
+        <div className="mt-16 glass-card rounded-2xl p-8 text-center shadow-premium animate-glass-appear">
           <h2 className="text-2xl font-bold mb-4">Why Choose Brain Bulb Web Design?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <div>
-              <h3 className="font-semibold mb-2">⚡ Fast Delivery</h3>
-              <p className="text-sm text-muted-foreground">
-                Most projects completed within 2-4 weeks, depending on complexity.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <span className="text-2xl">⚡</span>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Fast Delivery</h3>
+                <p className="text-sm text-muted-foreground">
+                  Most projects completed within 2-4 weeks, depending on complexity.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">🎨 Modern Design</h3>
-              <p className="text-sm text-muted-foreground">
-                Clean, professional designs that work perfectly on all devices.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <span className="text-2xl">🎨</span>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Modern Design</h3>
+                <p className="text-sm text-muted-foreground">
+                  Clean, professional designs that work perfectly on all devices.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">🔧 Ongoing Support</h3>
-              <p className="text-sm text-muted-foreground">
-                We don't disappear after launch. Continued support to keep you running smoothly.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <span className="text-2xl">🔧</span>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Ongoing Support</h3>
+                <p className="text-sm text-muted-foreground">
+                  We don't disappear after launch. Continued support to keep you running smoothly.
+                </p>
+              </div>
             </div>
           </div>
         </div>

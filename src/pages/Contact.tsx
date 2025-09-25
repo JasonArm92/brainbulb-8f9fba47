@@ -49,8 +49,8 @@ export const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-os py-16 px-4">
-      <div className="max-w-6xl mx-auto pt-8">
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
+      <div className="max-w-6xl mx-auto pt-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Let's Start Your Project
@@ -62,7 +62,7 @@ export const Contact = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
-          <div className="bg-gradient-window border border-border rounded-lg p-8 shadow-window">
+          <div className="glass-card rounded-2xl p-8 shadow-premium animate-glass-appear">
             <h2 className="text-2xl font-bold mb-6">Send us a message</h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -179,7 +179,7 @@ export const Contact = () => {
 
           {/* Contact Info */}
           <div className="space-y-8">
-            <div className="bg-gradient-window border border-border rounded-lg p-8 shadow-window">
+            <div className="glass-card rounded-2xl p-8 shadow-premium animate-glass-appear">
               <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
               
               <div className="space-y-6">
@@ -218,7 +218,7 @@ export const Contact = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-window border border-border rounded-lg p-8 shadow-window">
+            <div className="glass-card rounded-2xl p-8 shadow-glass">
               <h3 className="text-xl font-bold mb-4">Project Timeline</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">

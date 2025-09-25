@@ -4,8 +4,8 @@ import { Lightbulb, Users, Code, Award, Zap, Heart } from "lucide-react";
 
 export const About = () => {
   return (
-    <div className="min-h-screen bg-gradient-os py-16 px-4">
-      <div className="max-w-6xl mx-auto pt-8">
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
+      <div className="max-w-6xl mx-auto pt-12">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 mb-6">
             <img src="/src/assets/logo-icon.png" alt="Brain Bulb" className="w-16 h-16" />

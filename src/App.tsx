@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import { Taskbar } from "@/components/Taskbar";
 import Index from "./pages/Index";
 import { Portfolio } from "./pages/Portfolio";
 import { About } from "./pages/About";
@@ -19,8 +19,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen">
-          <Navbar />
+        <div className="min-h-screen bg-gradient-hero">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/portfolio" element={<Portfolio />} />
@@ -30,6 +29,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Taskbar />
         </div>
       </BrowserRouter>
     </TooltipProvider>

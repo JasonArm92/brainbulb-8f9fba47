@@ -20,19 +20,23 @@ interface PricingPlan {
 interface PricingCardProps {
   plan: PricingPlan;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export const PricingCard = ({ plan, className }: PricingCardProps) => {
+export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
   return (
-    <div className={cn(
-      "relative bg-gradient-window border border-border rounded-lg p-6 shadow-window",
-      plan.popular && "border-primary shadow-lg scale-105",
-      className
-    )}>
+    <div 
+      className={cn(
+        "relative glass-card rounded-2xl p-6 shadow-glass hover:shadow-premium transition-all duration-500",
+        plan.popular && "border-primary shadow-glow scale-105 animate-glow-pulse",
+        className
+      )}
+      style={style}
+    >
       {plan.popular && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <div className="bg-gradient-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-            <Star className="w-3 h-3" />
+          <div className="bg-gradient-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-glow">
+            <Star className="w-4 h-4" />
             Most Popular
           </div>
         </div>
@@ -41,7 +45,7 @@ export const PricingCard = ({ plan, className }: PricingCardProps) => {
       <div className="text-center mb-6">
         <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
         <div className="mb-2">
-          <span className="text-3xl font-bold text-primary">${plan.price}</span>
+          <span className="text-3xl font-bold text-primary">£{plan.price}</span>
           <span className="text-muted-foreground ml-1">starting at</span>
         </div>
         <p className="text-muted-foreground text-sm">{plan.description}</p>
@@ -67,7 +71,7 @@ export const PricingCard = ({ plan, className }: PricingCardProps) => {
       </ul>
       
       <Button 
-        variant={plan.popular ? "cta" : "osButton"}
+        variant={plan.popular ? "cta" : "glass"}
         size="lg"
         className="w-full"
       >

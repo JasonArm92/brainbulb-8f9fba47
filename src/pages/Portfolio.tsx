@@ -105,8 +105,8 @@ export const Portfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-os py-16 px-4">
-      <div className="max-w-6xl mx-auto pt-8">
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
+      <div className="max-w-6xl mx-auto pt-12">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4">Portfolio Explorer</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">

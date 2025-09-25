@@ -7,10 +7,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-os">
-      {/* Hero Section */}
-      <main className="pt-24 pb-12 px-4">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-hero pb-24 px-4">
+      <div className="max-w-6xl mx-auto pt-12">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-4 mb-8">
               <img 
@@ -39,7 +37,7 @@ const Index = () => {
                 Explore Our Work
               </Button>
               <Button 
-                variant="osButton" 
+                variant="glass" 
                 size="lg"
                 onClick={() => navigate("/contact")}
                 className="text-lg px-8 py-4"
@@ -50,13 +48,12 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Desktop OS Interface Preview */}
           <div className="relative max-w-4xl mx-auto mb-16">
-            <div className="bg-gradient-window border border-border rounded-lg shadow-window p-6 animate-window-open">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/30">
+            <div className="glass-card rounded-2xl shadow-premium p-6 animate-glass-appear">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-glass-border">
                 <div className="flex gap-1">
                   <div className="w-3 h-3 bg-destructive rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-warning rounded-full"></div>
                   <div className="w-3 h-3 bg-success rounded-full"></div>
                 </div>
                 <span className="text-sm text-muted-foreground ml-2">Portfolio Desktop</span>
@@ -105,7 +102,7 @@ const Index = () => {
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="bg-gradient-window border border-border rounded-lg p-6 text-center shadow-window hover:shadow-lg transition-shadow animate-fade-in"
+                className="glass-card rounded-2xl p-6 text-center shadow-glass hover:shadow-premium transition-all duration-500 animate-slide-up-premium hover:scale-105"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
@@ -118,7 +115,7 @@ const Index = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center bg-gradient-window border border-border rounded-lg p-8 shadow-window animate-fade-in">
+          <div className="text-center glass-card rounded-2xl p-8 shadow-premium animate-glass-appear">
             <h2 className="text-3xl font-bold mb-4">Ready to Illuminate Your Online Presence?</h2>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Join hundreds of satisfied clients who've transformed their business with our web design expertise.
@@ -141,7 +138,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 };
