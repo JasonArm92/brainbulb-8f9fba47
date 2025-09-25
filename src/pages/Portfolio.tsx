@@ -105,8 +105,8 @@ export const Portfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-os p-6 pb-20">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-os py-16 px-4">
+      <div className="max-w-6xl mx-auto pt-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4">Portfolio Explorer</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -131,31 +131,6 @@ export const Portfolio = () => {
               <span className="text-sm font-medium text-center">{project.title}</span>
             </button>
           ))}
-        </div>
-
-        {/* Taskbar Preview */}
-        <div className="fixed bottom-16 left-4 right-4 bg-taskbar/90 backdrop-blur-sm border border-border rounded-lg p-2">
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <span className="text-xs text-taskbar-foreground whitespace-nowrap mr-2">Open Projects:</span>
-            {openWindows.map((window) => {
-              const project = projects.find(p => p.id === window.projectId);
-              return (
-                <Button
-                  key={window.projectId}
-                  variant="taskbar"
-                  size="sm"
-                  onClick={() => openProject(window.projectId)}
-                  className={cn(
-                    "flex items-center gap-2 text-xs",
-                    window.isMinimized && "opacity-60"
-                  )}
-                >
-                  <Image className="w-3 h-3" />
-                  {project?.title}
-                </Button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Open Windows */}

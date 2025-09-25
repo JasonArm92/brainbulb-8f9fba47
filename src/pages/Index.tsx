@@ -1,24 +1,15 @@
-import React, { useState } from "react";
-import { OSTaskbar } from "@/components/OSTaskbar";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Play, Monitor, Sparkles } from "lucide-react";
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState("home");
   const navigate = useNavigate();
 
-  const handleNavigation = (section: string) => {
-    setActiveSection(section);
-    if (section !== "home") {
-      navigate(`/${section}`);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-os relative">
+    <div className="min-h-screen bg-gradient-os">
       {/* Hero Section */}
-      <main className="pt-16 pb-24 px-4">
+      <main className="pt-24 pb-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-4 mb-8">
@@ -151,12 +142,6 @@ const Index = () => {
           </div>
         </div>
       </main>
-
-      {/* OS Taskbar */}
-      <OSTaskbar 
-        activeSection={activeSection}
-        onNavigate={handleNavigation}
-      />
     </div>
   );
 };
