@@ -10,7 +10,7 @@ interface PricingFeature {
 
 interface PricingPlan {
   name: string;
-  price: number;
+  price: number | string;
   description: string;
   features: PricingFeature[];
   popular?: boolean;
@@ -45,8 +45,14 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
       <div className="text-center mb-6">
         <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
         <div className="mb-2">
-          <span className="text-3xl font-bold text-primary">£{plan.price}</span>
-          <span className="text-muted-foreground ml-1">starting at</span>
+          {plan.price === "enquiry" ? (
+            <span className="text-2xl font-bold text-primary">Price on Enquiry</span>
+          ) : (
+            <>
+              <span className="text-3xl font-bold text-primary">£{plan.price}</span>
+              <span className="text-muted-foreground ml-1">starting at</span>
+            </>
+          )}
         </div>
         <p className="text-muted-foreground text-sm">{plan.description}</p>
       </div>

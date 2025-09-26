@@ -57,7 +57,7 @@ const pricingPlans = [
   },
   {
     name: "Enterprise",
-    price: 0,
+    price: "enquiry",
     description: "Custom solutions for complex business needs",
     features: [
       { text: "Custom requirements analysis", included: true },

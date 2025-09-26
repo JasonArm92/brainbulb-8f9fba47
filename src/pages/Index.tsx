@@ -14,7 +14,7 @@ const Index = () => {
               <img 
                 src="/src/assets/logo-main.png" 
                 alt="Brain Bulb Web Design" 
-                className="h-20 animate-fade-in"
+                className="h-30 animate-fade-in"
               />
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
