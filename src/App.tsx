@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { WindowManagerProvider } from "./hooks/useWindowManager";
+import { Desktop } from "./components/Desktop";
 import { Taskbar } from "@/components/Taskbar";
 import Index from "./pages/Index";
 import { Portfolio } from "./pages/Portfolio";
@@ -19,18 +21,20 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-gradient-hero">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Taskbar />
-        </div>
+        <WindowManagerProvider>
+          <div className="min-h-screen w-full relative overflow-hidden">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Desktop />
+            <Taskbar />
+          </div>
+        </WindowManagerProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

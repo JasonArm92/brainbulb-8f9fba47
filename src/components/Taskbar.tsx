@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Monitor, User, DollarSign, Mail, Home, Search, Settings } from "lucide-react";
+import { Monitor, User, DollarSign, Mail, Home, Search, Settings, Folder, Image, Calculator, Music } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWindowManager } from "@/hooks/useWindowManager";
 
 const navItems = [
   { id: "/", label: "Home", icon: Home },
@@ -16,6 +17,96 @@ export const Taskbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { windows, toggleMinimize, openWindow, activeWindowId, restoreWindow } = useWindowManager();
+
+  // Sample applications that can be opened
+  const applications = [
+    { 
+      id: 'portfolio',
+      name: 'Portfolio',
+      icon: Monitor,
+      component: (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-4">My Portfolio</h2>
+          <p className="text-muted-foreground mb-4">Explore my latest web design projects and case studies.</p>
+          <Button onClick={() => navigate('/portfolio')} variant="cta">
+            View Full Portfolio
+          </Button>
+        </div>
+      )
+    },
+    { 
+      id: 'about',
+      name: 'About Me',
+      icon: User,
+      component: (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-4">About Brain Bulb</h2>
+          <p className="text-muted-foreground mb-4">Learn more about our web design philosophy and approach.</p>
+          <Button onClick={() => navigate('/about')} variant="cta">
+            Read More
+          </Button>
+        </div>
+      )
+    },
+    { 
+      id: 'calculator',
+      name: 'Calculator',
+      icon: Calculator,
+      component: (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-4">Project Calculator</h2>
+          <p className="text-muted-foreground mb-4">Estimate your web design project cost.</p>
+          <div className="grid grid-cols-3 gap-2 max-w-xs">
+            {['7','8','9','4','5','6','1','2','3','0','+','='].map(btn => (
+              <Button key={btn} variant="glass" size="sm">{btn}</Button>
+            ))}
+          </div>
+        </div>
+      )
+    },
+    { 
+      id: 'files',
+      name: 'Files',
+      icon: Folder,
+      component: (
+        <div className="p-6">
+          <h2 className="text-2xl font-bold mb-4">Project Files</h2>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 p-2 hover:bg-accent rounded">
+              <Folder className="w-4 h-4" />
+              <span>Recent Projects</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 hover:bg-accent rounded">
+              <Image className="w-4 h-4" />
+              <span>Design Assets</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 hover:bg-accent rounded">
+              <Monitor className="w-4 h-4" />
+              <span>Templates</span>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  const openApp = (app: typeof applications[0]) => {
+    openWindow({
+      id: app.id,
+      title: app.name,
+      component: app.component,
+      position: { 
+        x: Math.random() * (window.innerWidth - 600) + 50, 
+        y: Math.random() * (window.innerHeight - 400) + 50 
+      },
+      size: { width: 500, height: 400 },
+      isMinimized: false,
+      isMaximized: false,
+      icon: app.name,
+      isResizable: true
+    });
+  };
 
   const currentTime = new Date().toLocaleTimeString([], { 
     hour: '2-digit', 
@@ -62,45 +153,88 @@ export const Taskbar = () => {
             </button>
           </div>
 
-          {/* Center Navigation */}
-          <div className="flex items-center gap-2 bg-glass-bg/50 rounded-2xl px-3 py-2 backdrop-blur-sm border border-glass-border">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.id;
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(item.id)}
-                  className={cn(
-                    "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
-                    isActive 
-                      ? "bg-primary text-primary-foreground shadow-glow" 
-                      : "hover:bg-taskbar-hover text-taskbar-foreground"
-                  )}
-                >
-                  {/* Active indicator */}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-primary rounded-xl"></div>
-                  )}
-                  
-                  <div className="relative z-10">
-                    <Icon className={cn(
-                      "w-5 h-5 transition-transform duration-300",
-                      isActive ? "scale-110" : "group-hover:scale-110"
-                    )} />
-                    <span className="text-xs font-medium hidden lg:block">
-                      {item.label}
-                    </span>
-                  </div>
-                  
-                  {/* Hover glow effect */}
-                  {!isActive && (
-                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
-                  )}
-                </button>
-              );
-            })}
+          {/* Center Navigation & Open Windows */}
+          <div className="flex items-center gap-2">
+            {/* Navigation Pills */}
+            <div className="flex items-center gap-2 bg-glass-bg/50 rounded-2xl px-3 py-2 backdrop-blur-sm border border-glass-border">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.id;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => navigate(item.id)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                      isActive 
+                        ? "bg-primary text-primary-foreground shadow-glow" 
+                        : "hover:bg-taskbar-hover text-taskbar-foreground"
+                    )}
+                  >
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-primary rounded-xl"></div>
+                    )}
+                    
+                    <div className="relative z-10">
+                      <Icon className={cn(
+                        "w-4 h-4 transition-transform duration-300",
+                        isActive ? "scale-110" : "group-hover:scale-110"
+                      )} />
+                      <span className="text-xs font-medium hidden lg:block">
+                        {item.label}
+                      </span>
+                    </div>
+                    
+                    {!isActive && (
+                      <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Applications */}
+            <div className="flex items-center gap-1 bg-glass-bg/30 rounded-2xl px-2 py-2 backdrop-blur-sm border border-glass-border/50">
+              {applications.map((app) => {
+                const Icon = app.icon;
+                return (
+                  <button
+                    key={app.id}
+                    onClick={() => openApp(app)}
+                    className="p-2 rounded-lg hover:bg-taskbar-hover transition-all duration-300 group"
+                    title={app.name}
+                  >
+                    <Icon className="w-4 h-4 text-taskbar-foreground group-hover:scale-110 transition-transform duration-300" />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Open Windows */}
+            {windows.length > 0 && (
+              <div className="flex items-center gap-1 bg-glass-bg/30 rounded-2xl px-2 py-2 backdrop-blur-sm border border-glass-border/50">
+                {windows.map((window) => {
+                  const isActive = activeWindowId === window.id;
+                  return (
+                    <button
+                      key={window.id}
+                      onClick={() => window.isMinimized ? restoreWindow(window.id) : toggleMinimize(window.id)}
+                      className={cn(
+                        "px-3 py-2 rounded-lg transition-all duration-300 text-xs font-medium max-w-32 truncate",
+                        isActive 
+                          ? "bg-primary/20 text-primary border border-primary/30" 
+                          : "hover:bg-taskbar-hover text-taskbar-foreground",
+                        window.isMinimized && "opacity-60"
+                      )}
+                      title={window.title}
+                    >
+                      {window.title}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* System Tray */}
