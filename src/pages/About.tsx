@@ -18,12 +18,14 @@ export const About = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           {/* Our Story */}
-          <div className="bg-gradient-window border border-border rounded-lg p-8 shadow-window">
+          <div className="glass-card rounded-3xl p-10 shadow-glass hover:shadow-glow transition-all duration-500 border border-glass-border">
             <div className="flex items-center gap-3 mb-6">
-              <Lightbulb className="w-6 h-6 text-primary" />
+              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
+                <Lightbulb className="w-6 h-6 text-primary" />
+              </div>
               <h2 className="text-2xl font-bold">Our Story</h2>
             </div>
-            <div className="space-y-4 text-muted-foreground">
+            <div className="space-y-6 text-muted-foreground leading-relaxed">
               <p>
                 Brain Bulb Web Design was founded with a simple mission: to make professional web design 
                 accessible to businesses of all sizes. We believe every great idea deserves a great website.
@@ -41,43 +43,45 @@ export const About = () => {
           </div>
 
           {/* Our Approach */}
-          <div className="bg-gradient-window border border-border rounded-lg p-8 shadow-window">
+          <div className="glass-card rounded-3xl p-10 shadow-glass hover:shadow-glow transition-all duration-500 border border-glass-border">
             <div className="flex items-center gap-3 mb-6">
-              <Code className="w-6 h-6 text-primary" />
+              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
+                <Code className="w-6 h-6 text-primary" />
+              </div>
               <h2 className="text-2xl font-bold">Our Approach</h2>
             </div>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <Users className="w-4 h-4 text-primary" />
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
+                  <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Client-Focused</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold mb-2">Client-Focused</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     Your vision drives our design. We listen, understand, and deliver exactly what you need.
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <Zap className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-4">
+                <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
+                  <Zap className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Modern Technology</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold mb-2">Modern Technology</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     We use the latest tools and frameworks to ensure fast, secure, and scalable websites.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <Heart className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-4">
+                <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
+                  <Heart className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Long-term Partnership</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="font-semibold mb-2">Long-term Partnership</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     We don't just build websites; we build lasting relationships with ongoing support.
                   </p>
                 </div>
@@ -88,8 +92,8 @@ export const About = () => {
 
         {/* Services */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8">What We Do</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h2 className="text-3xl font-bold text-center mb-12">What We Do</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
                 title: "Custom Web Design",
@@ -122,23 +126,27 @@ export const About = () => {
                 icon: "📱"
               }
             ].map((service, index) => (
-              <div key={index} className="bg-gradient-window border border-border rounded-lg p-6 shadow-window hover:shadow-lg transition-shadow">
-                <div className="text-2xl mb-3">{service.icon}</div>
-                <h3 className="font-semibold mb-2">{service.title}</h3>
-                <p className="text-sm text-muted-foreground">{service.description}</p>
+              <div 
+                key={index} 
+                className="glass-card rounded-3xl p-8 shadow-glass hover:shadow-glow transition-all duration-500 hover:scale-105 border border-glass-border"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="text-3xl mb-4">{service.icon}</div>
+                <h3 className="font-semibold mb-3 text-lg">{service.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{service.description}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-gradient-window border border-border rounded-lg p-8 shadow-window">
-          <h2 className="text-2xl font-bold mb-4">Ready to Start Your Project?</h2>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+        <div className="text-center glass-card rounded-3xl p-10 shadow-glow border border-glass-border">
+          <h2 className="text-2xl font-bold mb-6">Ready to Start Your Project?</h2>
+          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Let's turn your ideas into a stunning website that drives results. 
             Contact us today for a free consultation and project quote.
           </p>
-          <Button variant="cta" size="lg">
+          <Button variant="cta" size="lg" className="rounded-2xl shadow-glow">
             Get Started Today
           </Button>
         </div>

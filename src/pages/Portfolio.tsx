@@ -219,14 +219,14 @@ export const Portfolio = () => {
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((category) => (
             <Button
               key={category}
               variant={filterCategory === category ? "cta" : "glass"}
               size="sm"
               onClick={() => setFilterCategory(category)}
-              className="capitalize"
+              className="capitalize rounded-2xl"
             >
               {category === "all" ? "All Projects" : category}
             </Button>
@@ -238,7 +238,7 @@ export const Portfolio = () => {
           {filteredProjects.map((project, index) => (
             <div
               key={project.id}
-              className="glass-card rounded-2xl overflow-hidden shadow-glass hover:shadow-premium transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105"
+              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-glow transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105 border border-glass-border"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => openProject(project.id)}
             >

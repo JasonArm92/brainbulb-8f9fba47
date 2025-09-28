@@ -31,25 +31,20 @@ export const Taskbar = () => {
           {/* Logo */}
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 px-3 py-2 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
+            className="flex items-center justify-center w-12 h-12 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
           >
-            <div className="relative">
-              <img 
-                src="/src/assets/logo-icon.png" 
-                alt="Brain Bulb" 
-                className="w-6 h-6 group-hover:scale-110 transition-transform duration-300"
-              />
-            </div>
-            <span className="hidden sm:block text-sm font-medium text-foreground">
-              Brain Bulb
-            </span>
+            <img 
+              src="/src/assets/logo-icon.png" 
+              alt="Brain Bulb" 
+              className="w-7 h-7 group-hover:scale-110 transition-transform duration-300"
+            />
           </button>
           
           {/* Divider */}
           <div className="w-px h-6 bg-border/50"></div>
 
           {/* Center Navigation */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.id;
@@ -59,7 +54,7 @@ export const Taskbar = () => {
                   key={item.id}
                   onClick={() => navigate(item.id)}
                   className={cn(
-                    "relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 group",
+                    "relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 group min-w-[60px]",
                     isActive 
                       ? "bg-primary text-primary-foreground shadow-glow" 
                       : "hover:bg-white/10 text-foreground/70 hover:text-foreground"
@@ -69,6 +64,9 @@ export const Taskbar = () => {
                     "w-5 h-5 transition-all duration-300",
                     isActive ? "scale-110" : "group-hover:scale-110"
                   )} />
+                  <span className="text-[10px] font-medium leading-none">
+                    {item.label}
+                  </span>
                   
                   {/* Active indicator dot */}
                   {isActive && (

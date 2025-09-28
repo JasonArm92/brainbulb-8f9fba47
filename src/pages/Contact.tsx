@@ -25,62 +25,62 @@ export const Contact = () => {
 
           {/* Contact Info */}
           <div className="space-y-8">
-            <div className="glass-card rounded-2xl p-8 shadow-premium animate-glass-appear">
-              <h2 className="text-2xl font-bold mb-6">Get in Touch</h2>
+            <div className="glass-card rounded-3xl p-10 shadow-glass hover:shadow-glow transition-all duration-500 animate-glass-appear border border-glass-border">
+              <h2 className="text-2xl font-bold mb-8">Get in Touch</h2>
               
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div className="flex items-start gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
+                  <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                     <Mail className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Email</h3>
-                    <p className="text-muted-foreground">hello@brainbulbwebdesign.com</p>
+                    <h3 className="font-semibold mb-2">Email</h3>
+                    <p className="text-muted-foreground mb-1">hello@brainbulbwebdesign.com</p>
                     <p className="text-sm text-muted-foreground">We typically respond within 24 hours</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
+                  <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                     <Phone className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Phone</h3>
-                    <p className="text-muted-foreground">(555) 123-4567</p>
+                    <h3 className="font-semibold mb-2">Phone</h3>
+                    <p className="text-muted-foreground mb-1">(555) 123-4567</p>
                     <p className="text-sm text-muted-foreground">Mon-Fri, 9AM-6PM EST</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">
+                  <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                     <MapPin className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Location</h3>
-                    <p className="text-muted-foreground">Remote & On-Site</p>
+                    <h3 className="font-semibold mb-2">Location</h3>
+                    <p className="text-muted-foreground mb-1">Remote & On-Site</p>
                     <p className="text-sm text-muted-foreground">Serving clients nationwide</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-8 shadow-glass">
-              <h3 className="text-xl font-bold mb-4">Project Timeline</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm">Initial Consultation</span>
+            <div className="glass-card rounded-3xl p-8 shadow-glass hover:shadow-glow transition-all duration-500 border border-glass-border">
+              <h3 className="text-xl font-bold mb-6">Project Timeline</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b border-glass-border/30">
+                  <span className="text-sm font-medium">Initial Consultation</span>
                   <span className="text-sm text-muted-foreground">24-48 hours</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Proposal & Contract</span>
+                <div className="flex justify-between items-center py-2 border-b border-glass-border/30">
+                  <span className="text-sm font-medium">Proposal & Contract</span>
                   <span className="text-sm text-muted-foreground">2-3 days</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Design & Development</span>
+                <div className="flex justify-between items-center py-2 border-b border-glass-border/30">
+                  <span className="text-sm font-medium">Design & Development</span>
                   <span className="text-sm text-muted-foreground">2-4 weeks</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm">Launch & Support</span>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-sm font-medium">Launch & Support</span>
                   <span className="text-sm text-muted-foreground">Ongoing</span>
                 </div>
               </div>

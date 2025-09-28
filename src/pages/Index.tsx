@@ -197,72 +197,72 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-hero pb-24 px-4">
       <div className="max-w-6xl mx-auto pt-12">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-4 mb-8">
-              <img 
-                src="/src/assets/logo-main.png" 
-                alt="Brain Bulb Web Design" 
-                className="h-30 animate-fade-in"
-              />
-            </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
-              Web Design That
-              <span className="block text-primary">Sparks Success</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto animate-slide-up">
-              Professional websites that capture your vision and drive results. 
-              From concept to launch, we create digital experiences that make your business shine.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-slide-up">
-              <Button 
-                variant="cta" 
-                size="lg"
-                onClick={() => navigate("/portfolio")}
-                className="text-lg px-8 py-4"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Explore Our Work
-              </Button>
-              <Button 
-                variant="glass" 
-                size="lg"
-                onClick={() => navigate("/contact")}
-                className="text-lg px-8 py-4"
-              >
-                Start Your Project
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-4 mb-8">
+            <img 
+              src="/src/assets/logo-main.png" 
+              alt="Brain Bulb Web Design" 
+              className="h-30 animate-fade-in"
+            />
           </div>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
+            Web Design That
+            <span className="block text-primary">Sparks Success</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto animate-slide-up">
+            Professional websites that capture your vision and drive results. 
+            From concept to launch, we create digital experiences that make your business shine.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-slide-up">
+            <Button 
+              variant="cta" 
+              size="lg"
+              onClick={() => navigate("/portfolio")}
+              className="text-lg px-8 py-4 rounded-2xl shadow-glow"
+            >
+              <Play className="w-5 h-5 mr-2" />
+              Explore Our Work
+            </Button>
+            <Button 
+              variant="glass" 
+              size="lg"
+              onClick={() => navigate("/contact")}
+              className="text-lg px-8 py-4 rounded-2xl"
+            >
+              Start Your Project
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
 
           <div className="relative max-w-6xl mx-auto mb-16">
-            <div className="glass-card rounded-2xl shadow-premium p-6 animate-glass-appear">
-              <div className="flex items-center justify-between mb-6 pb-3 border-b border-glass-border">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
+            <div className="glass-card rounded-3xl shadow-premium p-8 animate-glass-appear border border-glass-border">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-glass-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2">
                     <div className="w-3 h-3 bg-destructive rounded-full"></div>
                     <div className="w-3 h-3 bg-warning rounded-full"></div>
                     <div className="w-3 h-3 bg-success rounded-full"></div>
                   </div>
-                  <span className="text-sm text-muted-foreground ml-2">Portfolio Desktop</span>
+                  <span className="text-sm font-medium text-muted-foreground ml-2">Portfolio Desktop</span>
                 </div>
                 <Button 
                   variant="glass" 
                   size="sm"
                   onClick={() => navigate("/portfolio")}
-                  className="text-xs"
+                  className="text-xs rounded-xl"
                 >
                   <ExternalLink className="w-3 h-3 mr-1" />
                   View All
                 </Button>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {featuredProjects.map((project, index) => (
                   <button
                     key={project.id}
-                    className="group relative aspect-video rounded-lg overflow-hidden bg-muted hover:scale-105 transition-all duration-300 shadow-glass hover:shadow-premium"
+                    className="group relative aspect-video rounded-2xl overflow-hidden bg-muted hover:scale-105 transition-all duration-300 shadow-glass hover:shadow-glow"
                     onClick={() => setSelectedProject(project.id)}
                   >
                     <img 
@@ -271,13 +271,13 @@ const Index = () => {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity">
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
                         <div className="text-xs text-primary font-medium mb-1">{project.category}</div>
                         <div className="text-sm font-semibold text-foreground truncate">{project.title}</div>
                       </div>
                     </div>
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-primary/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <Monitor className="w-3 h-3 text-primary" />
+                    <div className="absolute top-3 right-3 w-7 h-7 bg-primary/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <Monitor className="w-4 h-4 text-primary" />
                     </div>
                   </button>
                 ))}
@@ -310,22 +310,22 @@ const Index = () => {
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="glass-card rounded-2xl p-6 text-center shadow-glass hover:shadow-premium transition-all duration-500 animate-slide-up-premium hover:scale-105"
+                className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-glow transition-all duration-500 animate-slide-up-premium hover:scale-105 border border-glass-border"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 backdrop-blur-sm border border-primary/20">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
 
           {/* Call to Action */}
-          <div className="text-center glass-card rounded-2xl p-8 shadow-premium animate-glass-appear">
-            <h2 className="text-3xl font-bold mb-4">Ready to Illuminate Your Online Presence?</h2>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+          <div className="text-center glass-card rounded-3xl p-10 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl">
+            <h2 className="text-3xl font-bold mb-6">Ready to Illuminate Your Online Presence?</h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
               Join hundreds of satisfied clients who've transformed their business with our web design expertise.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -333,6 +333,7 @@ const Index = () => {
                 variant="cta" 
                 size="lg"
                 onClick={() => navigate("/pricing")}
+                className="rounded-2xl shadow-glow"
               >
                 View Pricing
               </Button>
@@ -340,6 +341,7 @@ const Index = () => {
                 variant="outline" 
                 size="lg"
                 onClick={() => navigate("/about")}
+                className="rounded-2xl"
               >
                 Learn More
               </Button>

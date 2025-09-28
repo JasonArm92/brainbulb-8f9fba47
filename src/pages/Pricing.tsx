@@ -102,38 +102,38 @@ export const Pricing = () => {
           ))}
         </div>
 
-        <div className="mt-16 glass-card rounded-2xl p-8 text-center shadow-premium animate-glass-appear">
-          <h2 className="text-2xl font-bold mb-4">Why Choose Brain Bulb Web Design?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <div className="flex items-start gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
+        <div className="mt-16 glass-card rounded-3xl p-10 text-center shadow-glow animate-glass-appear border border-glass-border">
+          <h2 className="text-2xl font-bold mb-6">Why Choose Brain Bulb Web Design?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            <div className="flex items-start gap-4">
+              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                 <span className="text-2xl">⚡</span>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Fast Delivery</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold mb-3">Fast Delivery</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Most projects completed within 2-4 weeks, depending on complexity.
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
+            <div className="flex items-start gap-4">
+              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                 <span className="text-2xl">🎨</span>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Modern Design</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold mb-3">Modern Design</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Clean, professional designs that work perfectly on all devices.
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
+            <div className="flex items-start gap-4">
+              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                 <span className="text-2xl">🔧</span>
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Ongoing Support</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold mb-3">Ongoing Support</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   We don't disappear after launch. Continued support to keep you running smoothly.
                 </p>
               </div>
