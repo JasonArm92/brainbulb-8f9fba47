@@ -2,89 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Brain Bulb Web Design - Premium Windows 11 Theme
-Cutting-edge design system with glass morphism and premium aesthetics
+/* Brain Bulb Web Design - Elaborate Tech-Inspired Theme
+Futuristic design system with advanced tech elements, grid patterns, and holographic effects
 */
 
 @layer base {
   :root {
-    /* Premium OS Background with subtle texture */
-    --background: 220 12% 97%;
-    --foreground: 220 15% 12%;
+    /* Tech-inspired Background with digital texture */
+    --background: 220 15% 10%;
+    --foreground: 220 15% 95%;
 
-    /* Glass morphism cards */
-    --card: 0 0% 100% / 0.8;
-    --card-foreground: 220 15% 12%;
-    --glass-border: 255 255 255 / 0.2;
-    --glass-bg: 255 255 255 / 0.1;
+    /* Glass morphism with tech overlay */
+    --card: 220 20% 12% / 0.9;
+    --card-foreground: 220 15% 95%;
+    --glass-border: 130 100% 50% / 0.3;
+    --glass-bg: 220 20% 15% / 0.2;
 
-    /* Premium windows */
-    --popover: 0 0% 100% / 0.95;
-    --popover-foreground: 220 15% 12%;
+    /* Premium tech windows */
+    --popover: 220 20% 12% / 0.95;
+    --popover-foreground: 220 15% 95%;
 
-    /* Sophisticated brand colors */
-    --primary: 4 84% 62%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 4 84% 72%;
-    --primary-deep: 4 84% 52%;
+    /* Neon brand colors */
+    --primary: 130 100% 50%;
+    --primary-foreground: 220 15% 10%;
+    --primary-glow: 140 100% 60%;
+    --primary-deep: 120 100% 40%;
 
-    /* Elevated secondary palette */
-    --secondary: 220 12% 95%;
-    --secondary-foreground: 220 15% 25%;
+    /* Tech secondary palette */
+    --secondary: 200 100% 50%;
+    --secondary-foreground: 220 15% 95%;
 
     /* Refined muted elements */
-    --muted: 220 12% 96%;
-    --muted-foreground: 220 12% 45%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 12% 55%;
 
     /* Interactive accent colors */
-    --accent: 220 12% 92%;
-    --accent-foreground: 220 15% 15%;
+    --accent: 280 100% 50%;
+    --accent-foreground: 220 15% 95%;
 
     /* System status colors */
-    --destructive: 0 84% 60%;
+    --destructive: 0 100% 60%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --success: 130 100% 50%;
+    --success-foreground: 220 15% 10%;
+    --warning: 38 100% 50%;
+    --warning-foreground: 220 15% 10%;
 
-    /* Modern borders and inputs */
-    --border: 220 13% 88%;
-    --input: 220 13% 90%;
-    --ring: 4 84% 62%;
+    /* Tech borders and inputs */
+    --border: 130 100% 50% / 0.2;
+    --input: 220 15% 15%;
+    --ring: 130 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Premium taskbar (Windows 11 style) */
-    --taskbar: 220 12% 92% / 0.8;
-    --taskbar-foreground: 220 15% 25%;
-    --taskbar-active: 4 84% 62%;
-    --taskbar-hover: 220 12% 88%;
-    --taskbar-blur: blur(20px);
+    /* Tech taskbar (Futuristic style) */
+    --taskbar: 220 20% 10% / 0.9;
+    --taskbar-foreground: 220 15% 90%;
+    --taskbar-active: 130 100% 50%;
+    --taskbar-hover: 220 15% 15%;
+    --taskbar-blur: blur(24px);
 
-    /* Advanced gradients */
-    --gradient-hero: linear-gradient(135deg, 
-      hsl(220 20% 99%) 0%, 
-      hsl(220 15% 96%) 50%, 
-      hsl(220 12% 94%) 100%);
+    /* Advanced tech gradients */
+    --gradient-hero: radial-gradient(ellipse at top, 
+      hsl(220 20% 15%) 0%, 
+      hsl(220 18% 12%) 40%, 
+      hsl(220 20% 8%) 100%);
     --gradient-glass: linear-gradient(135deg, 
-      hsl(0 0% 100% / 0.2) 0%, 
-      hsl(0 0% 100% / 0.1) 50%, 
-      hsl(0 0% 100% / 0.05) 100%);
+      hsl(130 100% 50% / 0.1) 0%, 
+      hsl(200 100% 50% / 0.05) 50%, 
+      hsl(280 100% 50% / 0.1) 100%);
     --gradient-card: linear-gradient(145deg, 
-      hsl(0 0% 100% / 0.9) 0%, 
-      hsl(220 15% 98% / 0.8) 100%);
+      hsl(220 20% 12% / 0.95) 0%, 
+      hsl(220 18% 10% / 0.9) 100%);
     --gradient-primary: linear-gradient(135deg, 
       hsl(var(--primary)) 0%, 
       hsl(var(--primary-glow)) 50%, 
-      hsl(var(--primary-deep)) 100%);
+      hsl(var(--secondary)) 100%);
+    --gradient-tech: linear-gradient(90deg,
+      hsl(130 100% 50% / 0) 0%,
+      hsl(130 100% 50% / 0.3) 50%,
+      hsl(130 100% 50% / 0) 100%);
 
-    /* Premium shadows */
-    --shadow-glass: 0 8px 32px hsl(220 15% 15% / 0.1);
-    --shadow-elevated: 0 20px 40px hsl(220 15% 15% / 0.15);
-    --shadow-taskbar: 0 -4px 24px hsl(220 15% 15% / 0.1);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
-    --shadow-premium: 0 25px 50px hsl(220 15% 15% / 0.2);
+    /* Premium tech shadows and glows */
+    --shadow-glass: 0 8px 32px hsl(130 100% 50% / 0.1),
+                    inset 0 1px 0 hsl(130 100% 50% / 0.1);
+    --shadow-elevated: 0 20px 40px hsl(0 0% 0% / 0.5),
+                       0 0 60px hsl(130 100% 50% / 0.2);
+    --shadow-taskbar: 0 -4px 24px hsl(130 100% 50% / 0.15),
+                      inset 0 1px 0 hsl(130 100% 50% / 0.1);
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.5),
+                   0 0 80px hsl(var(--primary) / 0.2);
+    --shadow-premium: 0 25px 50px hsl(0 0% 0% / 0.8),
+                      0 0 100px hsl(130 100% 50% / 0.3);
 
     /* Smooth transitions */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -93,65 +102,70 @@ Cutting-edge design system with glass morphism and premium aesthetics
   }
 
   .dark {
-    /* Premium Dark Theme */
-    --background: 220 25% 6%;
-    --foreground: 220 15% 94%;
+    /* Enhanced Dark Theme - same as root for tech style */
+    --background: 220 15% 10%;
+    --foreground: 220 15% 95%;
 
-    --card: 220 25% 8% / 0.8;
-    --card-foreground: 220 15% 94%;
-    --glass-border: 255 255 255 / 0.1;
-    --glass-bg: 255 255 255 / 0.05;
+    --card: 220 20% 12% / 0.9;
+    --card-foreground: 220 15% 95%;
+    --glass-border: 130 100% 50% / 0.3;
+    --glass-bg: 220 20% 15% / 0.2;
 
-    --popover: 220 25% 8% / 0.95;
-    --popover-foreground: 220 15% 94%;
+    --popover: 220 20% 12% / 0.95;
+    --popover-foreground: 220 15% 95%;
 
-    --primary: 4 84% 65%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 4 84% 75%;
-    --primary-deep: 4 84% 55%;
+    --primary: 130 100% 50%;
+    --primary-foreground: 220 15% 10%;
+    --primary-glow: 140 100% 60%;
+    --primary-deep: 120 100% 40%;
 
-    --secondary: 220 20% 12%;
-    --secondary-foreground: 220 15% 85%;
+    --secondary: 200 100% 50%;
+    --secondary-foreground: 220 15% 95%;
 
-    --muted: 220 20% 10%;
-    --muted-foreground: 220 15% 65%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 12% 55%;
 
-    --accent: 220 20% 15%;
-    --accent-foreground: 220 15% 90%;
+    --accent: 280 100% 50%;
+    --accent-foreground: 220 15% 95%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 100% 60%;
     --destructive-foreground: 0 0% 100%;
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 25% 6%;
+    --success: 130 100% 50%;
+    --success-foreground: 220 15% 10%;
+    --warning: 38 100% 50%;
+    --warning-foreground: 220 15% 10%;
 
-    --border: 220 20% 18%;
-    --input: 220 20% 15%;
-    --ring: 4 84% 65%;
+    --border: 130 100% 50% / 0.2;
+    --input: 220 15% 15%;
+    --ring: 130 100% 50%;
 
-    --taskbar: 220 25% 8% / 0.8;
-    --taskbar-foreground: 220 15% 85%;
-    --taskbar-active: 4 84% 65%;
-    --taskbar-hover: 220 20% 15%;
+    --taskbar: 220 20% 10% / 0.9;
+    --taskbar-foreground: 220 15% 90%;
+    --taskbar-active: 130 100% 50%;
+    --taskbar-hover: 220 15% 15%;
 
-    --gradient-hero: linear-gradient(135deg, 
-      hsl(220 25% 8%) 0%, 
-      hsl(220 20% 6%) 50%, 
-      hsl(220 25% 4%) 100%);
+    --gradient-hero: radial-gradient(ellipse at top, 
+      hsl(220 20% 15%) 0%, 
+      hsl(220 18% 12%) 40%, 
+      hsl(220 20% 8%) 100%);
     --gradient-glass: linear-gradient(135deg, 
-      hsl(255 255 255 / 0.1) 0%, 
-      hsl(255 255 255 / 0.05) 50%, 
-      hsl(255 255 255 / 0.02) 100%);
+      hsl(130 100% 50% / 0.1) 0%, 
+      hsl(200 100% 50% / 0.05) 50%, 
+      hsl(280 100% 50% / 0.1) 100%);
     --gradient-card: linear-gradient(145deg, 
-      hsl(220 25% 10% / 0.9) 0%, 
-      hsl(220 20% 8% / 0.8) 100%);
+      hsl(220 20% 12% / 0.95) 0%, 
+      hsl(220 18% 10% / 0.9) 100%);
 
-    --shadow-glass: 0 8px 32px hsl(0 0% 0% / 0.3);
-    --shadow-elevated: 0 20px 40px hsl(0 0% 0% / 0.4);
-    --shadow-taskbar: 0 -4px 24px hsl(0 0% 0% / 0.3);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.4);
-    --shadow-premium: 0 25px 50px hsl(0 0% 0% / 0.5);
+    --shadow-glass: 0 8px 32px hsl(130 100% 50% / 0.1),
+                    inset 0 1px 0 hsl(130 100% 50% / 0.1);
+    --shadow-elevated: 0 20px 40px hsl(0 0% 0% / 0.5),
+                       0 0 60px hsl(130 100% 50% / 0.2);
+    --shadow-taskbar: 0 -4px 24px hsl(130 100% 50% / 0.15),
+                      inset 0 1px 0 hsl(130 100% 50% / 0.1);
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.5),
+                   0 0 80px hsl(var(--primary) / 0.2);
+    --shadow-premium: 0 25px 50px hsl(0 0% 0% / 0.8),
+                      0 0 100px hsl(130 100% 50% / 0.3);
   }
 }
 
@@ -162,19 +176,114 @@ Cutting-edge design system with glass morphism and premium aesthetics
 
   body {
     @apply bg-background text-foreground antialiased;
+    position: relative;
+    overflow-x: hidden;
   }
 
-  /* Glass morphism utilities */
+  /* Tech grid background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(hsl(130 100% 50% / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(130 100% 50% / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Animated scan line effect */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      hsl(130 100% 50% / 0.8) 50%, 
+      transparent 100%);
+    animation: scan 8s linear infinite;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 0 20px hsl(130 100% 50% / 0.5);
+  }
+
+  @keyframes scan {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
+  }
+
+  /* Glass morphism utilities with tech borders */
   .glass {
     background: var(--gradient-glass);
     backdrop-filter: var(--taskbar-blur);
     border: 1px solid hsl(var(--glass-border));
+    position: relative;
+  }
+
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, 
+      hsl(130 100% 50% / 0.3), 
+      hsl(200 100% 50% / 0.2), 
+      hsl(280 100% 50% / 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
 
   .glass-card {
     background: var(--gradient-card);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px);
     border: 1px solid hsl(var(--glass-border));
+    position: relative;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, 
+      hsl(130 100% 50% / 0.5), 
+      hsl(200 100% 50% / 0.3), 
+      transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Tech corner accents */
+  .tech-corners::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      linear-gradient(to right, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 0 0,
+      linear-gradient(to right, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 0 100%,
+      linear-gradient(to left, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 100% 0,
+      linear-gradient(to left, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 100% 100%,
+      linear-gradient(to bottom, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 0 0,
+      linear-gradient(to bottom, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 100% 0,
+      linear-gradient(to top, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 0 100%,
+      linear-gradient(to top, hsl(130 100% 50% / 0.5) 2px, transparent 2px) 100% 100%;
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    pointer-events: none;
+    border-radius: inherit;
   }
 
   /* Premium animations */
@@ -184,26 +293,79 @@ Cutting-edge design system with glass morphism and premium aesthetics
   }
 
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.3); }
-    50% { box-shadow: 0 0 40px hsl(var(--primary) / 0.6); }
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
+                  0 0 40px hsl(var(--primary) / 0.1);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.6),
+                  0 0 80px hsl(var(--primary) / 0.3);
+    }
   }
 
-  /* Scrollbar styling */
+  @keyframes data-flow {
+    0% { 
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% { 
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes circuit-pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* Holographic effect */
+  .holographic {
+    background: linear-gradient(135deg, 
+      hsl(130 100% 50% / 0.2),
+      hsl(200 100% 50% / 0.2),
+      hsl(280 100% 50% / 0.2));
+    animation: holographic-shift 3s ease-in-out infinite;
+  }
+
+  @keyframes holographic-shift {
+    0%, 100% {
+      filter: hue-rotate(0deg);
+    }
+    50% {
+      filter: hue-rotate(30deg);
+    }
+  }
+
+  /* Scrollbar styling with tech theme */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
 
   ::-webkit-scrollbar-track {
     background: hsl(var(--muted));
-    border-radius: 4px;
+    border-left: 1px solid hsl(130 100% 50% / 0.2);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--accent));
-    border-radius: 4px;
+    background: linear-gradient(180deg, 
+      hsl(130 100% 50% / 0.5),
+      hsl(200 100% 50% / 0.5));
+    border-radius: 5px;
+    box-shadow: 0 0 10px hsl(130 100% 50% / 0.5);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+    background: linear-gradient(180deg, 
+      hsl(130 100% 50% / 0.8),
+      hsl(200 100% 50% / 0.8));
+    box-shadow: 0 0 20px hsl(130 100% 50% / 0.8);
   }
 }

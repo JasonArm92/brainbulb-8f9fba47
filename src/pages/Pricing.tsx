@@ -76,11 +76,18 @@ const pricingPlans = [
 
 export const Pricing = () => {
   return (
-    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
-      <div className="max-w-7xl mx-auto pt-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Simple, Transparent Pricing
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24 relative">
+      {/* Tech ambiance */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto pt-12 relative z-10">
+        <div className="text-center mb-12 relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-16 bg-gradient-to-b from-primary/50 to-transparent"></div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 relative" style={{ textShadow: '0 0 30px hsl(130 100% 50% / 0.3)' }}>
+            <span className="inline-block tech-corners">Simple, Transparent Pricing</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Choose the perfect plan for your business. All packages include responsive design, 
@@ -102,9 +109,14 @@ export const Pricing = () => {
           ))}
         </div>
 
-        <div className="mt-16 glass-card rounded-3xl p-10 text-center shadow-glow animate-glass-appear border border-glass-border">
-          <h2 className="text-2xl font-bold mb-6">Why Choose Brain Bulb Web Design?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+        <div className="mt-16 glass-card rounded-3xl p-10 text-center shadow-glow animate-glass-appear border border-glass-border relative tech-corners overflow-hidden">
+          {/* Tech grid overlay */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, hsl(130 100% 50% / 0.1) 0px, transparent 1px, transparent 30px), repeating-linear-gradient(90deg, hsl(130 100% 50% / 0.1) 0px, transparent 1px, transparent 30px)',
+          }}></div>
+          
+          <h2 className="text-2xl font-bold mb-6 relative" style={{ textShadow: '0 0 20px hsl(130 100% 50% / 0.3)' }}>Why Choose Brain Bulb Web Design?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left relative">
             <div className="flex items-start gap-4">
               <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
                 <span className="text-2xl">⚡</span>

@@ -209,10 +209,19 @@ export const Portfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
-      <div className="max-w-7xl mx-auto pt-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Portfolio</h1>
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24 relative">
+      {/* Tech ambient lights */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-40 left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-40 right-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto pt-12 relative z-10">
+        <div className="text-center mb-12 relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-20 bg-gradient-to-b from-primary/50 to-transparent"></div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 relative" style={{ textShadow: '0 0 30px hsl(130 100% 50% / 0.3)' }}>
+            <span className="inline-block tech-corners">Our Portfolio</span>
+          </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Explore our diverse range of web design projects. Click on any project to view detailed case studies, photo galleries, and technical insights.
           </p>
@@ -234,14 +243,29 @@ export const Portfolio = () => {
         </div>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+          {/* Tech connector lines */}
+          <div className="absolute inset-0 pointer-events-none opacity-20">
+            <svg className="w-full h-full" style={{ position: 'absolute' }}>
+              <defs>
+                <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: 'hsl(130 100% 50%)', stopOpacity: 0 }} />
+                  <stop offset="50%" style={{ stopColor: 'hsl(130 100% 50%)', stopOpacity: 0.3 }} />
+                  <stop offset="100%" style={{ stopColor: 'hsl(130 100% 50%)', stopOpacity: 0 }} />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          
           {filteredProjects.map((project, index) => (
             <div
               key={project.id}
-              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-glow transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105 border border-glass-border"
+              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-glow transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105 border border-glass-border relative tech-corners"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => openProject(project.id)}
             >
+              {/* Holographic scan effect on hover */}
+              <div className="absolute inset-0 bg-gradient-tech opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" style={{ animation: 'data-flow 3s linear infinite' }}></div>
               <div className="aspect-video relative overflow-hidden">
                 <img 
                   src={project.images[0]} 
