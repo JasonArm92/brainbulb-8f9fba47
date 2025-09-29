@@ -8,34 +8,33 @@ import { cn } from "@/lib/utils";
 const projects = [
   {
     id: "1",
-    title: "TechCorp Solutions",
-    description: "Modern corporate website with responsive design and advanced functionality.",
-    fullDescription: "A comprehensive corporate website built for TechCorp Solutions, featuring a modern design system, responsive layout, and advanced functionality including client portals, service showcases, and integrated contact systems. The site was designed to establish TechCorp as a leader in their industry while providing an exceptional user experience across all devices.",
+    title: "Little Grand Projects",
+    description: "Project management and design consulting website built on Webflow.",
+    fullDescription: "A comprehensive website for Little Grand Projects, a project management and design consulting firm that's changing the management game. The site features a clean, modern design with an emphasis on accessibility and user experience. Built on Webflow for easy content management and scalability.",
     images: [
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800",
-      "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800",
-      "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800"
+      "/src/assets/little-grand-projects.png",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800",
+      "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800",
+      "https://images.unsplash.com/photo-1560472355-536de3962603?w=800"
     ],
-    technologies: ["React", "TypeScript", "Tailwind CSS", "Node.js", "PostgreSQL"],
-    liveUrl: "https://example.com",
-    githubUrl: "https://github.com/example",
+    technologies: ["Webflow", "JavaScript", "CSS3", "Responsive Design"],
+    liveUrl: "https://preview.webflow.com/preview/little-grand-projects",
     featured: true,
-    client: "TechCorp Solutions",
+    client: "Little Grand Projects",
     category: "Corporate Website",
-    duration: "6 weeks",
+    duration: "4 weeks",
     year: "2024",
     challenges: [
-      "Complex data visualization requirements",
-      "Integration with legacy systems",
-      "High-performance requirements for large datasets",
-      "Multi-language support implementation"
+      "Creating a unique brand identity",
+      "Seamless navigation experience",
+      "Content management system setup",
+      "Mobile-first responsive design"
     ],
     results: [
-      "40% increase in user engagement",
-      "60% reduction in page load times",
-      "100% accessibility compliance achieved",
-      "Mobile traffic increased by 75%"
+      "Clean, modern design that reflects brand identity",
+      "Easy-to-use CMS for content updates",
+      "100% mobile responsive",
+      "Professional online presence established"
     ]
   },
   {
