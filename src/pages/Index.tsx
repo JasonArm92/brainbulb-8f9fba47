@@ -195,34 +195,19 @@ const Index = () => {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-hero pb-24 px-4 relative">
-      {/* Tech grid overlay */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
-      </div>
-
-      <div className="max-w-6xl mx-auto pt-12 relative z-10">
+    <div className="min-h-screen bg-gradient-hero pb-24 px-4">
+      <div className="max-w-6xl mx-auto pt-12">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-4 mb-8 relative">
-            <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse"></div>
+          <div className="inline-flex items-center gap-4 mb-8">
             <img 
               src="/src/assets/logo-main.png" 
               alt="Brain Bulb Web Design" 
-              className="h-30 animate-fade-in relative z-10"
-              style={{ filter: 'drop-shadow(0 0 20px hsl(130 100% 50% / 0.5))' }}
+              className="h-30 animate-fade-in"
             />
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up relative">
-            <span className="inline-block relative">
-              Web Design That
-              <div className="absolute -inset-1 bg-gradient-primary opacity-20 blur-xl"></div>
-            </span>
-            <span className="block text-primary mt-2 relative tech-corners" style={{ textShadow: '0 0 30px hsl(130 100% 50% / 0.5)' }}>
-              Sparks Success
-              <div className="absolute inset-0 bg-primary/10 blur-2xl"></div>
-            </span>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
+            Web Design That
+            <span className="block text-primary">Sparks Success</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto animate-slide-up">
             Professional websites that capture your vision and drive results. 
@@ -252,16 +237,8 @@ const Index = () => {
         </div>
 
           <div className="relative max-w-6xl mx-auto mb-16">
-            {/* Tech circuit decoration */}
-            <div className="absolute -top-10 -left-10 w-32 h-32 border-l-2 border-t-2 border-primary/30 rounded-tl-3xl pointer-events-none"></div>
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 border-r-2 border-b-2 border-secondary/30 rounded-br-3xl pointer-events-none"></div>
-            
-            <div className="glass-card rounded-3xl shadow-premium p-8 animate-glass-appear border border-glass-border relative tech-corners overflow-hidden">
-              {/* Animated data flow lines */}
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-50 animate-pulse"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-secondary to-transparent opacity-50 animate-pulse" style={{ animationDelay: '1s' }}></div>
-              
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-glass-border/50 relative">
+            <div className="glass-card rounded-3xl shadow-premium p-8 animate-glass-appear border border-glass-border">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-glass-border/50">
                 <div className="flex items-center gap-3">
                   <div className="flex gap-2">
                     <div className="w-3 h-3 bg-destructive rounded-full"></div>
@@ -313,11 +290,7 @@ const Index = () => {
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 relative">
-            {/* Background tech elements */}
-            <div className="absolute -top-20 left-1/4 w-px h-40 bg-gradient-to-b from-transparent via-primary/20 to-transparent"></div>
-            <div className="absolute -top-20 right-1/4 w-px h-40 bg-gradient-to-b from-transparent via-secondary/20 to-transparent"></div>
-            
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             {[
               {
                 icon: <Sparkles className="w-8 h-8 text-primary" />,
@@ -337,14 +310,10 @@ const Index = () => {
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-glow transition-all duration-500 animate-slide-up-premium hover:scale-105 border border-glass-border relative tech-corners group overflow-hidden"
+                className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-glow transition-all duration-500 animate-slide-up-premium hover:scale-105 border border-glass-border"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                {/* Holographic overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/5 to-secondary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 backdrop-blur-sm border border-primary/20 relative group-hover:animate-pulse">
-                  <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 backdrop-blur-sm border border-primary/20">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
@@ -354,15 +323,8 @@ const Index = () => {
           </div>
 
           {/* Call to Action */}
-          <div className="text-center glass-card rounded-3xl p-10 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl relative tech-corners overflow-hidden">
-            {/* Tech grid pattern overlay */}
-            <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, hsl(130 100% 50% / 0.1) 0px, transparent 1px, transparent 20px), repeating-linear-gradient(90deg, hsl(130 100% 50% / 0.1) 0px, transparent 1px, transparent 20px)',
-            }}></div>
-            
-            <h2 className="text-3xl font-bold mb-6 relative" style={{ textShadow: '0 0 20px hsl(130 100% 50% / 0.3)' }}>
-              Ready to Illuminate Your Online Presence?
-            </h2>
+          <div className="text-center glass-card rounded-3xl p-10 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl">
+            <h2 className="text-3xl font-bold mb-6">Ready to Illuminate Your Online Presence?</h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
               Join hundreds of satisfied clients who've transformed their business with our web design expertise.
             </p>
