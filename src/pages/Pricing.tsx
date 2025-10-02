@@ -1,6 +1,7 @@
 import React from "react";
 import { PricingCard } from "@/components/PricingCard";
 import { cn } from "@/lib/utils";
+import { Zap, Award, Shield } from "lucide-react";
 
 const pricingPlans = [
   {
@@ -76,19 +77,26 @@ const pricingPlans = [
 
 export const Pricing = () => {
   return (
-    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
-      <div className="max-w-7xl mx-auto pt-12">
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24 tech-grid relative overflow-hidden">
+      {/* Ambient effects */}
+      <div className="fixed top-0 left-1/3 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/3 w-96 h-96 bg-primary-glow/15 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto pt-12 relative z-10">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Simple, Transparent Pricing
+          <div className="inline-block mb-4 px-4 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+            <span className="text-sm font-mono text-primary font-semibold">Pricing Plans</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-foreground via-primary to-foreground bg-clip-text text-transparent">
+            Elite Solutions, Transparent Pricing
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose the perfect plan for your business. All packages include responsive design, 
-            modern development practices, and professional results.
+            <span className="text-primary font-semibold">Industry-leading packages</span> with responsive design, 
+            modern development practices, and exceptional results guaranteed.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {pricingPlans.map((plan, index) => (
             <PricingCard 
               key={plan.name} 
@@ -102,40 +110,43 @@ export const Pricing = () => {
           ))}
         </div>
 
-        <div className="mt-16 glass-card rounded-3xl p-10 text-center shadow-glow animate-glass-appear border border-glass-border">
-          <h2 className="text-2xl font-bold mb-6">Why Choose Brain Bulb Web Design?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="flex items-start gap-4">
-              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
-                <span className="text-2xl">⚡</span>
+        <div className="mt-16 glass-card rounded-3xl p-10 text-center shadow-premium animate-glass-appear border border-glass-border relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary-glow/10 opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold mb-8 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Why Choose Brain Bulb?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+              <div className="flex items-start gap-4 group/item">
+                <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20 shadow-glass group-hover/item:shadow-glow transition-shadow">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold mb-3 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Rapid Deployment</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Most projects delivered within 2-4 weeks with enterprise-grade quality, regardless of complexity.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold mb-3">Fast Delivery</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Most projects completed within 2-4 weeks, depending on complexity.
-                </p>
+              <div className="flex items-start gap-4 group/item">
+                <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20 shadow-glass group-hover/item:shadow-glow transition-shadow">
+                  <Award className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold mb-3 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Award-Winning Design</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Industry-leading designs that perform flawlessly across all devices and platforms.
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
-                <span className="text-2xl">🎨</span>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Modern Design</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Clean, professional designs that work perfectly on all devices.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20">
-                <span className="text-2xl">🔧</span>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">Ongoing Support</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  We don't disappear after launch. Continued support to keep you running smoothly.
-                </p>
+              <div className="flex items-start gap-4 group/item">
+                <div className="bg-primary/10 p-3 rounded-2xl backdrop-blur-sm border border-primary/20 shadow-glass group-hover/item:shadow-glow transition-shadow">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold mb-3 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Elite Support</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    We're invested in your success. Continued support ensures peak performance long after launch.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

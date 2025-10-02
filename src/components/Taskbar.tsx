@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Monitor, User, DollarSign, Mail, Home, Search, Settings } from "lucide-react";
+import { Monitor, User, DollarSign, Mail, Home, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navItems = [
   { id: "/", label: "Home", icon: Home },
@@ -84,14 +85,12 @@ export const Taskbar = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/10 transition-all duration-300 group"
+              className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-accent/50 transition-all duration-300 group"
             >
               <Search className="w-4 h-4 text-foreground/70 group-hover:text-foreground transition-colors duration-300" />
             </button>
             
-            <button className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/10 transition-all duration-300 group">
-              <Settings className="w-4 h-4 text-foreground/70 group-hover:text-foreground transition-colors duration-300" />
-            </button>
+            <ThemeToggle />
             
             {/* Time */}
             <div className="flex items-center justify-center min-w-[60px] h-10 px-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-default">

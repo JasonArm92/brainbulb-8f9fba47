@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PricingFeature {
@@ -27,48 +27,66 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
   return (
     <div 
       className={cn(
-        "relative glass-card rounded-3xl p-8 shadow-glass hover:shadow-glow transition-all duration-500 border border-glass-border",
-        plan.popular && "border-primary shadow-glow scale-105 animate-glow-pulse",
+        "relative glass-card rounded-3xl p-8 shadow-glass hover:shadow-premium transition-all duration-500 border border-glass-border group overflow-hidden",
+        plan.popular && "border-primary shadow-premium scale-105",
         className
       )}
       style={style}
     >
       {plan.popular && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <div className="bg-gradient-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-glow">
-            <Star className="w-4 h-4" />
-            Most Popular
+        <>
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+            <div className="bg-gradient-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-glow border border-primary/30">
+              <Star className="w-4 h-4 fill-current" />
+              Most Popular
+            </div>
           </div>
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary-glow/10 opacity-50 animate-pulse" />
+        </>
       )}
       
-      <div className="text-center mb-8">
-        <h3 className="text-xl font-bold mb-3">{plan.name}</h3>
-        <div className="mb-3">
+      {!plan.popular && (
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      )}
+      
+      <div className="text-center mb-8 relative z-10">
+        <div className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+          <h3 className="text-sm font-mono font-bold text-primary">{plan.name}</h3>
+        </div>
+        <div className="mb-4">
           {plan.price === "enquiry" ? (
-            <span className="text-2xl font-bold text-primary">Price on Enquiry</span>
+            <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">Custom Pricing</div>
           ) : (
             <>
-              <span className="text-3xl font-bold text-primary">£{plan.price}</span>
-              <span className="text-muted-foreground ml-2">starting at</span>
+              <div className="flex items-baseline justify-center gap-2">
+                <span className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">£{plan.price}</span>
+                <span className="text-muted-foreground text-sm font-mono">starting at</span>
+              </div>
             </>
           )}
         </div>
         <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
       </div>
       
-      <ul className="space-y-4 mb-8">
+      <ul className="space-y-4 mb-8 relative z-10">
         {plan.features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-3">
-            <Check 
-              className={cn(
-                "w-5 h-5 mt-0.5 shrink-0",
-                feature.included ? "text-success" : "text-muted-foreground"
-              )} 
-            />
+          <li key={index} className="flex items-start gap-3 group/feature">
+            <div className={cn(
+              "mt-0.5 shrink-0 p-1 rounded-lg border transition-all duration-300",
+              feature.included 
+                ? "bg-success/10 border-success/30 group-hover/feature:shadow-glow" 
+                : "bg-muted/30 border-muted/50"
+            )}>
+              <Check 
+                className={cn(
+                  "w-4 h-4",
+                  feature.included ? "text-success" : "text-muted-foreground"
+                )} 
+              />
+            </div>
             <span className={cn(
               "text-sm leading-relaxed",
-              !feature.included && "text-muted-foreground line-through"
+              feature.included ? "text-foreground font-medium" : "text-muted-foreground line-through"
             )}>
               {feature.text}
             </span>
@@ -79,9 +97,10 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
       <Button 
         variant={plan.popular ? "cta" : "glass"}
         size="lg"
-        className="w-full rounded-2xl"
+        className="w-full rounded-2xl relative z-10 group/button"
       >
         {plan.ctaText || "Get Started"}
+        <Zap className="w-4 h-4 ml-2 group-hover/button:scale-110 transition-transform" />
       </Button>
     </div>
   );

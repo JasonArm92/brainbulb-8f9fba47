@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Play, Monitor, Sparkles, ExternalLink } from "lucide-react";
+import { ArrowRight, Play, Monitor, Sparkles, ExternalLink, Code2, Zap, Layers } from "lucide-react";
 import { ProjectModal } from "@/components/ProjectModal";
 
 // Featured projects data for homepage showcase
@@ -195,23 +195,28 @@ const Index = () => {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-hero pb-24 px-4">
-      <div className="max-w-6xl mx-auto pt-12">
+    <div className="min-h-screen bg-gradient-hero pb-24 px-4 tech-grid relative overflow-hidden">
+      {/* Ambient light effects */}
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-primary-glow/15 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="max-w-6xl mx-auto pt-12 relative z-10">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-4 mb-8">
+          <div className="inline-flex items-center gap-4 mb-8 relative">
+            <div className="absolute inset-0 bg-gradient-primary blur-3xl opacity-20 animate-pulse" />
             <img 
               src="/src/assets/logo-main.png" 
               alt="Brain Bulb Web Design" 
-              className="h-30 animate-fade-in"
+              className="h-30 animate-fade-in relative z-10"
             />
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
-            Web Design That
-            <span className="block text-primary">Sparks Success</span>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up bg-gradient-to-br from-foreground via-primary to-foreground bg-clip-text text-transparent">
+            Elite Web Design That
+            <span className="block bg-gradient-primary bg-clip-text text-transparent">Transforms Businesses</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto animate-slide-up">
-            Professional websites that capture your vision and drive results. 
-            From concept to launch, we create digital experiences that make your business shine.
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto animate-slide-up leading-relaxed">
+            Industry-leading websites engineered for performance and designed for impact. 
+            <span className="block mt-2 text-primary font-medium">From vision to execution, we craft digital experiences that drive exceptional results.</span>
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-slide-up">
@@ -219,144 +224,160 @@ const Index = () => {
               variant="cta" 
               size="lg"
               onClick={() => navigate("/portfolio")}
-              className="text-lg px-8 py-4 rounded-2xl shadow-glow"
+              className="text-lg px-8 py-6 rounded-2xl shadow-glow group"
             >
-              <Play className="w-5 h-5 mr-2" />
+              <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
               Explore Our Work
+              <Sparkles className="w-4 h-4 ml-2 opacity-70" />
             </Button>
             <Button 
               variant="glass" 
               size="lg"
               onClick={() => navigate("/contact")}
-              className="text-lg px-8 py-4 rounded-2xl"
+              className="text-lg px-8 py-6 rounded-2xl group"
             >
               Start Your Project
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>
 
-          <div className="relative max-w-6xl mx-auto mb-16">
-            <div className="glass-card rounded-3xl shadow-premium p-8 animate-glass-appear border border-glass-border">
-              <div className="flex items-center justify-between mb-8 pb-4 border-b border-glass-border/50">
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 bg-destructive rounded-full"></div>
-                    <div className="w-3 h-3 bg-warning rounded-full"></div>
-                    <div className="w-3 h-3 bg-success rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground ml-2">Portfolio Desktop</span>
+        <div className="relative max-w-6xl mx-auto mb-16">
+          <div className="glass-card rounded-3xl shadow-premium p-8 animate-glass-appear border border-glass-border relative overflow-hidden">
+            {/* Technical scan line effect */}
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
+              <div className="h-px w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line" />
+            </div>
+            
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-glass-border/50 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 bg-destructive rounded-full shadow-glow" />
+                  <div className="w-3 h-3 bg-warning rounded-full shadow-glow" />
+                  <div className="w-3 h-3 bg-success rounded-full shadow-glow" />
                 </div>
-                <Button 
-                  variant="glass" 
-                  size="sm"
-                  onClick={() => navigate("/portfolio")}
-                  className="text-xs rounded-xl"
+                <span className="text-sm font-medium text-muted-foreground ml-2 font-mono">Portfolio.exe</span>
+              </div>
+              <Button 
+                variant="glass" 
+                size="sm"
+                onClick={() => navigate("/portfolio")}
+                className="text-xs rounded-xl"
+              >
+                <ExternalLink className="w-3 h-3 mr-1" />
+                View All
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 relative z-10">
+              {featuredProjects.map((project, index) => (
+                <button
+                  key={project.id}
+                  className="group relative aspect-video rounded-2xl overflow-hidden bg-muted hover:scale-105 transition-all duration-500 shadow-glass hover:shadow-glow border border-glass-border"
+                  onClick={() => setSelectedProject(project.id)}
                 >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  View All
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {featuredProjects.map((project, index) => (
-                  <button
-                    key={project.id}
-                    className="group relative aspect-video rounded-2xl overflow-hidden bg-muted hover:scale-105 transition-all duration-300 shadow-glass hover:shadow-glow"
-                    onClick={() => setSelectedProject(project.id)}
-                  >
-                    <img 
-                      src={project.images[0]} 
-                      alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity">
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <div className="text-xs text-primary font-medium mb-1">{project.category}</div>
-                        <div className="text-sm font-semibold text-foreground truncate">{project.title}</div>
-                      </div>
+                  <img 
+                    src={project.images[0]} 
+                    alt={project.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-80 group-hover:opacity-95 transition-opacity">
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <div className="text-xs text-primary font-semibold mb-1 font-mono">{project.category}</div>
+                      <div className="text-sm font-bold text-foreground truncate">{project.title}</div>
                     </div>
-                    <div className="absolute top-3 right-3 w-7 h-7 bg-primary/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <Monitor className="w-4 h-4 text-primary" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-              
-              <div className="text-center mt-6 pt-4 border-t border-glass-border">
-                <p className="text-sm text-muted-foreground">Click any project above to view detailed case study</p>
-              </div>
+                  </div>
+                  <div className="absolute top-3 right-3 w-8 h-8 bg-primary/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-primary/30">
+                    <Monitor className="w-4 h-4 text-primary" />
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <div className="text-center mt-6 pt-4 border-t border-glass-border relative z-10">
+              <p className="text-sm text-muted-foreground font-mono">Click any project above to view detailed case study →</p>
             </div>
           </div>
+        </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {[
-              {
-                icon: <Sparkles className="w-8 h-8 text-primary" />,
-                title: "Modern Design",
-                description: "Clean, professional designs that capture your brand and engage your audience."
-              },
-              {
-                icon: <Monitor className="w-8 h-8 text-primary" />,
-                title: "Responsive & Fast",
-                description: "Websites that look perfect and load quickly on all devices and screen sizes."
-              },
-              {
-                icon: <ArrowRight className="w-8 h-8 text-primary" />,
-                title: "Results Driven",
-                description: "Strategic design focused on converting visitors into customers and driving growth."
-              }
-            ].map((feature, index) => (
-              <div 
-                key={index}
-                className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-glow transition-all duration-500 animate-slide-up-premium hover:scale-105 border border-glass-border"
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 backdrop-blur-sm border border-primary/20">
+        {/* Features */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {[
+            {
+              icon: <Code2 className="w-8 h-8 text-primary" />,
+              title: "Technical Excellence",
+              description: "Engineered with cutting-edge technologies and industry-best practices for unmatched performance.",
+              gradient: "from-primary/20 via-primary/10 to-transparent"
+            },
+            {
+              icon: <Zap className="w-8 h-8 text-primary" />,
+              title: "Lightning Fast",
+              description: "Optimized architecture delivering exceptional speed across all devices and network conditions.",
+              gradient: "from-primary-glow/20 via-primary-glow/10 to-transparent"
+            },
+            {
+              icon: <Layers className="w-8 h-8 text-primary" />,
+              title: "Scalable Systems",
+              description: "Future-proof infrastructure designed to grow seamlessly with your business expansion.",
+              gradient: "from-primary-deep/20 via-primary-deep/10 to-transparent"
+            }
+          ].map((feature, index) => (
+            <div 
+              key={index}
+              className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-premium transition-all duration-500 animate-slide-up-premium hover:scale-105 border border-glass-border group relative overflow-hidden"
+              style={{ animationDelay: `${index * 0.2}s` }}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+              <div className="relative z-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 backdrop-blur-sm border border-primary/20 shadow-glow group-hover:scale-110 transition-transform duration-500">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+                <h3 className="text-xl font-bold mb-4 bg-gradient-to-br from-foreground to-primary bg-clip-text text-transparent">{feature.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Call to Action */}
-          <div className="text-center glass-card rounded-3xl p-10 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl">
-            <h2 className="text-3xl font-bold mb-6">Ready to Illuminate Your Online Presence?</h2>
+        {/* Call to Action */}
+        <div className="text-center glass-card rounded-3xl p-12 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary-glow/10 opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Ready to Transform Your Digital Presence?</h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
-              Join hundreds of satisfied clients who've transformed their business with our web design expertise.
+              Join industry leaders who've revolutionized their business with our elite web design expertise.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 variant="cta" 
                 size="lg"
                 onClick={() => navigate("/pricing")}
-                className="rounded-2xl shadow-glow"
+                className="rounded-2xl shadow-glow px-10 py-6 text-lg group"
               >
                 View Pricing
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
-                variant="outline" 
+                variant="glass" 
                 size="lg"
                 onClick={() => navigate("/about")}
-                className="rounded-2xl"
+                className="rounded-2xl px-10 py-6 text-lg"
               >
                 Learn More
               </Button>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Project Modal */}
-        {selectedProject && (
-          <ProjectModal
-            project={featuredProjects.find(p => p.id === selectedProject)!}
-            isOpen={!!selectedProject}
-            onClose={() => setSelectedProject(null)}
-          />
-        )}
+      {/* Project Modal */}
+      {selectedProject && (
+        <ProjectModal
+          project={featuredProjects.find(p => p.id === selectedProject)!}
+          isOpen={!!selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </div>
   );
 };

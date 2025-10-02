@@ -124,8 +124,25 @@ export default {
           "100%": { backgroundPosition: "200% 0" },
         },
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" },
-          "50%": { boxShadow: "0 0 40px hsl(var(--primary) / 0.6)" },
+          "0%, 100%": { 
+            boxShadow: "0 0 20px hsl(var(--primary) / 0.3), 0 0 40px hsl(var(--primary) / 0.1)" 
+          },
+          "50%": { 
+            boxShadow: "0 0 40px hsl(var(--primary) / 0.6), 0 0 80px hsl(var(--primary) / 0.2)" 
+          },
+        },
+        "scan-line": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
+        },
+        "data-flow": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
+        "border-beam": {
+          "0%": { offsetDistance: "0%" },
+          "100%": { offsetDistance: "100%" },
         },
         "slide-up-premium": {
           "0%": { 
@@ -146,6 +163,9 @@ export default {
         "shimmer": "shimmer 3s ease-in-out infinite",
         "glow-pulse": "glow-pulse 4s ease-in-out infinite",
         "slide-up-premium": "slide-up-premium 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+        "scan-line": "scan-line 4s linear infinite",
+        "data-flow": "data-flow 20s ease infinite",
+        "border-beam": "border-beam 3s linear infinite",
       },
     },
   },

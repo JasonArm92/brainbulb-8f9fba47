@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ProjectModal } from "@/components/ProjectModal";
 import { Button } from "@/components/ui/button";
-import { Monitor, ExternalLink, Calendar, User } from "lucide-react";
+import { Monitor, ExternalLink, Calendar, User, Code2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Enhanced portfolio data with photo reels and detailed information
@@ -209,12 +209,20 @@ export const Portfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24">
-      <div className="max-w-7xl mx-auto pt-12">
+    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24 tech-grid relative overflow-hidden">
+      {/* Ambient effects */}
+      <div className="fixed top-0 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-0 left-1/4 w-96 h-96 bg-primary-glow/15 rounded-full blur-[120px] pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto pt-12 relative z-10">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Portfolio</h1>
+          <div className="inline-block mb-4 px-4 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+            <span className="text-sm font-mono text-primary font-semibold">Portfolio</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-foreground via-primary to-foreground bg-clip-text text-transparent">Our Elite Projects</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Explore our diverse range of web design projects. Click on any project to view detailed case studies, photo galleries, and technical insights.
+            Engineered solutions that set industry benchmarks.
+            <span className="block mt-2 text-primary font-medium">Click any project to explore detailed case studies and technical insights.</span>
           </p>
         </div>
 
@@ -226,8 +234,9 @@ export const Portfolio = () => {
               variant={filterCategory === category ? "cta" : "glass"}
               size="sm"
               onClick={() => setFilterCategory(category)}
-              className="capitalize rounded-2xl"
+              className="capitalize rounded-xl font-medium"
             >
+              <Code2 className="w-3 h-3 mr-1" />
               {category === "all" ? "All Projects" : category}
             </Button>
           ))}
@@ -238,7 +247,7 @@ export const Portfolio = () => {
           {filteredProjects.map((project, index) => (
             <div
               key={project.id}
-              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-glow transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105 border border-glass-border"
+              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-premium transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105 border border-glass-border relative"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => openProject(project.id)}
             >
@@ -246,9 +255,9 @@ export const Portfolio = () => {
                 <img 
                   src={project.images[0]} 
                   alt={project.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-4 left-4 right-4">
                     <Button variant="cta" size="sm" className="w-full">
                       <Monitor className="w-4 h-4 mr-2" />
@@ -257,48 +266,48 @@ export const Portfolio = () => {
                   </div>
                 </div>
                 {project.featured && (
-                  <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-semibold">
+                  <div className="absolute top-3 right-3 bg-gradient-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-glow">
                     Featured
                   </div>
                 )}
-                <div className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm text-foreground px-2 py-1 rounded-full text-xs font-medium">
+                <div className="absolute top-3 left-3 glass-card text-foreground px-3 py-1 rounded-full text-xs font-medium border border-glass-border">
                   {project.images.length} Photos
                 </div>
               </div>
               
               <div className="p-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs text-muted-foreground bg-accent/50 px-2 py-1 rounded">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs text-primary font-bold bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                     {project.category}
                   </span>
-                  <span className="text-xs text-muted-foreground">{project.year}</span>
+                  <span className="text-xs text-muted-foreground font-mono">{project.year}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{project.title}</h3>
                 <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{project.description}</p>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="w-4 h-4" />
-                    <span>{project.client}</span>
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
+                  <div className="flex items-center gap-2">
+                    <User className="w-3 h-3" />
+                    <span className="font-mono">{project.client}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span>{project.duration}</span>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3 h-3" />
+                    <span className="font-mono">{project.duration}</span>
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap gap-1 mt-4">
+                <div className="flex flex-wrap gap-2">
                   {project.technologies.slice(0, 3).map((tech) => (
                     <span 
                       key={tech}
-                      className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium"
+                      className="px-2 py-1 bg-primary/10 text-primary rounded-lg text-xs font-semibold border border-primary/20"
                     >
                       {tech}
                     </span>
                   ))}
                   {project.technologies.length > 3 && (
-                    <span className="px-2 py-1 bg-muted text-muted-foreground rounded text-xs">
-                      +{project.technologies.length - 3} more
+                    <span className="px-2 py-1 glass-card text-muted-foreground rounded-lg text-xs font-medium border border-glass-border">
+                      +{project.technologies.length - 3}
                     </span>
                   )}
                 </div>
