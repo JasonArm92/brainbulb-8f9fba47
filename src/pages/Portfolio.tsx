@@ -3,6 +3,8 @@ import { ProjectModal } from "@/components/ProjectModal";
 import { Button } from "@/components/ui/button";
 import { Monitor, ExternalLink, Calendar, User, Code2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RippleEffect } from "@/components/RippleEffect";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 // Enhanced portfolio data with photo reels and detailed information
 const projects = [
@@ -245,9 +247,9 @@ export const Portfolio = () => {
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProjects.map((project, index) => (
-            <div
+            <RippleEffect
               key={project.id}
-              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-premium transition-all duration-500 cursor-pointer group animate-slide-up-premium hover:scale-105 border border-glass-border relative"
+              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-premium transition-all duration-500 cursor-pointer group animate-slide-up-fade hover:scale-105 border border-glass-border relative"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => openProject(project.id)}
             >
@@ -312,7 +314,7 @@ export const Portfolio = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </RippleEffect>
           ))}
         </div>
 

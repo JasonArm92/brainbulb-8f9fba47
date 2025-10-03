@@ -2,6 +2,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Lightbulb, Users, Code, Award, Zap, Heart, Target, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { MagneticButton } from "@/components/MagneticButton";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 export const About = () => {
   const navigate = useNavigate();
@@ -173,7 +175,7 @@ export const About = () => {
               Let's engineer your vision into a <span className="text-primary font-semibold">world-class website</span> that drives measurable results. 
               Schedule your strategic consultation today.
             </p>
-            <Button 
+            <MagneticButton 
               variant="cta" 
               size="lg" 
               className="rounded-2xl shadow-glow px-10 py-6 text-lg"
@@ -181,7 +183,7 @@ export const About = () => {
             >
               Get Started Today
               <Zap className="w-5 h-5 ml-2" />
-            </Button>
+            </MagneticButton>
           </div>
         </div>
       </div>

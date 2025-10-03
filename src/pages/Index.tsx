@@ -3,6 +3,10 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Play, Monitor, Sparkles, ExternalLink, Code2, Zap, Layers } from "lucide-react";
 import { ProjectModal } from "@/components/ProjectModal";
+import { MagneticButton } from "@/components/MagneticButton";
+import { AnimatedStats } from "@/components/AnimatedStats";
+import { RippleEffect } from "@/components/RippleEffect";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 // Featured projects data for homepage showcase
 const featuredProjects = [
@@ -220,7 +224,7 @@ const Index = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-slide-up">
-            <Button 
+            <MagneticButton 
               variant="cta" 
               size="lg"
               onClick={() => navigate("/portfolio")}
@@ -229,8 +233,8 @@ const Index = () => {
               <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
               Explore Our Work
               <Sparkles className="w-4 h-4 ml-2 opacity-70" />
-            </Button>
-            <Button 
+            </MagneticButton>
+            <MagneticButton 
               variant="glass" 
               size="lg"
               onClick={() => navigate("/contact")}
@@ -238,7 +242,7 @@ const Index = () => {
             >
               Start Your Project
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            </MagneticButton>
           </div>
         </div>
 
@@ -271,7 +275,7 @@ const Index = () => {
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6 relative z-10">
               {featuredProjects.map((project, index) => (
-                <button
+                <RippleEffect
                   key={project.id}
                   className="group relative aspect-video rounded-2xl overflow-hidden bg-muted hover:scale-105 transition-all duration-500 shadow-glass hover:shadow-glow border border-glass-border"
                   onClick={() => setSelectedProject(project.id)}
@@ -290,7 +294,7 @@ const Index = () => {
                   <div className="absolute top-3 right-3 w-8 h-8 bg-primary/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-primary/30">
                     <Monitor className="w-4 h-4 text-primary" />
                   </div>
-                </button>
+                </RippleEffect>
               ))}
             </div>
             
@@ -339,6 +343,11 @@ const Index = () => {
           ))}
         </div>
 
+        {/* Animated Stats Section */}
+        <div className="mb-16">
+          <AnimatedStats />
+        </div>
+
         {/* Call to Action */}
         <div className="text-center glass-card rounded-3xl p-12 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary-glow/10 opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
@@ -348,7 +357,7 @@ const Index = () => {
               Join industry leaders who've revolutionized their business with our elite web design expertise.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
+              <MagneticButton 
                 variant="cta" 
                 size="lg"
                 onClick={() => navigate("/pricing")}
@@ -356,15 +365,15 @@ const Index = () => {
               >
                 View Pricing
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button 
+              </MagneticButton>
+              <MagneticButton 
                 variant="glass" 
                 size="lg"
                 onClick={() => navigate("/about")}
                 className="rounded-2xl px-10 py-6 text-lg"
               >
                 Learn More
-              </Button>
+              </MagneticButton>
             </div>
           </div>
         </div>

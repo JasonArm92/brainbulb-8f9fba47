@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Taskbar } from "@/components/Taskbar";
+import { ParticleBackground } from "@/components/ParticleBackground";
+import { ScrollProgress } from "@/components/ScrollProgress";
 import Index from "./pages/Index";
 import { Portfolio } from "./pages/Portfolio";
 import { About } from "./pages/About";
@@ -20,6 +22,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <div className="min-h-screen bg-gradient-hero">
+          <ParticleBackground />
+          <ScrollProgress />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/portfolio" element={<Portfolio />} />
