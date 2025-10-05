@@ -134,12 +134,29 @@ export const AIChatContact = () => {
           }, 1000);
         } else {
           // Chat completed
-          setTimeout(() => {
+          setTimeout(async () => {
             addMessage(
               "Thank you for all the information! 🎉 I've collected everything we need to get started. Someone from our team will review your requirements and get back to you within 24 hours with a detailed proposal. We're excited to work with you!",
               "ai"
             );
             setIsCompleted(true);
+            
+            // Save to database
+            const { supabase } = await import('@/integrations/supabase/client');
+            const { error } = await supabase.from('clients').insert({
+              name: updatedData.name || '',
+              email: updatedData.email || '',
+              company: updatedData.company,
+              phone: updatedData.phone,
+              message: `Project Type: ${updatedData.projectType}\n\nDescription: ${updatedData.description}`,
+              budget_range: updatedData.budget,
+              project_timeline: updatedData.timeline,
+              source: 'ai_chat',
+            });
+
+            if (error) {
+              console.error('Error saving client:', error);
+            }
             
             toast({
               title: "Information Collected Successfully!",

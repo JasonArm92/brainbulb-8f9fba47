@@ -6,11 +6,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Taskbar } from "@/components/Taskbar";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import { Portfolio } from "./pages/Portfolio";
 import { About } from "./pages/About";
 import { Pricing } from "./pages/Pricing";
 import { Contact } from "./pages/Contact";
+import AdminAuth from "./pages/AdminAuth";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,20 +24,24 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-gradient-hero">
-          <ParticleBackground />
-          <ScrollProgress />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/contact" element={<Contact />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Taskbar />
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen bg-gradient-hero">
+            <ParticleBackground />
+            <ScrollProgress />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/admin-auth" element={<AdminAuth />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Taskbar />
+          </div>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
