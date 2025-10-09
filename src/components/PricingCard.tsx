@@ -27,7 +27,7 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
   return (
     <div 
       className={cn(
-        "relative glass-card rounded-3xl p-8 shadow-glass hover:shadow-premium transition-all duration-500 border border-glass-border group overflow-hidden",
+        "relative glass-card rounded-3xl p-8 shadow-glass hover:shadow-premium transition-all duration-500 border border-glass-border group overflow-hidden flex flex-col h-full",
         plan.popular && "border-primary shadow-premium scale-105",
         className
       )}
@@ -68,7 +68,7 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
         <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
       </div>
       
-      <ul className="space-y-4 mb-8 relative z-10">
+      <ul className="space-y-3 mb-8 relative z-10 flex-grow">
         {plan.features.map((feature, index) => (
           <li key={index} className="flex items-start gap-3 group/feature">
             <div className={cn(
@@ -97,7 +97,7 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
       <Button 
         variant={plan.popular ? "cta" : "glass"}
         size="lg"
-        className="w-full rounded-2xl relative z-10 group/button"
+        className="w-full rounded-2xl relative z-10 group/button mt-auto"
       >
         {plan.ctaText || "Get Started"}
         <Zap className="w-4 h-4 ml-2 group-hover/button:scale-110 transition-transform" />
