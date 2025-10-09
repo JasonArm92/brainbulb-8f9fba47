@@ -8,38 +8,38 @@ Sophisticated, technical, and industry-leading aesthetic
 
 @layer base {
   :root {
-    /* Refined Light Background System */
-    --background: 0 0% 98%;
-    --foreground: 220 20% 10%;
+    /* Apple-Inspired Ultra Clean Background */
+    --background: 0 0% 99%;
+    --foreground: 220 20% 8%;
 
-    /* Advanced Glass Morphism */
-    --card: 0 0% 100% / 0.85;
-    --card-foreground: 220 20% 10%;
-    --glass-border: 4 84% 62% / 0.15;
-    --glass-bg: 0 0% 100% / 0.5;
+    /* Premium Frosted Glass */
+    --card: 0 0% 100% / 0.7;
+    --card-foreground: 220 20% 8%;
+    --glass-border: 4 84% 62% / 0.08;
+    --glass-bg: 0 0% 100% / 0.3;
 
-    /* Sophisticated Popover System */
+    /* Elevated Popover System */
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover-foreground: 220 20% 8%;
 
-    /* Brand Identity - Coral Red Palette */
+    /* Refined Brand Palette */
     --primary: 4 84% 62%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 4 90% 68%;
     --primary-deep: 4 78% 54%;
-    --primary-subtle: 4 84% 62% / 0.1;
+    --primary-subtle: 4 84% 62% / 0.05;
 
-    /* Elevated Secondary System */
-    --secondary: 220 15% 93%;
-    --secondary-foreground: 220 20% 15%;
+    /* Minimalist Secondary */
+    --secondary: 220 12% 95%;
+    --secondary-foreground: 220 20% 12%;
 
-    /* Refined Muted Palette */
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 15% 40%;
+    /* Subtle Muted Palette */
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Sophisticated Accent Colors */
-    --accent: 220 15% 90%;
-    --accent-foreground: 220 20% 15%;
+    /* Ultra Clean Accent */
+    --accent: 220 10% 94%;
+    --accent-foreground: 220 20% 12%;
 
     /* Status Colors */
     --destructive: 0 84% 60%;
@@ -49,143 +49,139 @@ Sophisticated, technical, and industry-leading aesthetic
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Technical Borders */
-    --border: 220 15% 86%;
-    --input: 220 15% 92%;
+    /* Apple-Style Borders */
+    --border: 220 10% 90%;
+    --input: 220 10% 94%;
     --ring: 4 84% 62%;
 
-    --radius: 0.875rem;
+    --radius: 1.25rem;
 
-    /* Elite Taskbar System */
-    --taskbar: 0 0% 100% / 0.85;
-    --taskbar-foreground: 220 20% 15%;
+    /* Apple-Style Taskbar */
+    --taskbar: 0 0% 100% / 0.7;
+    --taskbar-foreground: 220 20% 12%;
     --taskbar-active: 4 84% 62%;
-    --taskbar-hover: 220 15% 93%;
-    --taskbar-blur: blur(24px);
+    --taskbar-hover: 220 10% 96%;
+    --taskbar-blur: blur(40px);
 
-    /* Premium Gradients */
-    --gradient-hero: linear-gradient(135deg, 
+    /* Refined Gradients */
+    --gradient-hero: linear-gradient(180deg, 
       hsl(0 0% 100%) 0%, 
-      hsl(220 20% 98%) 35%,
-      hsl(4 84% 98%) 70%,
-      hsl(220 20% 97%) 100%);
+      hsl(0 0% 99%) 100%);
     --gradient-glass: linear-gradient(135deg, 
-      hsl(0 0% 100% / 0.5) 0%, 
-      hsl(0 0% 100% / 0.3) 50%, 
-      hsl(4 84% 62% / 0.05) 100%);
+      hsl(0 0% 100% / 0.3) 0%, 
+      hsl(0 0% 100% / 0.1) 100%);
     --gradient-card: linear-gradient(145deg, 
-      hsl(0 0% 100% / 0.95) 0%, 
-      hsl(220 15% 99% / 0.9) 100%);
+      hsl(0 0% 100% / 0.7) 0%, 
+      hsl(0 0% 100% / 0.5) 100%);
     --gradient-primary: linear-gradient(135deg, 
       hsl(var(--primary-deep)) 0%, 
       hsl(var(--primary)) 50%, 
       hsl(var(--primary-glow)) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsl(4 84% 62% / 0.08) 0px, transparent 50%),
-                      radial-gradient(at 80% 0%, hsl(220 70% 60% / 0.06) 0px, transparent 50%),
-                      radial-gradient(at 0% 50%, hsl(4 90% 68% / 0.05) 0px, transparent 50%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(4 84% 62% / 0.03) 0px, transparent 60%),
+                      radial-gradient(at 80% 0%, hsl(220 70% 60% / 0.02) 0px, transparent 60%),
+                      radial-gradient(at 0% 80%, hsl(4 90% 68% / 0.02) 0px, transparent 60%);
 
-    /* Technical Shadows */
-    --shadow-glass: 0 8px 32px hsl(220 15% 15% / 0.08), 
-                     0 0 0 1px hsl(4 84% 62% / 0.1);
-    --shadow-elevated: 0 20px 40px hsl(220 15% 15% / 0.12),
-                        0 0 0 1px hsl(4 84% 62% / 0.12);
-    --shadow-taskbar: 0 -4px 24px hsl(220 15% 15% / 0.08);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.35),
-                    0 0 80px hsl(var(--primary) / 0.15);
-    --shadow-premium: 0 25px 50px hsl(220 15% 15% / 0.15),
-                       0 10px 20px hsl(4 84% 62% / 0.1);
+    /* Apple-Style Shadows */
+    --shadow-glass: 0 2px 16px hsl(220 15% 15% / 0.04), 
+                     0 0 0 0.5px hsl(220 10% 80% / 0.5);
+    --shadow-elevated: 0 8px 32px hsl(220 15% 15% / 0.06),
+                        0 1px 2px hsl(220 15% 15% / 0.04);
+    --shadow-taskbar: 0 -2px 16px hsl(220 15% 15% / 0.04),
+                       0 0 0 0.5px hsl(220 10% 90% / 0.8);
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.2),
+                    0 0 40px hsl(var(--primary) / 0.08);
+    --shadow-premium: 0 12px 48px hsl(220 15% 15% / 0.08),
+                       0 2px 8px hsl(220 15% 15% / 0.04);
 
-    /* Elite Transitions */
-    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-spring: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    --transition-glass: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-technical: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Fluid Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.175);
+    --transition-glass: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-apple: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   .dark {
-    /* Elite Dark Technical Theme */
-    --background: 220 28% 7%;
-    --foreground: 220 15% 96%;
+    /* Apple Dark Mode */
+    --background: 220 25% 6%;
+    --foreground: 220 12% 98%;
 
-    /* Dark Glass Morphism */
-    --card: 220 25% 10% / 0.9;
-    --card-foreground: 220 15% 96%;
-    --glass-border: 4 84% 62% / 0.2;
-    --glass-bg: 220 25% 15% / 0.3;
+    /* Premium Dark Glass */
+    --card: 220 22% 10% / 0.6;
+    --card-foreground: 220 12% 98%;
+    --glass-border: 4 84% 62% / 0.12;
+    --glass-bg: 220 22% 12% / 0.3;
 
-    /* Dark Popover System */
-    --popover: 220 25% 10%;
-    --popover-foreground: 220 15% 96%;
+    /* Dark Popover */
+    --popover: 220 22% 10%;
+    --popover-foreground: 220 12% 98%;
 
-    /* Dark Brand Colors */
+    /* Refined Dark Brand */
     --primary: 4 88% 65%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 4 92% 72%;
     --primary-deep: 4 84% 58%;
-    --primary-subtle: 4 88% 65% / 0.15;
+    --primary-subtle: 4 88% 65% / 0.08;
 
-    /* Dark Secondary System */
-    --secondary: 220 22% 14%;
-    --secondary-foreground: 220 15% 90%;
+    /* Dark Secondary */
+    --secondary: 220 18% 15%;
+    --secondary-foreground: 220 12% 92%;
 
-    /* Dark Muted Palette */
-    --muted: 220 22% 12%;
-    --muted-foreground: 220 15% 60%;
+    /* Dark Muted */
+    --muted: 220 18% 12%;
+    --muted-foreground: 220 12% 55%;
 
-    /* Dark Accent System */
-    --accent: 220 22% 18%;
-    --accent-foreground: 220 15% 94%;
+    /* Dark Accent */
+    --accent: 220 18% 16%;
+    --accent-foreground: 220 12% 96%;
 
-    /* Dark Status Colors */
+    /* Dark Status */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 220 28% 7%;
+    --warning-foreground: 220 25% 6%;
 
-    /* Dark Technical Borders */
-    --border: 220 22% 22%;
-    --input: 220 22% 16%;
+    /* Dark Borders */
+    --border: 220 18% 20%;
+    --input: 220 18% 14%;
     --ring: 4 88% 65%;
 
     /* Dark Taskbar */
-    --taskbar: 220 25% 10% / 0.9;
-    --taskbar-foreground: 220 15% 90%;
+    --taskbar: 220 22% 10% / 0.6;
+    --taskbar-foreground: 220 12% 92%;
     --taskbar-active: 4 88% 65%;
-    --taskbar-hover: 220 22% 18%;
+    --taskbar-hover: 220 18% 16%;
 
-    /* Dark Premium Gradients */
-    --gradient-hero: linear-gradient(135deg, 
-      hsl(220 28% 8%) 0%, 
-      hsl(220 25% 7%) 35%,
-      hsl(4 50% 10%) 70%,
-      hsl(220 28% 6%) 100%);
+    /* Dark Gradients */
+    --gradient-hero: linear-gradient(180deg, 
+      hsl(220 25% 6%) 0%, 
+      hsl(220 22% 7%) 100%);
     --gradient-glass: linear-gradient(135deg, 
-      hsl(220 25% 15% / 0.4) 0%, 
-      hsl(220 22% 12% / 0.3) 50%, 
-      hsl(4 84% 62% / 0.08) 100%);
+      hsl(220 22% 12% / 0.3) 0%, 
+      hsl(220 18% 10% / 0.1) 100%);
     --gradient-card: linear-gradient(145deg, 
-      hsl(220 25% 12% / 0.95) 0%, 
-      hsl(220 22% 10% / 0.9) 100%);
+      hsl(220 22% 12% / 0.6) 0%, 
+      hsl(220 18% 10% / 0.4) 100%);
     --gradient-primary: linear-gradient(135deg, 
       hsl(var(--primary-deep)) 0%, 
       hsl(var(--primary)) 50%, 
       hsl(var(--primary-glow)) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsl(4 84% 62% / 0.15) 0px, transparent 50%),
-                      radial-gradient(at 80% 0%, hsl(220 70% 60% / 0.1) 0px, transparent 50%),
-                      radial-gradient(at 0% 50%, hsl(4 90% 68% / 0.08) 0px, transparent 50%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(4 84% 62% / 0.06) 0px, transparent 60%),
+                      radial-gradient(at 80% 0%, hsl(220 70% 60% / 0.04) 0px, transparent 60%),
+                      radial-gradient(at 0% 80%, hsl(4 90% 68% / 0.04) 0px, transparent 60%);
 
-    /* Dark Technical Shadows */
-    --shadow-glass: 0 8px 32px hsl(0 0% 0% / 0.4), 
-                     0 0 0 1px hsl(4 84% 62% / 0.15);
-    --shadow-elevated: 0 20px 40px hsl(0 0% 0% / 0.5),
-                        0 0 0 1px hsl(4 84% 62% / 0.2);
-    --shadow-taskbar: 0 -4px 24px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.45),
-                    0 0 80px hsl(var(--primary) / 0.2);
-    --shadow-premium: 0 25px 50px hsl(0 0% 0% / 0.6),
-                       0 10px 20px hsl(4 84% 62% / 0.15);
+    /* Dark Shadows */
+    --shadow-glass: 0 2px 16px hsl(0 0% 0% / 0.2), 
+                     0 0 0 0.5px hsl(220 18% 25% / 0.5);
+    --shadow-elevated: 0 8px 32px hsl(0 0% 0% / 0.3),
+                        0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-taskbar: 0 -2px 16px hsl(0 0% 0% / 0.2),
+                       0 0 0 0.5px hsl(220 18% 18% / 0.8);
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3),
+                    0 0 40px hsl(var(--primary) / 0.12);
+    --shadow-premium: 0 12px 48px hsl(0 0% 0% / 0.4),
+                       0 2px 8px hsl(0 0% 0% / 0.2);
   }
 }
 
@@ -197,13 +193,16 @@ Sophisticated, technical, and industry-leading aesthetic
   body {
     @apply bg-background text-foreground antialiased;
     background-image: var(--gradient-mesh);
+    letter-spacing: -0.01em;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 
-  /* Elite Glass Morphism */
+  /* Apple-Style Glass Morphism */
   .glass {
     background: var(--gradient-glass);
-    backdrop-filter: var(--taskbar-blur);
-    border: 1px solid hsl(var(--glass-border));
+    backdrop-filter: var(--taskbar-blur) saturate(180%);
+    -webkit-backdrop-filter: var(--taskbar-blur) saturate(180%);
+    border: 0.5px solid hsl(var(--glass-border));
     position: relative;
   }
 
@@ -212,11 +211,11 @@ Sophisticated, technical, and industry-leading aesthetic
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 1px;
+    padding: 0.5px;
     background: linear-gradient(135deg, 
-      hsl(var(--primary) / 0.2), 
+      hsl(var(--primary) / 0.08), 
       transparent 50%, 
-      hsl(var(--primary) / 0.1));
+      hsl(var(--primary) / 0.04));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -225,8 +224,9 @@ Sophisticated, technical, and industry-leading aesthetic
 
   .glass-card {
     background: var(--gradient-card);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--glass-border));
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 0.5px solid hsl(var(--glass-border));
     position: relative;
     overflow: hidden;
   }
@@ -236,11 +236,11 @@ Sophisticated, technical, and industry-leading aesthetic
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 1px;
+    padding: 0.5px;
     background: linear-gradient(135deg, 
-      hsl(var(--primary) / 0.15), 
+      hsl(var(--primary) / 0.06), 
       transparent 50%, 
-      hsl(var(--primary) / 0.08));
+      hsl(var(--primary) / 0.03));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -253,14 +253,14 @@ Sophisticated, technical, and industry-leading aesthetic
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 0.5px;
     background: linear-gradient(90deg, 
       transparent, 
-      hsl(var(--primary) / 0.3) 50%, 
+      hsl(var(--primary) / 0.15) 50%, 
       transparent);
   }
 
-  /* Technical Grid Overlay */
+  /* Subtle Grid Overlay */
   .tech-grid {
     position: relative;
   }
@@ -270,33 +270,35 @@ Sophisticated, technical, and industry-leading aesthetic
     position: absolute;
     inset: 0;
     background-image: 
-      linear-gradient(hsl(var(--primary) / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--primary) / 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(hsl(var(--primary) / 0.015) 0.5px, transparent 0.5px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.015) 0.5px, transparent 0.5px);
+    background-size: 60px 60px;
     pointer-events: none;
     z-index: 0;
+    opacity: 0.5;
   }
 
-  /* Premium animations */
+  /* Fluid Apple-Style Animations */
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
+    50% { transform: translateY(-8px); }
   }
 
   @keyframes glow-pulse {
     0%, 100% { 
-      box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
-                  0 0 40px hsl(var(--primary) / 0.1); 
+      box-shadow: 0 0 16px hsl(var(--primary) / 0.2),
+                  0 0 32px hsl(var(--primary) / 0.08); 
     }
     50% { 
-      box-shadow: 0 0 40px hsl(var(--primary) / 0.6),
-                  0 0 80px hsl(var(--primary) / 0.2); 
+      box-shadow: 0 0 24px hsl(var(--primary) / 0.3),
+                  0 0 48px hsl(var(--primary) / 0.12); 
     }
   }
 
   @keyframes scan-line {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
+    0% { transform: translateY(-100%); opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { transform: translateY(100%); opacity: 0; }
   }
 
   @keyframes data-flow {
@@ -315,7 +317,7 @@ Sophisticated, technical, and industry-leading aesthetic
   @keyframes slide-up-fade {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(20px);
     }
     to {
       opacity: 1;
@@ -324,25 +326,27 @@ Sophisticated, technical, and industry-leading aesthetic
   }
 
   .animate-slide-up-fade {
-    animation: slide-up-fade 0.6s ease-out forwards;
+    animation: slide-up-fade 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
   }
 
-  /* Scrollbar styling */
+  /* Apple-Style Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-    border-radius: 4px;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--accent));
-    border-radius: 4px;
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+    background: hsl(var(--muted-foreground) / 0.3);
+    background-clip: padding-box;
   }
 }
