@@ -96,13 +96,13 @@ export const Pricing = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 items-stretch">
           {pricingPlans.map((plan, index) => (
             <PricingCard 
               key={plan.name} 
               plan={plan}
               className={cn(
-                "animate-slide-up-premium hover:scale-105",
+                "animate-slide-up-premium hover:scale-105 h-full",
                 index === 3 ? "md:col-span-2 lg:col-span-1" : ""
               )}
               style={{ animationDelay: `${index * 0.1}s` }}

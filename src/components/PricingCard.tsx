@@ -27,15 +27,16 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
   return (
     <div 
       className={cn(
-        "relative glass-card rounded-3xl p-8 shadow-glass hover:shadow-premium transition-all duration-500 border border-glass-border group overflow-hidden flex flex-col h-full",
-        plan.popular && "border-primary shadow-premium scale-105",
+        "relative glass-card rounded-3xl p-8 shadow-glass hover:shadow-premium transition-all duration-500 border border-glass-border group overflow-hidden flex flex-col",
+        plan.popular && "border-primary shadow-premium scale-105 pt-14",
+        !plan.popular && "pt-8",
         className
       )}
       style={style}
     >
       {plan.popular && (
         <>
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
             <div className="bg-gradient-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-glow border border-primary/30">
               <Star className="w-4 h-4 fill-current" />
               Most Popular
@@ -49,11 +50,11 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       )}
       
-      <div className="text-center mb-8 relative z-10">
-        <div className="inline-block mb-3 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+      <div className="text-center mb-10 relative z-10">
+        <div className="inline-block mb-4 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
           <h3 className="text-sm font-mono font-bold text-primary">{plan.name}</h3>
         </div>
-        <div className="mb-4">
+        <div className="mb-5">
           {plan.price === "enquiry" ? (
             <div className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">Custom Pricing</div>
           ) : (
@@ -68,7 +69,7 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
         <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
       </div>
       
-      <ul className="space-y-3 mb-8 relative z-10 flex-grow">
+      <ul className="space-y-4 mb-10 relative z-10 flex-grow">
         {plan.features.map((feature, index) => (
           <li key={index} className="flex items-start gap-3 group/feature">
             <div className={cn(
