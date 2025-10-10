@@ -17,8 +17,12 @@ export default function AdminAuth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && isAdmin) {
-      navigate('/admin');
+    if (user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/client');
+      }
     }
   }, [user, isAdmin, navigate]);
 

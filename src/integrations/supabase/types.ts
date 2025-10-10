@@ -68,6 +68,85 @@ export type Database = {
         }
         Relationships: []
       }
+      design_submissions: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          feedback: string | null
+          file_url: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          feedback?: string | null
+          file_url: string
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          feedback?: string | null
+          file_url?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_submissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          client_id: string
+          created_at: string
+          file_url: string | null
+          id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_projects: {
         Row: {
           category: string | null

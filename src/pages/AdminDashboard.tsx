@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ClientsManager } from '@/components/admin/ClientsManager';
 import { PortfolioManager } from '@/components/admin/PortfolioManager';
-import { LogOut, Users, Briefcase } from 'lucide-react';
+import { DesignSubmissionManager } from '@/components/admin/DesignSubmissionManager';
+import { ChatManager } from '@/components/admin/ChatManager';
+import { LogOut, Users, Briefcase, FileImage, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 function AdminDashboardContent() {
@@ -35,10 +37,18 @@ function AdminDashboardContent() {
         </div>
 
         <Tabs defaultValue="clients" className="space-y-6">
-          <TabsList className="glass-card p-1">
+          <TabsList className="glass-card p-1 grid grid-cols-4 w-full">
             <TabsTrigger value="clients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Clients
+            </TabsTrigger>
+            <TabsTrigger value="designs" className="flex items-center gap-2">
+              <FileImage className="h-4 w-4" />
+              Designs
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Chat
             </TabsTrigger>
             <TabsTrigger value="portfolio" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
@@ -48,6 +58,14 @@ function AdminDashboardContent() {
 
           <TabsContent value="clients">
             <ClientsManager />
+          </TabsContent>
+
+          <TabsContent value="designs">
+            <DesignSubmissionManager />
+          </TabsContent>
+
+          <TabsContent value="chat">
+            <ChatManager />
           </TabsContent>
 
           <TabsContent value="portfolio">
