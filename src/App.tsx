@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import { Portfolio } from "./pages/Portfolio";
 import { About } from "./pages/About";
 import { Pricing } from "./pages/Pricing";
+import { Checkout } from "./pages/Checkout";
 import { Contact } from "./pages/Contact";
 import AdminAuth from "./pages/AdminAuth";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/about" element={<About />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin-auth" element={<AdminAuth />} />
               <Route path="/admin" element={<AdminDashboard />} />

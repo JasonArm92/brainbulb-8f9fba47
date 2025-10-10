@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,12 @@ interface PricingCardProps {
 }
 
 export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate("/checkout", { state: { plan } });
+  };
+
   return (
     <div 
       className={cn(
@@ -116,6 +123,7 @@ export const PricingCard = ({ plan, className, style }: PricingCardProps) => {
           <Button 
             variant={plan.popular ? "default" : "outline"}
             size="lg"
+            onClick={handleGetStarted}
             className={cn(
               "w-full rounded-2xl group/button relative overflow-hidden transition-all duration-300",
               plan.popular && "bg-gradient-primary hover:shadow-glow border-0"
