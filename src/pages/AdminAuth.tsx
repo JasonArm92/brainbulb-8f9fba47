@@ -1,148 +1,199 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogIn, UserPlus } from 'lucide-react';
 
 export default function AdminAuth() {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user, isAdmin } = useAuth();
+  const { signIn, signUp, isAdmin, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/client');
-      }
+      navigate(isAdmin ? '/admin' : '/client');
     }
   }, [user, isAdmin, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
-        if (error) {
-          toast.error(error.message);
-        } else {
-          toast.success('Signed in successfully!');
-        }
+      const { error } = await signIn(email, password);
+
+      if (error) {
+        toast.error(error.message || 'Failed to sign in');
       } else {
-        if (!fullName.trim()) {
-          toast.error('Please enter your full name');
-          setLoading(false);
-          return;
-        }
-        const { error } = await signUp(email, password, fullName);
-        if (error) {
-          toast.error(error.message);
-        } else {
-          toast.success('Account created! Please sign in.');
-          setIsLogin(true);
-        }
+        toast.success('Signed in successfully');
+        navigate(isAdmin ? '/admin' : '/client');
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await signUp(email, password, fullName);
+
+      if (error) {
+        toast.error(error.message || 'Failed to sign up');
+      } else {
+        toast.success('Account created successfully');
+        navigate('/client');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      <div className="tech-grid" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4 relative overflow-hidden">
+      <div className="tech-grid opacity-30" />
       
-      <Card className="glass-card w-full max-w-md p-8 relative z-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
-            Admin Portal
-          </h1>
-          <p className="text-muted mt-2">
-            {isLogin ? 'Sign in to access the CRM' : 'Create your admin account'}
-          </p>
-        </div>
+      <div className="relative z-10 w-full max-w-md">
+        <Tabs defaultValue="signin" className="w-full">
+          <TabsList className="glass-card p-1 grid grid-cols-2 w-full mb-4">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="text-sm font-medium text-muted mb-2 block">
-                Full Name
-              </label>
-              <Input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                className="glass"
-                placeholder="John Doe"
-              />
-            </div>
-          )}
+          <TabsContent value="signin">
+            <Card className="glass-card border-glass-border">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Welcome Back
+                </CardTitle>
+                <CardDescription>
+                  Enter your credentials to access your account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">Email</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="glass"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">Password</Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="glass"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Sign In
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <div>
-            <label className="text-sm font-medium text-muted mb-2 block">
-              Email
-            </label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="glass"
-              placeholder="admin@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-muted mb-2 block">
-              Password
-            </label>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="glass"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isLogin ? 'Signing in...' : 'Creating account...'}
-              </>
-            ) : (
-              <>{isLogin ? 'Sign In' : 'Create Account'}</>
-            )}
-          </Button>
-
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="w-full text-sm text-primary hover:text-primary-glow transition-colors"
-          >
-            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </button>
-        </form>
-      </Card>
+          <TabsContent value="signup">
+            <Card className="glass-card border-glass-border">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  Create Account
+                </CardTitle>
+                <CardDescription>
+                  Enter your information to create a new account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      placeholder="John Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="glass"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="glass"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="glass"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Sign Up
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
