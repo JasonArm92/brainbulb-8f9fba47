@@ -112,15 +112,18 @@ export const DesignSubmissionManager = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use signed URL since bucket is now private
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('design-submissions')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry for design files
+
+      if (signedUrlError) throw signedUrlError;
 
       const { error: insertError } = await supabase.from('design_submissions').insert({
         client_id: formData.client_id,
         title: formData.title,
         description: formData.description,
-        file_url: publicUrl,
+        file_url: signedUrlData.signedUrl,
         status: 'pending',
       });
 
