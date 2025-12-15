@@ -4,7 +4,7 @@ import { Lightbulb, Users, Code, Award, Zap, Heart, Target, Rocket } from "lucid
 import { useNavigate } from "react-router-dom";
 import { MagneticButton } from "@/components/MagneticButton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-
+import logoIcon from "@/assets/logo-icon.png";
 export const About = () => {
   const navigate = useNavigate();
   
@@ -17,7 +17,7 @@ export const About = () => {
       <div className="max-w-6xl mx-auto pt-12 relative z-10">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-3 mb-6 glass-card px-6 py-3 rounded-2xl shadow-glass border border-glass-border">
-            <img src="/src/assets/logo-icon.png" alt="Brain Bulb" className="w-12 h-12" />
+            <img src={logoIcon} alt="Brain Bulb" className="w-12 h-12" />
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">About Brain Bulb</h1>
           </div>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
