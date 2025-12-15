@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
+import logoIcon from "@/assets/logo-icon.png";
 const navItems = [
   { id: "/", label: "Home", icon: Home },
   { id: "/portfolio", label: "Portfolio", icon: Monitor },
@@ -56,7 +56,7 @@ export const Taskbar = () => {
               className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/10 transition-all duration-300"
             >
               <img 
-                src="/src/assets/logo-icon.png" 
+                src={logoIcon} 
                 alt="Brain Bulb" 
                 className="w-6 h-6"
               />
@@ -151,7 +151,7 @@ export const Taskbar = () => {
             className="flex items-center justify-center w-12 h-12 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
           >
             <img 
-              src="/src/assets/logo-icon.png" 
+              src={logoIcon} 
               alt="Brain Bulb" 
               className="w-7 h-7 group-hover:scale-110 transition-transform duration-300"
             />
