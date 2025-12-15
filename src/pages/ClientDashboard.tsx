@@ -209,10 +209,42 @@ export default function ClientDashboard() {
     setSending(false);
   };
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const ALLOWED_FILE_TYPES = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+    'application/pdf',
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain'
+  ];
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !clientData || !user) return;
 
     const file = e.target.files[0];
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: 'File too large',
+        description: 'Maximum file size is 10MB',
+        variant: 'destructive',
+      });
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Allowed: images, PDFs, Word, Excel, and text files',
+        variant: 'destructive',
+      });
+      e.target.value = '';
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -225,15 +257,18 @@ export default function ClientDashboard() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use signed URL since bucket is private
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('client-files')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 days expiry
+
+      if (signedUrlError) throw signedUrlError;
 
       const { error: messageError } = await supabase.from('messages').insert({
         client_id: clientData.id,
         sender_id: user.id,
         message: `Uploaded file: ${file.name}`,
-        file_url: publicUrl,
+        file_url: signedUrlData.signedUrl,
       });
 
       if (messageError) throw messageError;
