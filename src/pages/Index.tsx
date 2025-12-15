@@ -7,7 +7,7 @@ import { MagneticButton } from "@/components/MagneticButton";
 import { AnimatedStats } from "@/components/AnimatedStats";
 import { RippleEffect } from "@/components/RippleEffect";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-
+import logoMain from "@/assets/logo-main.png";
 // Featured projects data for homepage showcase
 const featuredProjects = [
   {
@@ -209,7 +209,7 @@ const Index = () => {
           <div className="inline-flex items-center gap-4 mb-8 relative">
             <div className="absolute inset-0 bg-gradient-primary blur-3xl opacity-20 animate-pulse" />
             <img 
-              src="/src/assets/logo-main.png" 
+              src={logoMain}
               alt="Brain Bulb Web Design" 
               className="h-30 animate-fade-in relative z-10"
             />
