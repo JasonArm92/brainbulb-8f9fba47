@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, XCircle, Clock, Upload, MessageSquare, FileText, LogOut } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Upload, MessageSquare, FileText, LogOut, User, Settings, Save } from 'lucide-react';
 
 interface DesignSubmission {
   id: string;
@@ -33,12 +34,21 @@ interface ClientData {
   id: string;
   name: string;
   email: string;
+  company: string | null;
+  phone: string | null;
+}
+
+interface ProfileData {
+  id: string;
+  email: string;
+  full_name: string | null;
 }
 
 export default function ClientDashboard() {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [submissions, setSubmissions] = useState<DesignSubmission[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,6 +57,8 @@ export default function ClientDashboard() {
   const [uploading, setUploading] = useState(false);
   const [sending, setSending] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ full_name: '' });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -56,7 +68,7 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     if (user) {
-      fetchClientData();
+      fetchProfileAndClientData();
     }
   }, [user]);
 
@@ -64,23 +76,29 @@ export default function ClientDashboard() {
     if (clientData) {
       fetchSubmissions();
       fetchMessages();
-      subscribeToMessages();
+      const unsubscribe = subscribeToMessages();
+      return unsubscribe;
     }
   }, [clientData]);
 
-  const fetchClientData = async () => {
+  const fetchProfileAndClientData = async () => {
     try {
-      const { data: profile } = await supabase
+      // First fetch the profile
+      const { data: profileData } = await supabase
         .from('profiles')
-        .select('email')
+        .select('id, email, full_name')
         .eq('id', user?.id)
         .single();
 
-      if (profile) {
+      if (profileData) {
+        setProfile(profileData);
+        setProfileForm({ full_name: profileData.full_name || '' });
+
+        // Then try to find matching client
         const { data: client } = await supabase
           .from('clients')
-          .select('id, name, email')
-          .eq('email', profile.email)
+          .select('id, name, email, company, phone')
+          .eq('email', profileData.email)
           .single();
 
         if (client) {
@@ -88,7 +106,7 @@ export default function ClientDashboard() {
         }
       }
     } catch (error) {
-      console.error('Error fetching client data:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setDataLoading(false);
     }
@@ -135,7 +153,7 @@ export default function ClientDashboard() {
   };
 
   const subscribeToMessages = () => {
-    if (!clientData) return;
+    if (!clientData) return () => {};
 
     const channel = supabase
       .channel('client-messages')
@@ -223,7 +241,6 @@ export default function ClientDashboard() {
 
     const file = e.target.files[0];
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       toast({
         title: 'File too large',
@@ -234,7 +251,6 @@ export default function ClientDashboard() {
       return;
     }
 
-    // Validate file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
       toast({
         title: 'Invalid file type',
@@ -257,10 +273,9 @@ export default function ClientDashboard() {
 
       if (uploadError) throw uploadError;
 
-      // Use signed URL since bucket is private
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('client-files')
-        .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 days expiry
+        .createSignedUrl(fileName, 60 * 60 * 24 * 7);
 
       if (signedUrlError) throw signedUrlError;
 
@@ -289,6 +304,30 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: profileForm.full_name })
+      .eq('id', user.id);
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Success',
+        description: 'Profile updated',
+      });
+      setEditingProfile(false);
+      fetchProfileAndClientData();
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/admin-auth');
@@ -302,23 +341,17 @@ export default function ClientDashboard() {
     );
   }
 
-  if (!clientData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="p-6">
-          <p className="text-muted-foreground">No client account found for this user.</p>
-        </Card>
-      </div>
-    );
-  }
+  // Show account page even if no client project
+  const displayName = clientData?.name || profile?.full_name || profile?.email || 'User';
+  const displayEmail = profile?.email || '';
 
   return (
     <div className="min-h-screen bg-gradient-hero py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Welcome, {clientData.name}</h1>
-            <p className="text-muted-foreground">{clientData.email}</p>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Welcome, {displayName}</h1>
+            <p className="text-muted-foreground">{displayEmail}</p>
           </div>
           <Button onClick={handleSignOut} variant="outline">
             <LogOut className="mr-2 h-4 w-4" />
@@ -326,163 +359,290 @@ export default function ClientDashboard() {
           </Button>
         </div>
 
-        <Tabs defaultValue="designs" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="designs">
-              <FileText className="mr-2 h-4 w-4" />
-              Design Approvals
+        <Tabs defaultValue={clientData ? "designs" : "account"} className="w-full">
+          <TabsList className={`grid w-full mb-8 ${clientData ? 'grid-cols-3' : 'grid-cols-1'}`}>
+            <TabsTrigger value="account">
+              <User className="mr-2 h-4 w-4" />
+              Account
             </TabsTrigger>
-            <TabsTrigger value="chat">
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Chat
-            </TabsTrigger>
+            {clientData && (
+              <>
+                <TabsTrigger value="designs">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Design Approvals
+                </TabsTrigger>
+                <TabsTrigger value="chat">
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Chat
+                </TabsTrigger>
+              </>
+            )}
           </TabsList>
 
-          <TabsContent value="designs">
-            <div className="space-y-4">
-              {submissions.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <p className="text-muted-foreground">No design submissions yet</p>
-                </Card>
-              ) : (
-                submissions.map((submission) => (
-                  <Card key={submission.id} className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">{submission.title}</h3>
-                        <p className="text-muted-foreground mb-4">{submission.description}</p>
-                      </div>
-                      <Badge
-                        variant={
-                          submission.status === 'approved'
-                            ? 'default'
-                            : submission.status === 'rejected'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                      >
-                        {submission.status === 'approved' && <CheckCircle className="mr-1 h-4 w-4" />}
-                        {submission.status === 'rejected' && <XCircle className="mr-1 h-4 w-4" />}
-                        {submission.status === 'pending' && <Clock className="mr-1 h-4 w-4" />}
-                        {submission.status}
-                      </Badge>
+          {/* Account Tab - Always visible */}
+          <TabsContent value="account">
+            <div className="space-y-6 max-w-2xl">
+              <Card className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <User className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-semibold">Profile Information</h3>
+                </div>
+                
+                {editingProfile ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Full Name</Label>
+                      <Input
+                        value={profileForm.full_name}
+                        onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                        placeholder="Your name"
+                      />
                     </div>
-
-                    <img
-                      src={submission.file_url}
-                      alt={submission.title}
-                      className="w-full h-64 object-cover rounded-lg mb-4"
-                    />
-
-                    {submission.status === 'pending' && (
-                      <div className="space-y-4">
-                        <Textarea
-                          placeholder="Add feedback (optional)"
-                          value={feedback[submission.id] || ''}
-                          onChange={(e) =>
-                            setFeedback((prev) => ({ ...prev, [submission.id]: e.target.value }))
-                          }
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleApproval(submission.id, 'approved')}
-                            className="flex-1"
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Approve
-                          </Button>
-                          <Button
-                            onClick={() => handleApproval(submission.id, 'rejected')}
-                            variant="destructive"
-                            className="flex-1"
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Reject
-                          </Button>
-                        </div>
+                    <div>
+                      <Label>Email</Label>
+                      <Input value={displayEmail} disabled className="bg-muted" />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleUpdateProfile}>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingProfile(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Name</p>
+                      <p className="font-medium">{displayName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="font-medium">{displayEmail}</p>
+                    </div>
+                    {clientData?.company && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Company</p>
+                        <p className="font-medium">{clientData.company}</p>
                       </div>
                     )}
-
-                    {submission.feedback && (
-                      <div className="mt-4 p-4 bg-muted rounded-lg">
-                        <p className="text-sm font-medium mb-1">Your Feedback:</p>
-                        <p className="text-sm text-muted-foreground">{submission.feedback}</p>
+                    {clientData?.phone && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium">{clientData.phone}</p>
                       </div>
                     )}
-                  </Card>
-                ))
+                    <Button variant="outline" onClick={() => setEditingProfile(true)}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  </div>
+                )}
+              </Card>
+
+              {!clientData && (
+                <Card className="p-6 border-dashed">
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Active Project</h3>
+                    <p className="text-muted-foreground mb-4">
+                      You don't have an active project yet. Once you start a project with us, 
+                      you'll be able to view design submissions and chat with our team here.
+                    </p>
+                    <Button onClick={() => navigate('/contact')}>
+                      Start a Project
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
+              {clientData && (
+                <Card className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Project Summary</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-2xl font-bold text-primary">{submissions.length}</p>
+                      <p className="text-sm text-muted-foreground">Total Designs</p>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-2xl font-bold text-green-500">
+                        {submissions.filter(s => s.status === 'approved').length}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Approved</p>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-2xl font-bold text-yellow-500">
+                        {submissions.filter(s => s.status === 'pending').length}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Pending</p>
+                    </div>
+                  </div>
+                </Card>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="chat">
-            <Card className="p-6">
-              <div className="mb-6">
-                <label className="block mb-2 text-sm font-medium">Upload File</label>
-                <Input
-                  type="file"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  className="cursor-pointer"
-                />
-                {uploading && (
-                  <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
+          {/* Design Approvals Tab - Only if client has project */}
+          {clientData && (
+            <TabsContent value="designs">
+              <div className="space-y-4">
+                {submissions.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <p className="text-muted-foreground">No design submissions yet</p>
+                  </Card>
+                ) : (
+                  submissions.map((submission) => (
+                    <Card key={submission.id} className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-semibold mb-2">{submission.title}</h3>
+                          <p className="text-muted-foreground mb-4">{submission.description}</p>
+                        </div>
+                        <Badge
+                          variant={
+                            submission.status === 'approved'
+                              ? 'default'
+                              : submission.status === 'rejected'
+                              ? 'destructive'
+                              : 'secondary'
+                          }
+                        >
+                          {submission.status === 'approved' && <CheckCircle className="mr-1 h-4 w-4" />}
+                          {submission.status === 'rejected' && <XCircle className="mr-1 h-4 w-4" />}
+                          {submission.status === 'pending' && <Clock className="mr-1 h-4 w-4" />}
+                          {submission.status}
+                        </Badge>
+                      </div>
+
+                      <img
+                        src={submission.file_url}
+                        alt={submission.title}
+                        className="w-full h-64 object-cover rounded-lg mb-4"
+                      />
+
+                      {submission.status === 'pending' && (
+                        <div className="space-y-4">
+                          <Textarea
+                            placeholder="Add feedback (optional)"
+                            value={feedback[submission.id] || ''}
+                            onChange={(e) =>
+                              setFeedback((prev) => ({ ...prev, [submission.id]: e.target.value }))
+                            }
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleApproval(submission.id, 'approved')}
+                              className="flex-1"
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Approve
+                            </Button>
+                            <Button
+                              onClick={() => handleApproval(submission.id, 'rejected')}
+                              variant="destructive"
+                              className="flex-1"
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Reject
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {submission.feedback && (
+                        <div className="mt-4 p-4 bg-muted rounded-lg">
+                          <p className="text-sm font-medium mb-1">Your Feedback:</p>
+                          <p className="text-sm text-muted-foreground">{submission.feedback}</p>
+                        </div>
+                      )}
+                    </Card>
+                  ))
                 )}
               </div>
+            </TabsContent>
+          )}
 
-              <div className="h-[400px] overflow-y-auto mb-4 space-y-4 p-4 border rounded-lg">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${
-                      message.sender_id === user?.id ? 'justify-end' : 'justify-start'
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[70%] rounded-lg p-3 ${
-                        message.sender_id === user?.id
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      <p className="text-sm">{message.message}</p>
-                      {message.file_url && (
-                        <a
-                          href={message.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs underline mt-2 block"
-                        >
-                          View File
-                        </a>
-                      )}
-                      <p className="text-xs opacity-70 mt-1">
-                        {new Date(message.created_at).toLocaleString()}
-                      </p>
+          {/* Chat Tab - Only if client has project */}
+          {clientData && (
+            <TabsContent value="chat">
+              <Card className="p-6">
+                <div className="mb-6">
+                  <label className="block mb-2 text-sm font-medium">Upload File</label>
+                  <Input
+                    type="file"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    className="cursor-pointer"
+                  />
+                  {uploading && (
+                    <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
+                  )}
+                </div>
+
+                <div className="h-[400px] overflow-y-auto mb-4 space-y-4 p-4 border rounded-lg">
+                  {messages.length === 0 ? (
+                    <div className="text-center text-muted-foreground py-8">
+                      <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No messages yet. Start a conversation!</p>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ) : (
+                    messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${
+                          message.sender_id === user?.id ? 'justify-end' : 'justify-start'
+                        }`}
+                      >
+                        <div
+                          className={`max-w-[70%] rounded-lg p-3 ${
+                            message.sender_id === user?.id
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}
+                        >
+                          <p className="text-sm">{message.message}</p>
+                          {message.file_url && (
+                            <a
+                              href={message.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs underline mt-2 block"
+                            >
+                              View File
+                            </a>
+                          )}
+                          <p className="text-xs opacity-70 mt-1">
+                            {new Date(message.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
 
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  className="flex-1"
-                />
-                <Button onClick={handleSendMessage} disabled={sending || !newMessage.trim()}>
-                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send'}
-                </Button>
-              </div>
-            </Card>
-          </TabsContent>
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleSendMessage} disabled={sending || !newMessage.trim()}>
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send'}
+                  </Button>
+                </div>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

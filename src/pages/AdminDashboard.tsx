@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ProtectedRoute } from '@/components/admin/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,10 @@ import { ClientsManager } from '@/components/admin/ClientsManager';
 import { PortfolioManager } from '@/components/admin/PortfolioManager';
 import { DesignSubmissionManager } from '@/components/admin/DesignSubmissionManager';
 import { ChatManager } from '@/components/admin/ChatManager';
-import { LogOut, Users, Briefcase, FileImage, MessageSquare } from 'lucide-react';
+import { AnalyticsManager } from '@/components/admin/AnalyticsManager';
+import { RevenueManager } from '@/components/admin/RevenueManager';
+import { SettingsManager } from '@/components/admin/SettingsManager';
+import { LogOut, Users, Briefcase, FileImage, MessageSquare, BarChart3, PoundSterling, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 function AdminDashboardContent() {
@@ -36,25 +38,41 @@ function AdminDashboardContent() {
           </Button>
         </div>
 
-        <Tabs defaultValue="clients" className="space-y-6">
-          <TabsList className="glass-card p-1 grid grid-cols-4 w-full">
+        <Tabs defaultValue="analytics" className="space-y-6">
+          <TabsList className="glass-card p-1 grid grid-cols-4 lg:grid-cols-7 w-full">
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
             <TabsTrigger value="clients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Clients
+              <span className="hidden sm:inline">Clients</span>
             </TabsTrigger>
             <TabsTrigger value="designs" className="flex items-center gap-2">
               <FileImage className="h-4 w-4" />
-              Designs
+              <span className="hidden sm:inline">Designs</span>
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Chat
+              <span className="hidden sm:inline">Chat</span>
             </TabsTrigger>
             <TabsTrigger value="portfolio" className="flex items-center gap-2">
               <Briefcase className="h-4 w-4" />
-              Portfolio
+              <span className="hidden sm:inline">Portfolio</span>
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="flex items-center gap-2">
+              <PoundSterling className="h-4 w-4" />
+              <span className="hidden sm:inline">Revenue</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="analytics">
+            <AnalyticsManager />
+          </TabsContent>
 
           <TabsContent value="clients">
             <ClientsManager />
@@ -70,6 +88,14 @@ function AdminDashboardContent() {
 
           <TabsContent value="portfolio">
             <PortfolioManager />
+          </TabsContent>
+
+          <TabsContent value="revenue">
+            <RevenueManager />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsManager />
           </TabsContent>
         </Tabs>
       </div>
