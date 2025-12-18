@@ -6,7 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
+import { Loader2, Bell, BellOff } from 'lucide-react';
 
 interface Client {
   id: string;
@@ -25,12 +26,43 @@ interface Message {
 export const ChatManager = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { permission, requestPermission, showNotification, isSupported } = useBrowserNotifications();
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // Subscribe to all client messages for notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-all-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        async (payload) => {
+          const newMsg = payload.new as Message;
+          // Only notify if message is from a client (not from admin)
+          if (newMsg.sender_id !== user?.id && permission === 'granted') {
+            const client = clients.find((c) => c.id === (payload.new as any).client_id);
+            showNotification('New Client Message', {
+              body: `${client?.name || 'Client'}: ${newMsg.message.substring(0, 100)}`,
+              tag: 'client-message',
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, permission, clients, showNotification]);
 
   useEffect(() => {
     fetchClients();
@@ -130,20 +162,43 @@ export const ChatManager = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Client Chat</h2>
-        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a client to chat with" />
-          </SelectTrigger>
-          <SelectContent>
-            {clients.map((client) => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.name} ({client.email})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <h2 className="text-2xl font-bold mb-4">Client Chat</h2>
+          <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a client to chat with" />
+            </SelectTrigger>
+            <SelectContent>
+              {clients.map((client) => (
+                <SelectItem key={client.id} value={client.id}>
+                  {client.name} ({client.email})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {isSupported && (
+          <Button
+            variant={permission === 'granted' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={requestPermission}
+            disabled={permission === 'granted'}
+            title={permission === 'granted' ? 'Notifications enabled' : 'Enable notifications'}
+          >
+            {permission === 'granted' ? (
+              <>
+                <Bell className="h-4 w-4 mr-2" />
+                Notifications On
+              </>
+            ) : (
+              <>
+                <BellOff className="h-4 w-4 mr-2" />
+                Enable Notifications
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
       {selectedClientId && (

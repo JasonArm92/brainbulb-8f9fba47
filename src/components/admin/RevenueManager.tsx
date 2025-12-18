@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, PoundSterling, TrendingUp, Calendar } from 'lucide-react';
+import { InvoiceButton } from './InvoiceGenerator';
 
 interface RevenueEntry {
   id: string;
@@ -257,7 +258,8 @@ export function RevenueManager() {
                     <Badge className={statusColors[entry.status]}>{entry.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
+                      <InvoiceButton entry={entry} />
                       <Button size="sm" variant="ghost" onClick={() => openEdit(entry)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
