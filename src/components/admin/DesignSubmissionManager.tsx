@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
+import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
+import { Loader2, Upload, Plus, Trash2, Bell, BellOff } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,7 @@ interface DesignSubmission {
 
 export const DesignSubmissionManager = () => {
   const { toast } = useToast();
+  const { permission, requestPermission, showNotification, isSupported } = useBrowserNotifications();
   const [clients, setClients] = useState<Client[]>([]);
   const [submissions, setSubmissions] = useState<DesignSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,41 @@ export const DesignSubmissionManager = () => {
     description: '',
     file: null as File | null,
   });
+
+  // Subscribe to design status changes for notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-design-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'design_submissions',
+        },
+        async (payload) => {
+          const updated = payload.new as DesignSubmission;
+          const old = payload.old as DesignSubmission;
+          
+          // Only notify if status changed
+          if (updated.status !== old.status && permission === 'granted') {
+            const statusEmoji = updated.status === 'approved' ? '✅' : updated.status === 'rejected' ? '❌' : '🔄';
+            showNotification(`${statusEmoji} Design ${updated.status}`, {
+              body: `"${updated.title}" has been ${updated.status}`,
+              tag: 'design-update',
+            });
+          }
+          
+          // Refresh the list
+          fetchSubmissions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [permission, showNotification]);
 
   useEffect(() => {
     fetchClients();
@@ -191,15 +228,31 @@ export const DesignSubmissionManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-4">
         <h2 className="text-2xl font-bold">Design Submissions</h2>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Upload Design
+        <div className="flex gap-2">
+          {isSupported && (
+            <Button
+              variant={permission === 'granted' ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={requestPermission}
+              disabled={permission === 'granted'}
+              title={permission === 'granted' ? 'Notifications enabled' : 'Enable notifications'}
+            >
+              {permission === 'granted' ? (
+                <Bell className="h-4 w-4" />
+              ) : (
+                <BellOff className="h-4 w-4" />
+              )}
             </Button>
-          </DialogTrigger>
+          )}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Upload Design
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Upload Design for Client</DialogTitle>
@@ -281,6 +334,7 @@ export const DesignSubmissionManager = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4">
