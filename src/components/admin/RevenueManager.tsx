@@ -29,7 +29,6 @@ interface Client {
   name: string;
 }
 
-// Note: Revenue data will be stored locally until a revenue table is created
 export function RevenueManager() {
   const [entries, setEntries] = useState<RevenueEntry[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -53,76 +52,80 @@ export function RevenueManager() {
   });
 
   useEffect(() => {
-    fetchClients();
-    loadLocalRevenue();
+    fetchData();
   }, []);
 
-  const fetchClients = async () => {
-    const { data } = await supabase.from('clients').select('id, name');
-    if (data) setClients(data);
+  const fetchData = async () => {
+    setLoading(true);
+    const [clientsRes, entriesRes] = await Promise.all([
+      supabase.from('clients').select('id, name'),
+      supabase.from('revenue_entries').select('*').order('payment_date', { ascending: false }),
+    ]);
+
+    if (clientsRes.data) setClients(clientsRes.data);
+    if (entriesRes.data) {
+      setEntries(entriesRes.data.map((e) => ({
+        ...e,
+        amount: Number(e.amount),
+        status: e.status as RevenueEntry['status'],
+      })));
+    }
     setLoading(false);
   };
 
-  const loadLocalRevenue = () => {
-    const saved = localStorage.getItem('brainbulb_revenue');
-    if (saved) {
-      setEntries(JSON.parse(saved));
-    }
-  };
-
-  const saveLocalRevenue = (data: RevenueEntry[]) => {
-    localStorage.setItem('brainbulb_revenue', JSON.stringify(data));
-    setEntries(data);
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.amount || !formData.description) {
       toast.error('Please fill in required fields');
       return;
     }
 
     const client = clients.find((c) => c.id === formData.client_id);
+    const entryData = {
+      client_id: formData.client_id || null,
+      client_name: client?.name || 'General',
+      amount: parseFloat(formData.amount),
+      description: formData.description,
+      payment_date: formData.payment_date,
+      status: formData.status,
+      invoice_number: formData.invoice_number || null,
+    };
 
     if (editingEntry) {
-      const updated = entries.map((e) =>
-        e.id === editingEntry.id
-          ? {
-              ...e,
-              client_id: formData.client_id || null,
-              client_name: client?.name || 'General',
-              amount: parseFloat(formData.amount),
-              description: formData.description,
-              payment_date: formData.payment_date,
-              status: formData.status,
-              invoice_number: formData.invoice_number || null,
-            }
-          : e
-      );
-      saveLocalRevenue(updated);
+      const { error } = await supabase
+        .from('revenue_entries')
+        .update(entryData)
+        .eq('id', editingEntry.id);
+
+      if (error) {
+        toast.error('Failed to update entry');
+        console.error(error);
+        return;
+      }
       toast.success('Entry updated');
     } else {
-      const newEntry: RevenueEntry = {
-        id: crypto.randomUUID(),
-        client_id: formData.client_id || null,
-        client_name: client?.name || 'General',
-        amount: parseFloat(formData.amount),
-        currency: 'GBP',
-        description: formData.description,
-        payment_date: formData.payment_date,
-        status: formData.status,
-        invoice_number: formData.invoice_number || null,
-        created_at: new Date().toISOString(),
-      };
-      saveLocalRevenue([newEntry, ...entries]);
+      const { error } = await supabase.from('revenue_entries').insert(entryData);
+
+      if (error) {
+        toast.error('Failed to add entry');
+        console.error(error);
+        return;
+      }
       toast.success('Entry added');
     }
 
     resetForm();
+    fetchData();
   };
 
-  const handleDelete = (id: string) => {
-    saveLocalRevenue(entries.filter((e) => e.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from('revenue_entries').delete().eq('id', id);
+    if (error) {
+      toast.error('Failed to delete entry');
+      console.error(error);
+      return;
+    }
     toast.success('Entry deleted');
+    fetchData();
   };
 
   const resetForm = () => {
@@ -173,6 +176,14 @@ export function RevenueManager() {
     overdue: 'bg-destructive/20 text-destructive',
     cancelled: 'bg-muted text-muted-foreground',
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
