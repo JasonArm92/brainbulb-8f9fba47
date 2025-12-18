@@ -176,7 +176,23 @@ export default function ClientDashboard() {
     };
   };
 
+  const sendNotification = async (type: 'design_approved' | 'design_rejected' | 'new_message', extra: { designTitle?: string; messagePreview?: string; feedback?: string }) => {
+    try {
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          type,
+          clientName: clientData?.name || profile?.full_name || 'Client',
+          clientEmail: profile?.email,
+          ...extra,
+        },
+      });
+    } catch (err) {
+      console.error('Failed to send notification:', err);
+    }
+  };
+
   const handleApproval = async (submissionId: string, status: 'approved' | 'rejected') => {
+    const submission = submissions.find((s) => s.id === submissionId);
     const { error } = await supabase
       .from('design_submissions')
       .update({
@@ -196,6 +212,13 @@ export default function ClientDashboard() {
         title: 'Success',
         description: `Design ${status}`,
       });
+
+      // Send email notification to admin
+      sendNotification(
+        status === 'approved' ? 'design_approved' : 'design_rejected',
+        { designTitle: submission?.title || 'Unknown', feedback: feedback[submissionId] }
+      );
+
       fetchSubmissions();
       setFeedback((prev) => {
         const newFeedback = { ...prev };
@@ -209,10 +232,11 @@ export default function ClientDashboard() {
     if (!newMessage.trim() || !clientData || !user) return;
 
     setSending(true);
+    const messageText = newMessage;
     const { error } = await supabase.from('messages').insert({
       client_id: clientData.id,
       sender_id: user.id,
-      message: newMessage,
+      message: messageText,
     });
 
     if (error) {
@@ -223,6 +247,8 @@ export default function ClientDashboard() {
       });
     } else {
       setNewMessage('');
+      // Send email notification to admin
+      sendNotification('new_message', { messagePreview: messageText.substring(0, 200) });
     }
     setSending(false);
   };
