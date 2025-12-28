@@ -156,6 +156,22 @@ export const AIChatContact = () => {
 
             if (error) {
               console.error('Error saving client:', error);
+            } else {
+              // Send onboarding email
+              try {
+                await supabase.functions.invoke('client-onboarding', {
+                  body: {
+                    clientName: updatedData.name,
+                    clientEmail: updatedData.email,
+                    company: updatedData.company,
+                    budgetRange: updatedData.budget,
+                    projectTimeline: updatedData.timeline,
+                    message: updatedData.description,
+                  },
+                });
+              } catch (emailError) {
+                console.error('Error sending onboarding email:', emailError);
+              }
             }
             
             toast({

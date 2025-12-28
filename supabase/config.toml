@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.weekly-revenue-report]
 verify_jwt = false
+
+[functions.client-onboarding]
+verify_jwt = false
