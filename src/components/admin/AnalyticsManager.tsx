@@ -4,13 +4,12 @@ import { Card } from '@/components/ui/card';
 import { 
   TrendingUp, 
   Users, 
-  DollarSign, 
   Briefcase, 
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
 } from 'lucide-react';
+import { RevenueChart } from './RevenueChart';
 
 interface AnalyticsData {
   totalClients: number;
@@ -23,8 +22,17 @@ interface AnalyticsData {
   clientsByPriority: { priority: string; count: number }[];
 }
 
+interface RevenueEntry {
+  id: string;
+  amount: number;
+  payment_date: string;
+  status: string;
+  client_name: string;
+}
+
 export function AnalyticsManager() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [revenueEntries, setRevenueEntries] = useState<RevenueEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,6 +55,14 @@ export function AnalyticsManager() {
       const { data: projects } = await supabase
         .from('portfolio_projects')
         .select('id');
+
+      // Fetch revenue entries
+      const { data: revenue } = await supabase
+        .from('revenue_entries')
+        .select('id, amount, payment_date, status, client_name')
+        .order('payment_date', { ascending: true });
+
+      setRevenueEntries(revenue || []);
 
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -160,6 +176,9 @@ export function AnalyticsManager() {
           ))}
         </div>
       </div>
+
+      {/* Revenue Chart */}
+      <RevenueChart entries={revenueEntries} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="glass-card p-6">

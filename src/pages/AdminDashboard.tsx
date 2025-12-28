@@ -9,7 +9,8 @@ import { ChatManager } from '@/components/admin/ChatManager';
 import { AnalyticsManager } from '@/components/admin/AnalyticsManager';
 import { RevenueManager } from '@/components/admin/RevenueManager';
 import { SettingsManager } from '@/components/admin/SettingsManager';
-import { LogOut, Users, Briefcase, FileImage, MessageSquare, BarChart3, PoundSterling, Settings } from 'lucide-react';
+import { MilestoneTracker } from '@/components/admin/MilestoneTracker';
+import { LogOut, Users, Briefcase, FileImage, MessageSquare, BarChart3, PoundSterling, Settings, Target } from 'lucide-react';
 import { toast } from 'sonner';
 
 function AdminDashboardContent() {
@@ -39,7 +40,7 @@ function AdminDashboardContent() {
         </div>
 
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="glass-card p-1 grid grid-cols-4 lg:grid-cols-7 w-full">
+          <TabsList className="glass-card p-1 grid grid-cols-4 lg:grid-cols-8 w-full">
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
@@ -47,6 +48,10 @@ function AdminDashboardContent() {
             <TabsTrigger value="clients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Clients</span>
+            </TabsTrigger>
+            <TabsTrigger value="milestones" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">Milestones</span>
             </TabsTrigger>
             <TabsTrigger value="designs" className="flex items-center gap-2">
               <FileImage className="h-4 w-4" />
@@ -76,6 +81,10 @@ function AdminDashboardContent() {
 
           <TabsContent value="clients">
             <ClientsManager />
+          </TabsContent>
+
+          <TabsContent value="milestones">
+            <MilestoneTracker />
           </TabsContent>
 
           <TabsContent value="designs">
