@@ -10,8 +10,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, XCircle, Clock, Upload, MessageSquare, FileText, LogOut, User, Settings, Save, Target } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Upload, MessageSquare, FileText, LogOut, User, Settings, Save, Target, FolderOpen } from 'lucide-react';
 import { ProjectPortal } from '@/components/client/ProjectPortal';
+import { FileSharing } from '@/components/client/FileSharing';
 
 interface DesignSubmission {
   id: string;
@@ -387,7 +388,7 @@ export default function ClientDashboard() {
         </div>
 
         <Tabs defaultValue={clientData ? "designs" : "account"} className="w-full">
-          <TabsList className={`grid w-full mb-8 ${clientData ? 'grid-cols-4' : 'grid-cols-1'}`}>
+          <TabsList className={`grid w-full mb-8 ${clientData ? 'grid-cols-5' : 'grid-cols-1'}`}>
             <TabsTrigger value="account">
               <User className="mr-2 h-4 w-4" />
               Account
@@ -397,6 +398,10 @@ export default function ClientDashboard() {
                 <TabsTrigger value="project">
                   <Target className="mr-2 h-4 w-4" />
                   Project
+                </TabsTrigger>
+                <TabsTrigger value="files">
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  Files
                 </TabsTrigger>
                 <TabsTrigger value="designs">
                   <FileText className="mr-2 h-4 w-4" />
@@ -520,6 +525,13 @@ export default function ClientDashboard() {
           {clientData && (
             <TabsContent value="project">
               <ProjectPortal clientId={clientData.id} />
+            </TabsContent>
+          )}
+
+          {/* Files Tab - Only if client has project */}
+          {clientData && (
+            <TabsContent value="files">
+              <FileSharing clientId={clientData.id} />
             </TabsContent>
           )}
 
