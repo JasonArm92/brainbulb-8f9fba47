@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.client-onboarding]
 verify_jwt = false
+
+[functions.milestone-reminders]
+verify_jwt = false
