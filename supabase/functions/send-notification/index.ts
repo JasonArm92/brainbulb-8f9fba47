@@ -9,12 +9,15 @@ const corsHeaders = {
 };
 
 interface NotificationRequest {
-  type: "design_approved" | "design_rejected" | "new_message";
+  type: "design_approved" | "design_rejected" | "new_message" | "file_uploaded";
   designTitle?: string;
   clientName: string;
   clientEmail?: string;
   messagePreview?: string;
   feedback?: string;
+  fileName?: string;
+  fileSize?: string;
+  uploadedBy?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { type, designTitle, clientName, clientEmail, messagePreview, feedback }: NotificationRequest = await req.json();
+    const { type, designTitle, clientName, clientEmail, messagePreview, feedback, fileName, fileSize, uploadedBy }: NotificationRequest = await req.json();
 
     console.log(`Processing notification: ${type} for ${clientName}`);
 
@@ -72,6 +75,22 @@ const handler = async (req: Request): Promise<Response> => {
             <p><strong>From:</strong> ${clientName}</p>
             ${messagePreview ? `<p><strong>Message:</strong></p><blockquote style="border-left: 3px solid #3b82f6; padding-left: 15px; color: #555;">${messagePreview}</blockquote>` : ""}
             <p>Log in to your admin dashboard to respond.</p>
+          <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;" />
+            <p style="color: #666; font-size: 12px;">BrainBulb Design Studio</p>
+          </div>
+        `;
+        break;
+
+      case "file_uploaded":
+        subject = `📁 New File Uploaded: ${fileName}`;
+        html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #8b5cf6;">New File Uploaded</h1>
+            <p><strong>Project:</strong> ${clientName}</p>
+            <p><strong>File:</strong> ${fileName}</p>
+            <p><strong>Size:</strong> ${fileSize}</p>
+            <p><strong>Uploaded by:</strong> ${uploadedBy === 'admin' ? 'Designer' : 'Client'}</p>
+            <p>A new file has been added to the project. Log in to view and download.</p>
             <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;" />
             <p style="color: #666; font-size: 12px;">BrainBulb Design Studio</p>
           </div>
@@ -82,16 +101,42 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error(`Unknown notification type: ${type}`);
     }
 
-    const emailResponse = await resend.emails.send({
+    // Send to admin
+    const adminEmailResponse = await resend.emails.send({
       from: "BrainBulb <onboarding@resend.dev>",
       to: [adminEmail],
       subject,
       html,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Admin email sent successfully:", adminEmailResponse);
 
-    return new Response(JSON.stringify({ success: true, id: emailResponse.data?.id }), {
+    // For file uploads, also notify the client if it was uploaded by admin
+    if (type === "file_uploaded" && clientEmail && uploadedBy === 'admin') {
+      const clientHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #8b5cf6;">New File Available</h1>
+          <p>Hi ${clientName},</p>
+          <p>A new file has been added to your project:</p>
+          <p><strong>File:</strong> ${fileName}</p>
+          <p><strong>Size:</strong> ${fileSize}</p>
+          <p>Log in to your dashboard to view and download the file.</p>
+          <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;" />
+          <p style="color: #666; font-size: 12px;">BrainBulb Design Studio</p>
+        </div>
+      `;
+
+      await resend.emails.send({
+        from: "BrainBulb <onboarding@resend.dev>",
+        to: [clientEmail],
+        subject: `📁 New File Available: ${fileName}`,
+        html: clientHtml,
+      });
+
+      console.log("Client email sent for file upload");
+    }
+
+    return new Response(JSON.stringify({ success: true, id: adminEmailResponse.data?.id }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
