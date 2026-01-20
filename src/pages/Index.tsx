@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Play, Monitor, Sparkles, ExternalLink, Code2, Zap, Layers } from "lucide-react";
+import { ArrowRight, Play, Monitor, Sparkles, ExternalLink, Code2, Zap, Layers, ArrowUpRight } from "lucide-react";
 import { ProjectModal } from "@/components/ProjectModal";
 import { MagneticButton } from "@/components/MagneticButton";
 import { AnimatedStats } from "@/components/AnimatedStats";
 import { RippleEffect } from "@/components/RippleEffect";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import logoMain from "@/assets/logo-main.png";
+
 // Featured projects data for homepage showcase
 const featuredProjects = [
   {
@@ -199,161 +200,236 @@ const Index = () => {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-hero pb-24 px-4 tech-grid relative overflow-hidden">
-      {/* Ambient light effects */}
-      <div className="fixed top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-primary-glow/15 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen pb-24 relative overflow-hidden">
+      {/* Aurora Background */}
+      <div className="aurora-bg fixed inset-0 pointer-events-none" />
       
-      <div className="max-w-6xl mx-auto pt-12 relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-4 mb-8 relative">
-            <div className="absolute inset-0 bg-gradient-primary blur-3xl opacity-20 animate-pulse" />
+      {/* Animated gradient orbs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] rounded-full bg-gradient-to-br from-primary/30 via-primary-glow/20 to-transparent blur-[100px] animate-float-rotate pointer-events-none" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] max-w-[700px] max-h-[700px] rounded-full bg-gradient-to-tl from-accent-cyan/20 via-primary/15 to-transparent blur-[100px] animate-float-gentle pointer-events-none" style={{ animationDelay: '-2s' }} />
+      <div className="fixed top-[40%] right-[20%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] rounded-full bg-gradient-to-br from-accent-pink/15 to-transparent blur-[80px] animate-morph pointer-events-none" />
+      
+      {/* Tech grid overlay */}
+      <div className="tech-grid fixed inset-0 pointer-events-none opacity-50" />
+      
+      <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Hero Section */}
+        <div className="text-center mb-24 pt-8">
+          {/* Floating badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 animate-slide-up-premium border border-glass-border">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-green"></span>
+            </span>
+            <span className="text-sm font-medium text-muted-foreground">Available for new projects</span>
+          </div>
+
+          {/* Logo with glow */}
+          <div className="relative inline-block mb-10">
+            <div className="absolute inset-0 bg-gradient-primary blur-[60px] opacity-40 animate-glow-pulse scale-150" />
             <img 
               src={logoMain}
               alt="Brain Bulb Web Design" 
-              className="h-30 animate-fade-in relative z-10"
+              className="h-28 md:h-36 relative z-10 animate-float-gentle drop-shadow-2xl"
             />
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up bg-gradient-to-br from-foreground via-primary to-foreground bg-clip-text text-transparent">
-            Elite Web Design That
-            <span className="block bg-gradient-primary bg-clip-text text-transparent">Transforms Businesses</span>
+
+          {/* Main heading with gradient text */}
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight leading-[0.9] animate-slide-up-premium font-display">
+            <span className="block text-foreground">Websites That</span>
+            <span className="block gradient-text mt-2">Break The Mold</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto animate-slide-up leading-relaxed">
-            Industry-leading websites engineered for performance and designed for impact. 
-            <span className="block mt-2 text-primary font-medium">From vision to execution, we craft digital experiences that drive exceptional results.</span>
+
+          {/* Subtitle */}
+          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto animate-slide-up-premium leading-relaxed stagger-2">
+            We craft <span className="text-foreground font-medium">boundary-pushing</span> digital experiences 
+            that captivate audiences and <span className="gradient-text-static font-semibold">transform businesses</span>.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 animate-slide-up">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-slide-up-premium stagger-3">
             <MagneticButton 
               variant="cta" 
               size="lg"
               onClick={() => navigate("/portfolio")}
-              className="text-lg px-8 py-6 rounded-2xl shadow-glow group"
+              className="text-lg px-10 py-7 rounded-full shadow-glow group relative overflow-hidden"
             >
-              <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-              Explore Our Work
-              <Sparkles className="w-4 h-4 ml-2 opacity-70" />
+              <span className="relative z-10 flex items-center gap-2">
+                <Play className="w-5 h-5 group-hover:scale-125 transition-transform duration-300" />
+                Explore Our Work
+                <Sparkles className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+              </span>
             </MagneticButton>
             <MagneticButton 
               variant="glass" 
               size="lg"
               onClick={() => navigate("/contact")}
-              className="text-lg px-8 py-6 rounded-2xl group"
+              className="text-lg px-10 py-7 rounded-full group neon-glow"
             >
               Start Your Project
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform duration-300" />
             </MagneticButton>
+          </div>
+
+          {/* Floating metrics */}
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 animate-slide-up-premium stagger-4">
+            {[
+              { value: "50+", label: "Projects Delivered" },
+              { value: "98%", label: "Client Satisfaction" },
+              { value: "5★", label: "Average Rating" },
+            ].map((metric, index) => (
+              <div key={index} className="text-center group">
+                <div className="text-3xl md:text-4xl font-bold gradient-text group-hover:scale-110 transition-transform duration-300">{metric.value}</div>
+                <div className="text-sm text-muted-foreground mt-1">{metric.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="relative max-w-6xl mx-auto mb-16">
-          <div className="glass-card rounded-3xl shadow-premium p-8 animate-glass-appear border border-glass-border relative overflow-hidden">
+        {/* Portfolio Showcase */}
+        <div className="relative max-w-6xl mx-auto mb-20">
+          <div className="glass-card rounded-[2rem] shadow-premium p-6 md:p-10 animate-glass-appear border border-glass-border relative overflow-hidden noise-texture">
+            {/* Animated border gradient */}
+            <div className="absolute inset-0 rounded-[2rem] p-[1px] bg-gradient-to-br from-primary/50 via-accent-cyan/30 to-accent-pink/50 opacity-50 animate-gradient-x" style={{ backgroundSize: '200% 200%' }} />
+            
             {/* Technical scan line effect */}
-            <div className="absolute inset-0 opacity-30 pointer-events-none">
-              <div className="h-px w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line" />
+            <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden rounded-[2rem]">
+              <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line" />
             </div>
             
+            {/* Window header */}
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-glass-border/50 relative z-10">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="flex gap-2">
-                  <div className="w-3 h-3 bg-destructive rounded-full shadow-glow" />
-                  <div className="w-3 h-3 bg-warning rounded-full shadow-glow" />
-                  <div className="w-3 h-3 bg-success rounded-full shadow-glow" />
+                  <div className="w-3 h-3 bg-destructive rounded-full shadow-lg hover:scale-125 transition-transform cursor-pointer" />
+                  <div className="w-3 h-3 bg-warning rounded-full shadow-lg hover:scale-125 transition-transform cursor-pointer" />
+                  <div className="w-3 h-3 bg-success rounded-full shadow-lg hover:scale-125 transition-transform cursor-pointer" />
                 </div>
-                <span className="text-sm font-medium text-muted-foreground ml-2 font-mono">Portfolio.exe</span>
+                <span className="text-sm font-medium text-muted-foreground font-mono tracking-wider">Portfolio.exe</span>
               </div>
               <Button 
                 variant="glass" 
                 size="sm"
                 onClick={() => navigate("/portfolio")}
-                className="text-xs rounded-xl"
+                className="text-xs rounded-full px-4 group"
               >
-                <ExternalLink className="w-3 h-3 mr-1" />
-                View All
+                <span>View All</span>
+                <ArrowUpRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Button>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 relative z-10">
+            {/* Project grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 relative z-10">
               {featuredProjects.map((project, index) => (
                 <RippleEffect
                   key={project.id}
-                  className="group relative aspect-video rounded-2xl overflow-hidden bg-muted hover:scale-105 transition-all duration-500 shadow-glass hover:shadow-glow border border-glass-border"
+                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted/50 hover:scale-[1.02] transition-all duration-500 shadow-glass hover:shadow-glow border border-glass-border animate-border-dance cursor-pointer perspective-card"
                   onClick={() => setSelectedProject(project.id)}
+                  style={{ animationDelay: `${index * 0.5}s` }}
                 >
                   <img 
                     src={project.images[0]} 
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-80 group-hover:opacity-95 transition-opacity">
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-80 group-hover:opacity-95 transition-all duration-300">
                     <div className="absolute bottom-0 left-0 right-0 p-4">
-                      <div className="text-xs text-primary font-semibold mb-1 font-mono">{project.category}</div>
-                      <div className="text-sm font-bold text-foreground truncate">{project.title}</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold uppercase tracking-wider">{project.category}</span>
+                      </div>
+                      <div className="text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{project.title}</div>
                     </div>
                   </div>
-                  <div className="absolute top-3 right-3 w-8 h-8 bg-primary/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-primary/30">
-                    <Monitor className="w-4 h-4 text-primary" />
+                  {/* Hover icon */}
+                  <div className="absolute top-3 right-3 w-9 h-9 bg-primary/30 backdrop-blur-md rounded-xl flex items-center justify-center border border-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-90">
+                    <ExternalLink className="w-4 h-4 text-primary-foreground" />
                   </div>
                 </RippleEffect>
               ))}
             </div>
             
-            <div className="text-center mt-6 pt-4 border-t border-glass-border relative z-10">
-              <p className="text-sm text-muted-foreground font-mono">Click any project above to view detailed case study →</p>
+            <div className="text-center mt-8 pt-4 border-t border-glass-border relative z-10">
+              <p className="text-sm text-muted-foreground font-mono">
+                <span className="gradient-text-static">Click any project</span> to view detailed case study →
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {[
-            {
-              icon: <Code2 className="w-8 h-8 text-primary" />,
-              title: "Technical Excellence",
-              description: "Engineered with cutting-edge technologies and industry-best practices for unmatched performance.",
-              gradient: "from-primary/20 via-primary/10 to-transparent"
-            },
-            {
-              icon: <Zap className="w-8 h-8 text-primary" />,
-              title: "Lightning Fast",
-              description: "Optimized architecture delivering exceptional speed across all devices and network conditions.",
-              gradient: "from-primary-glow/20 via-primary-glow/10 to-transparent"
-            },
-            {
-              icon: <Layers className="w-8 h-8 text-primary" />,
-              title: "Scalable Systems",
-              description: "Future-proof infrastructure designed to grow seamlessly with your business expansion.",
-              gradient: "from-primary-deep/20 via-primary-deep/10 to-transparent"
-            }
-          ].map((feature, index) => (
-            <div 
-              key={index}
-              className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-premium transition-all duration-500 animate-slide-up-premium hover:scale-105 border border-glass-border group relative overflow-hidden"
-              style={{ animationDelay: `${index * 0.2}s` }}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-              <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 backdrop-blur-sm border border-primary/20 shadow-glow group-hover:scale-110 transition-transform duration-500">
-                  {feature.icon}
+        {/* Features Section */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-display">
+              Why Choose <span className="gradient-text">Brain Bulb</span>?
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We combine cutting-edge technology with artistic vision to deliver exceptional results.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {[
+              {
+                icon: <Code2 className="w-8 h-8" />,
+                title: "Technical Excellence",
+                description: "Engineered with cutting-edge technologies and industry-best practices for unmatched performance.",
+                color: "from-primary to-primary-glow",
+                accent: "primary"
+              },
+              {
+                icon: <Zap className="w-8 h-8" />,
+                title: "Lightning Fast",
+                description: "Optimized architecture delivering exceptional speed across all devices and network conditions.",
+                color: "from-accent-cyan to-accent-green",
+                accent: "cyan"
+              },
+              {
+                icon: <Layers className="w-8 h-8" />,
+                title: "Scalable Systems",
+                description: "Future-proof infrastructure designed to grow seamlessly with your business expansion.",
+                color: "from-accent-pink to-accent-orange",
+                accent: "pink"
+              }
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                className="glass-card rounded-3xl p-8 text-center shadow-glass hover:shadow-premium transition-all duration-500 animate-slide-up-premium hover:scale-[1.02] border border-glass-border group relative overflow-hidden"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                {/* Gradient background on hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+                
+                <div className="relative z-10">
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6 backdrop-blur-sm border border-glass-border shadow-glow group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-gradient-to-br ${feature.color}`}>
+                    <div className="text-primary-foreground">
+                      {feature.icon}
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold mb-4 group-hover:gradient-text transition-all duration-300 font-display">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                 </div>
-                <h3 className="text-xl font-bold mb-4 bg-gradient-to-br from-foreground to-primary bg-clip-text text-transparent">{feature.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Animated Stats Section */}
-        <div className="mb-16">
+        <div className="mb-20">
           <AnimatedStats />
         </div>
 
         {/* Call to Action */}
-        <div className="text-center glass-card rounded-3xl p-12 shadow-glow animate-glass-appear border border-glass-border backdrop-blur-xl relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary-glow/10 opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
-          <div className="relative z-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">Ready to Transform Your Digital Presence?</h2>
-            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto text-lg leading-relaxed">
+        <div className="glass-card rounded-[2rem] p-8 md:p-16 shadow-glow animate-glass-appear border border-glass-border relative overflow-hidden group noise-texture">
+          {/* Aurora effect on hover */}
+          <div className="aurora-bg absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          
+          {/* Content */}
+          <div className="relative z-10 text-center">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 font-display">
+              Ready to <span className="gradient-text">Transform</span> Your Digital Presence?
+            </h2>
+            <p className="text-muted-foreground mb-10 max-w-2xl mx-auto text-lg leading-relaxed">
               Join industry leaders who've revolutionized their business with our elite web design expertise.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -361,18 +437,18 @@ const Index = () => {
                 variant="cta" 
                 size="lg"
                 onClick={() => navigate("/pricing")}
-                className="rounded-2xl shadow-glow px-10 py-6 text-lg group"
+                className="text-lg px-10 py-6 rounded-full shadow-glow group"
               >
                 View Pricing
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <ArrowUpRight className="w-5 h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </MagneticButton>
               <MagneticButton 
                 variant="glass" 
                 size="lg"
                 onClick={() => navigate("/about")}
-                className="rounded-2xl px-10 py-6 text-lg"
+                className="text-lg px-10 py-6 rounded-full neon-glow"
               >
-                Learn More
+                Learn About Us
               </MagneticButton>
             </div>
           </div>
@@ -381,7 +457,7 @@ const Index = () => {
 
       {/* Project Modal */}
       {selectedProject && (
-        <ProjectModal
+        <ProjectModal 
           project={featuredProjects.find(p => p.id === selectedProject)!}
           isOpen={!!selectedProject}
           onClose={() => setSelectedProject(null)}
