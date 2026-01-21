@@ -53,7 +53,7 @@ export const Taskbar = () => {
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => navigate("/")}
-              className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/10 transition-all duration-300"
+              className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-accent transition-all duration-300"
             >
               <img 
                 src={logoIcon} 
@@ -66,7 +66,7 @@ export const Taskbar = () => {
               <ThemeToggle />
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <button className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/10 transition-all duration-300">
+                  <button className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-accent transition-all duration-300">
                     <Menu className="w-5 h-5" />
                   </button>
                 </SheetTrigger>
@@ -87,7 +87,7 @@ export const Taskbar = () => {
                             "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300",
                             isActive 
                               ? "bg-primary text-primary-foreground shadow-glow" 
-                              : "hover:bg-white/10 text-foreground"
+                              : "hover:bg-accent text-foreground"
                           )}
                         >
                           <Icon className="w-5 h-5" />
@@ -104,7 +104,7 @@ export const Taskbar = () => {
                               handleAuthAction();
                               setMobileMenuOpen(false);
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-300"
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-accent transition-all duration-300"
                           >
                             <User className="w-5 h-5" />
                             <span className="text-base font-medium">My Account</span>
@@ -148,7 +148,7 @@ export const Taskbar = () => {
           {/* Logo */}
           <button
             onClick={() => navigate("/")}
-            className="flex items-center justify-center w-12 h-12 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
+            className="flex items-center justify-center w-12 h-12 rounded-2xl hover:bg-accent transition-all duration-300 group"
           >
             <img 
               src={logoIcon} 
@@ -174,7 +174,7 @@ export const Taskbar = () => {
                     "relative flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-300 group min-w-[60px]",
                     isActive 
                       ? "bg-primary text-primary-foreground shadow-glow" 
-                      : "hover:bg-white/10 text-foreground/70 hover:text-foreground"
+                      : "hover:bg-accent text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Icon className={cn(
@@ -215,7 +215,7 @@ export const Taskbar = () => {
                   onClick={handleAuthAction}
                   variant="ghost"
                   size="sm"
-                  className="rounded-xl hover:bg-white/10"
+                  className="rounded-xl hover:bg-accent"
                 >
                   <User className="w-4 h-4 mr-2" />
                   {isAdmin ? 'Admin' : 'Account'}
@@ -242,8 +242,8 @@ export const Taskbar = () => {
             )}
             
             {/* Time */}
-            <div className="flex items-center justify-center min-w-[60px] h-10 px-3 rounded-xl hover:bg-white/10 transition-all duration-300 cursor-default">
-              <span className="text-xs font-medium text-foreground/80">
+            <div className="flex items-center justify-center min-w-[60px] h-10 px-3 rounded-xl hover:bg-accent transition-all duration-300 cursor-default">
+              <span className="text-xs font-medium text-muted-foreground">
                 {currentTime}
               </span>
             </div>
