@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ProjectModal } from "@/components/ProjectModal";
 import { Button } from "@/components/ui/button";
-import { Monitor, ExternalLink, Calendar, User, Code2 } from "lucide-react";
+import { Monitor, ExternalLink, Calendar, User, Code2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RippleEffect } from "@/components/RippleEffect";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -211,34 +211,44 @@ export const Portfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero py-16 px-4 pb-24 tech-grid relative overflow-hidden">
+    <div className="min-h-screen bg-background py-16 px-4 pb-24 tech-grid relative overflow-hidden">
+      {/* Aurora background effect */}
+      <div className="aurora-bg fixed inset-0 pointer-events-none" />
+      
       {/* Ambient effects */}
-      <div className="fixed top-0 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-0 left-1/4 w-96 h-96 bg-primary-glow/15 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-0 right-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[150px] pointer-events-none animate-float-rotate" />
+      <div className="fixed bottom-0 left-1/4 w-[400px] h-[400px] bg-primary-glow/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-1/2 left-0 w-[300px] h-[300px] bg-accent-cyan/10 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto pt-12 relative z-10">
-        <div className="text-center mb-12">
-          <div className="inline-block mb-4 px-4 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 mb-6 px-5 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm shadow-glass">
+            <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-mono text-primary font-semibold">Portfolio</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-foreground via-primary to-foreground bg-clip-text text-transparent">Our Elite Projects</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 gradient-text">
+            Our Elite Projects
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Engineered solutions that set industry benchmarks.
-            <span className="block mt-2 text-primary font-medium">Click any project to explore detailed case studies and technical insights.</span>
+            <span className="block mt-3 text-primary font-medium">Click any project to explore detailed case studies.</span>
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
+        <div className="flex flex-wrap justify-center gap-3 mb-16">
           {categories.map((category) => (
             <Button
               key={category}
-              variant={filterCategory === category ? "cta" : "glass"}
+              variant={filterCategory === category ? "default" : "outline"}
               size="sm"
               onClick={() => setFilterCategory(category)}
-              className="capitalize rounded-xl font-medium"
+              className={cn(
+                "capitalize rounded-xl font-medium transition-all duration-300",
+                filterCategory === category && "shadow-glow"
+              )}
             >
-              <Code2 className="w-3 h-3 mr-1" />
+              <Code2 className="w-3 h-3 mr-2" />
               {category === "all" ? "All Projects" : category}
             </Button>
           ))}
@@ -249,7 +259,7 @@ export const Portfolio = () => {
           {filteredProjects.map((project, index) => (
             <RippleEffect
               key={project.id}
-              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-premium transition-all duration-500 cursor-pointer group animate-slide-up-fade hover:scale-105 border border-glass-border relative"
+              className="glass-card rounded-3xl overflow-hidden shadow-glass hover:shadow-premium transition-all duration-500 cursor-pointer group animate-slide-up-fade hover:scale-[1.02] border border-glass-border relative"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => openProject(project.id)}
             >
@@ -259,16 +269,17 @@ export const Portfolio = () => {
                   alt={project.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-4 left-4 right-4">
-                    <Button variant="cta" size="sm" className="w-full">
+                    <Button variant="default" size="sm" className="w-full shadow-glow">
                       <Monitor className="w-4 h-4 mr-2" />
                       View Project
                     </Button>
                   </div>
                 </div>
                 {project.featured && (
-                  <div className="absolute top-3 right-3 bg-gradient-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-glow">
+                  <div className="absolute top-3 right-3 bg-gradient-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-glow flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
                     Featured
                   </div>
                 )}
@@ -284,16 +295,16 @@ export const Portfolio = () => {
                   </span>
                   <span className="text-xs text-muted-foreground font-mono">{project.year}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{project.title}</h3>
+                <h3 className="text-xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">{project.title}</h3>
                 <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{project.description}</p>
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-4">
                   <div className="flex items-center gap-2">
-                    <User className="w-3 h-3" />
+                    <User className="w-3 h-3 text-primary" />
                     <span className="font-mono">{project.client}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-3 h-3" />
+                    <Calendar className="w-3 h-3 text-primary" />
                     <span className="font-mono">{project.duration}</span>
                   </div>
                 </div>
@@ -308,7 +319,7 @@ export const Portfolio = () => {
                     </span>
                   ))}
                   {project.technologies.length > 3 && (
-                    <span className="px-2 py-1 glass-card text-muted-foreground rounded-lg text-xs font-medium border border-glass-border">
+                    <span className="px-2 py-1 bg-muted text-muted-foreground rounded-lg text-xs font-medium">
                       +{project.technologies.length - 3}
                     </span>
                   )}
