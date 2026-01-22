@@ -341,7 +341,7 @@
     background-clip: text;
   }
 
-  /* Aurora Background Effect */
+  /* Aurora Background Effect - Simplified for performance */
   .aurora-bg {
     position: relative;
     overflow: hidden;
@@ -350,13 +350,17 @@
   .aurora-bg::before {
     content: '';
     position: absolute;
-    inset: -50%;
+    inset: 0;
     background: var(--gradient-aurora);
-    background-size: 200% 200%;
-    animation: aurora-flow 15s ease-in-out infinite;
-    filter: blur(60px);
-    opacity: 0.5;
+    opacity: 0.3;
     z-index: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+    .aurora-bg::before {
+      background-size: 200% 200%;
+      animation: aurora-flow 30s ease-in-out infinite;
+    }
   }
 
   /* Neon Glow Effect */
@@ -386,20 +390,10 @@
 
   @keyframes aurora-flow {
     0%, 100% { 
-      transform: rotate(0deg) scale(1);
       background-position: 0% 50%;
     }
-    25% { 
-      transform: rotate(5deg) scale(1.1);
-      background-position: 50% 0%;
-    }
     50% { 
-      transform: rotate(0deg) scale(1.2);
       background-position: 100% 50%;
-    }
-    75% { 
-      transform: rotate(-5deg) scale(1.1);
-      background-position: 50% 100%;
     }
   }
 
@@ -500,16 +494,18 @@
     animation: slide-up-fade 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  .animate-morph {
-    animation: morph 8s ease-in-out infinite;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    .animate-morph {
+      animation: morph 12s ease-in-out infinite;
+    }
 
-  .animate-float-rotate {
-    animation: float-rotate 6s ease-in-out infinite;
-  }
+    .animate-float-rotate {
+      animation: float-rotate 10s ease-in-out infinite;
+    }
 
-  .animate-border-dance {
-    animation: border-dance 4s ease-in-out infinite;
+    .animate-border-dance {
+      animation: border-dance 6s ease-in-out infinite;
+    }
   }
 
   /* Artistic Scrollbar */
