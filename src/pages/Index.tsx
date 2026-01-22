@@ -212,7 +212,7 @@ const Index = () => {
       <div className="tech-grid fixed inset-0 pointer-events-none opacity-30" />
       
       
-      <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col items-center">
         {/* Hero Section */}
         <div className="text-center mb-24 pt-8">
           {/* Floating badge */}
@@ -287,7 +287,7 @@ const Index = () => {
         </div>
 
         {/* Portfolio Showcase */}
-        <div className="relative max-w-6xl mx-auto mb-20">
+        <div className="relative w-full max-w-6xl mb-20">
           <div className="glass-card rounded-[2rem] shadow-premium p-6 md:p-10 animate-glass-appear border border-glass-border relative overflow-hidden noise-texture">
             {/* Animated border gradient */}
             <div className="absolute inset-0 rounded-[2rem] p-[1px] bg-gradient-to-br from-primary/50 via-accent-cyan/30 to-accent-pink/50 opacity-50 animate-gradient-x" style={{ backgroundSize: '200% 200%' }} />
@@ -358,7 +358,7 @@ const Index = () => {
         </div>
 
         {/* Features Section */}
-        <div className="mb-20">
+        <div className="mb-20 w-full">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 font-display">
               Why Choose <span className="gradient-text">Brain Bulb</span>?
@@ -415,12 +415,12 @@ const Index = () => {
         </div>
 
         {/* Animated Stats Section */}
-        <div className="mb-20">
+        <div className="mb-20 w-full">
           <AnimatedStats />
         </div>
 
         {/* Call to Action */}
-        <div className="glass-card rounded-[2rem] p-8 md:p-16 shadow-glow animate-glass-appear border border-glass-border relative overflow-hidden group noise-texture">
+        <div className="glass-card rounded-[2rem] p-8 md:p-16 shadow-glow animate-glass-appear border border-glass-border relative overflow-hidden group noise-texture w-full">
           {/* Aurora effect on hover */}
           <div className="aurora-bg absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           
