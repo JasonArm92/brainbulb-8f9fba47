@@ -212,13 +212,12 @@ export const Portfolio = () => {
 
   return (
     <div className="min-h-screen bg-background py-16 px-4 pb-24 tech-grid relative overflow-hidden">
-      {/* Aurora background effect */}
+      {/* Simplified background */}
       <div className="aurora-bg fixed inset-0 pointer-events-none" />
       
-      {/* Ambient effects */}
-      <div className="fixed top-0 right-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[150px] pointer-events-none animate-float-rotate" />
-      <div className="fixed bottom-0 left-1/4 w-[400px] h-[400px] bg-primary-glow/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed top-1/2 left-0 w-[300px] h-[300px] bg-accent-cyan/10 rounded-full blur-[100px] pointer-events-none" />
+      {/* Static ambient effects - reduced blur */}
+      <div className="fixed top-0 right-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed bottom-0 left-1/4 w-[250px] h-[250px] bg-primary-glow/10 rounded-full blur-3xl pointer-events-none" />
       
       <div className="max-w-7xl mx-auto pt-12 relative z-10">
         <div className="text-center mb-16">

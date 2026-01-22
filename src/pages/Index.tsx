@@ -201,16 +201,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pb-24 relative overflow-hidden">
-      {/* Aurora Background */}
+      {/* Simplified background - no heavy blur animations */}
       <div className="aurora-bg fixed inset-0 pointer-events-none" />
       
-      {/* Animated gradient orbs */}
-      <div className="fixed top-[-20%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] rounded-full bg-gradient-to-br from-primary/30 via-primary-glow/20 to-transparent blur-[100px] animate-float-rotate pointer-events-none" />
-      <div className="fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] max-w-[700px] max-h-[700px] rounded-full bg-gradient-to-tl from-accent-cyan/20 via-primary/15 to-transparent blur-[100px] animate-float-gentle pointer-events-none" style={{ animationDelay: '-2s' }} />
-      <div className="fixed top-[40%] right-[20%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] rounded-full bg-gradient-to-br from-accent-pink/15 to-transparent blur-[80px] animate-morph pointer-events-none" />
+      {/* Static ambient orbs - reduced blur and no animations */}
+      <div className="fixed top-[-10%] left-[-5%] w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full bg-gradient-to-br from-primary/20 via-primary-glow/10 to-transparent blur-3xl pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-5%] w-[35vw] h-[35vw] max-w-[400px] max-h-[400px] rounded-full bg-gradient-to-tl from-accent-cyan/15 via-primary/10 to-transparent blur-3xl pointer-events-none" />
       
-      {/* Tech grid overlay */}
-      <div className="tech-grid fixed inset-0 pointer-events-none opacity-50" />
+      {/* Static tech grid - simplified */}
+      <div className="tech-grid fixed inset-0 pointer-events-none opacity-30" />
+      
       
       <div className="max-w-7xl mx-auto pt-16 px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Hero Section */}
