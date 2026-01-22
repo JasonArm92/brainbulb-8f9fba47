@@ -9,7 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, LogIn, UserPlus } from 'lucide-react';
+import { Loader2, LogIn, UserPlus, Sparkles } from 'lucide-react';
+import logoMain from '@/assets/logo-main.png';
 
 export default function AdminAuth() {
   const [email, setEmail] = useState('');
@@ -86,27 +87,60 @@ export default function AdminAuth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4 relative overflow-hidden">
-      <div className="tech-grid opacity-30" />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Aurora background */}
+      <div className="aurora-bg fixed inset-0 pointer-events-none" />
+      
+      {/* Ambient orbs */}
+      <div className="fixed top-[-15%] left-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-gradient-to-br from-primary/20 via-primary-glow/15 to-transparent blur-3xl pointer-events-none" />
+      <div className="fixed bottom-[-15%] right-[-10%] w-[45vw] h-[45vw] max-w-[500px] max-h-[500px] rounded-full bg-gradient-to-tl from-accent-cyan/15 via-accent-pink/10 to-transparent blur-3xl pointer-events-none" />
+      
+      {/* Tech grid */}
+      <div className="tech-grid fixed inset-0 pointer-events-none opacity-20" />
       
       <div className="relative z-10 w-full max-w-md">
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="glass-card p-1 grid grid-cols-2 w-full mb-4">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+        {/* Logo */}
+        <div className="text-center mb-8 animate-slide-up-premium">
+          <div className="relative inline-block mb-4">
+            <div className="absolute inset-0 bg-gradient-primary blur-[40px] opacity-40 scale-150" />
+            <img 
+              src={logoMain}
+              alt="Brain Bulb" 
+              className="h-16 relative z-10 drop-shadow-2xl"
+            />
+          </div>
+          <h1 className="text-2xl font-bold font-display gradient-text mb-2">Welcome Back</h1>
+          <p className="text-muted-foreground text-sm">Sign in to access your dashboard</p>
+        </div>
+
+        <Tabs defaultValue="signin" className="w-full animate-slide-up-premium stagger-2">
+          <TabsList className="glass-card p-1.5 grid grid-cols-2 w-full mb-6 rounded-2xl border border-glass-border shadow-glass">
+            <TabsTrigger 
+              value="signin"
+              className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-glow transition-all duration-300"
+            >
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signup"
+              className="rounded-xl data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-glow transition-all duration-300"
+            >
+              Sign Up
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin">
-            <Card className="glass-card border-glass-border">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Welcome Back
+            <Card className="glass-card border-glass-border rounded-3xl shadow-premium overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent-cyan/5 pointer-events-none" />
+              <CardHeader className="space-y-1 relative z-10">
+                <CardTitle className="text-2xl font-bold font-display">
+                  <span className="gradient-text">Sign In</span>
                 </CardTitle>
                 <CardDescription>
                   Enter your credentials to access your account
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
@@ -117,7 +151,7 @@ export default function AdminAuth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="glass"
+                      className="glass-card border-glass-border rounded-xl focus:border-primary/50 focus:ring-primary/30 transition-all"
                     />
                   </div>
                   <div className="space-y-2">
@@ -128,10 +162,14 @@ export default function AdminAuth() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="glass"
+                      className="glass-card border-glass-border rounded-xl focus:border-primary/50 focus:ring-primary/30 transition-all"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full rounded-xl bg-gradient-primary hover:opacity-90 shadow-glow text-primary-foreground transition-all duration-300 group" 
+                    disabled={loading}
+                  >
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -139,27 +177,27 @@ export default function AdminAuth() {
                       </>
                     ) : (
                       <>
-                        <LogIn className="mr-2 h-4 w-4" />
+                        <LogIn className="mr-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                         Sign In
                       </>
                     )}
                   </Button>
 
-                  <div className="relative my-4">
-                    <Separator />
-                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
+                  <div className="relative my-6">
+                    <Separator className="bg-glass-border" />
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground rounded-full">
                       OR
                     </span>
                   </div>
 
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full glass"
+                    variant="glass"
+                    className="w-full rounded-xl group"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <svg className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -185,16 +223,17 @@ export default function AdminAuth() {
           </TabsContent>
 
           <TabsContent value="signup">
-            <Card className="glass-card border-glass-border">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Create Account
+            <Card className="glass-card border-glass-border rounded-3xl shadow-premium overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-cyan/5 via-transparent to-primary/5 pointer-events-none" />
+              <CardHeader className="space-y-1 relative z-10">
+                <CardTitle className="text-2xl font-bold font-display">
+                  <span className="gradient-text">Create Account</span>
                 </CardTitle>
                 <CardDescription>
                   Enter your information to create a new account
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative z-10">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name">Full Name</Label>
@@ -205,7 +244,7 @@ export default function AdminAuth() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
-                      className="glass"
+                      className="glass-card border-glass-border rounded-xl focus:border-primary/50 focus:ring-primary/30 transition-all"
                     />
                   </div>
                   <div className="space-y-2">
@@ -217,7 +256,7 @@ export default function AdminAuth() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="glass"
+                      className="glass-card border-glass-border rounded-xl focus:border-primary/50 focus:ring-primary/30 transition-all"
                     />
                   </div>
                   <div className="space-y-2">
@@ -229,10 +268,14 @@ export default function AdminAuth() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={6}
-                      className="glass"
+                      className="glass-card border-glass-border rounded-xl focus:border-primary/50 focus:ring-primary/30 transition-all"
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full rounded-xl bg-gradient-primary hover:opacity-90 shadow-glow text-primary-foreground transition-all duration-300 group" 
+                    disabled={loading}
+                  >
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -240,27 +283,27 @@ export default function AdminAuth() {
                       </>
                     ) : (
                       <>
-                        <UserPlus className="mr-2 h-4 w-4" />
+                        <UserPlus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
                         Sign Up
                       </>
                     )}
                   </Button>
 
-                  <div className="relative my-4">
-                    <Separator />
-                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
+                  <div className="relative my-6">
+                    <Separator className="bg-glass-border" />
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-xs text-muted-foreground rounded-full">
                       OR
                     </span>
                   </div>
 
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full glass"
+                    variant="glass"
+                    className="w-full rounded-xl group"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <svg className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
