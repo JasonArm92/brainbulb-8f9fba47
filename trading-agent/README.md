@@ -34,7 +34,7 @@ scripts/nightly.sh        overnight job
 python3 -m pip install -r requirements-dev.txt && python3 -m pytest -q
 python3 -m trader paper --bars 3000 && python3 -m trader review
 python3 scripts/record_okx.py --out tapes/okx.jsonl        # record real OKX books/trades/funding
-python3 -m trader replay tapes/okx.jsonl                    # rung 1 on real data
+python3 -m trader replay tapes/okx-*                         # rung 1 on real data (daily files, .gz ok)
 # with keys:  TYPESAFE_API_KEY=... ANTHROPIC_API_KEY=... python3 -m trader paper --engine jev
 ```
 

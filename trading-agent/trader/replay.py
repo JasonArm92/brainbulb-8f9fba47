@@ -5,7 +5,7 @@ policy, risk layer and paper broker run over a recorded tape instead of
 `SimMarket`, so the only difference from paper trading is where the events
 come from.
 
-Tape format: JSON Lines, one event per line, timestamps are the EXCHANGE's
+Tape format: JSON Lines (optionally .gz), one event per line, timestamps are the EXCHANGE's
 (seconds, float). Written by `scripts/record_okx.py`.
 
     {"t": "meta", "venue": "okx", "symbols": {"BTC-PERP": "BTC-USDT-SWAP"}, ...}
@@ -29,6 +29,7 @@ The rung-1 exit check (`rung1_check`) mirrors 06-ship.md:
 
 from __future__ import annotations
 
+import gzip
 import json
 import math
 import os
@@ -73,7 +74,8 @@ def read_tape(path: str, stats: TapeStats | None = None) -> Iterator[BookUpdate 
     """Parse and validate a tape. Yields events in file order, dropping bad ones."""
     st = stats if stats is not None else TapeStats()
     last: dict[tuple[str, str], float] = {}
-    with open(path) as f:
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -289,7 +291,7 @@ def rung1_check(res: ReplayResult, min_days: int = 30, min_heldout_calls: int = 
 
 # --------------------------------------------------------------------------- run
 def replay(
-    tape_path: str,
+    tape_path: str | list[str],
     schemas: dict[str, CompiledSchema],
     engine: DecisionEngine,
     cfg: AgentConfig,
@@ -304,7 +306,8 @@ def replay(
     from .portfolio import Portfolio
 
     stats = TapeStats()
-    events = sorted(read_tape(tape_path, stats), key=lambda e: e.ts)  # stable: file order on ties
+    paths = [tape_path] if isinstance(tape_path, str) else sorted(tape_path)
+    events = sorted((e for p in paths for e in read_tape(p, stats)), key=lambda e: e.ts)  # stable on ties
     if os.path.exists(cfg.ledger_path):
         raise FileExistsError(f"{cfg.ledger_path} exists; replay writes a fresh ledger")
     agent = Agent(cfg, engine, schemas, Portfolio(cash=equity), brain=brain, calibrator=calibrator)

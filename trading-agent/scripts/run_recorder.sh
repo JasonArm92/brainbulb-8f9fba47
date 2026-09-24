@@ -13,4 +13,11 @@ while true; do
   secs=$(( midnight - now ))
   [ "$secs" -lt 5 ] && { sleep "$secs"; continue; }
   "$PY" scripts/record_okx.py --out "tapes/okx-${day}.jsonl" --duration "$secs" || sleep 30
+  # compress every finished day (never today's file, which is still being written)
+  today=$(date -u +%Y%m%d)
+  for f in tapes/okx-*.jsonl; do
+    [ -e "$f" ] || continue
+    [ "$f" = "tapes/okx-${today}.jsonl" ] && continue
+    gzip -f "$f"
+  done
 done

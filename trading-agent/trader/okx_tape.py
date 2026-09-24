@@ -15,6 +15,13 @@ All book and trade requests in one poll run in parallel (14 requests for 7
 symbols), well inside OKX's public limits (books 40/2s, trades 100/2s per IP).
 
 Sizes are converted from contracts to base units with the instrument's ctVal.
+
+Storage: by default trades are aggregated per poll into at most one buy line
+and one sell line per symbol (VWAP price, summed qty, count, tradeId range).
+The state engine only uses trades for signed flow over a multi-bar window and
+for the newest data timestamp, and both survive aggregation at the 2 s poll
+granularity. This cuts the tape roughly 50x. Pass aggregate_trades=False to
+keep every print.
 """
 
 from __future__ import annotations
@@ -66,6 +73,21 @@ def trade_lines(resp: dict, sym: str, ct_val: float, last_id: int | None) -> tup
     return lines, cursor, gap
 
 
+def aggregate_trades(lines: list[dict]) -> list[dict]:
+    """Collapse trade lines into one line per side, ordered by timestamp."""
+    by_side: dict[str, list[dict]] = {}
+    for l in lines:
+        by_side.setdefault(l["side"], []).append(l)
+    out = []
+    for side, ls in by_side.items():
+        qty = sum(l["qty"] for l in ls)
+        vwap = sum(l["px"] * l["qty"] for l in ls) / qty if qty > 0 else ls[-1]["px"]
+        ids = [int(l["id"]) for l in ls]
+        out.append({"t": "trade", "ts": max(l["ts"] for l in ls), "sym": ls[0]["sym"], "px": vwap, "qty": qty,
+                    "side": side, "n": len(ls), "id_lo": str(min(ids)), "id_hi": str(max(ids))})
+    return sorted(out, key=lambda l: l["ts"])
+
+
 def funding_lines(resp: dict, sym: str, seen: set, interval_h: float = 8.0) -> list[dict]:
     out = []
     for r in sorted(_data(resp), key=lambda r: int(r["fundingTime"])):
@@ -91,6 +113,7 @@ class Recorder:
     symbols: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_SYMBOLS))
     poll_s: float = 2.0
     funding_every_s: float = 300.0
+    aggregate: bool = True
     get: object = _get           # injectable for tests
     ct_val: dict[str, float] = field(default_factory=dict)
     _last_trade: dict[str, int | None] = field(default_factory=dict)
@@ -130,7 +153,7 @@ class Recorder:
                 tl, self._last_trade[sym], gap = trade_lines(trades, sym, cv, self._last_trade.get(sym))
                 if gap:
                     lines.append(gap)
-                lines.extend(tl)
+                lines.extend(aggregate_trades(tl) if self.aggregate else tl)
             except Exception as e:  # record the hole, keep going
                 lines.append({"t": "gap", "ts": now, "sym": sym, "what": "poll", "detail": repr(e)[:200]})
         if now - self._last_funding_poll >= self.funding_every_s:

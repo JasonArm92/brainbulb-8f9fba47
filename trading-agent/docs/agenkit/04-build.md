@@ -3,12 +3,12 @@
 ```bash
 cd trading-agent
 python3 -m pip install -r requirements-dev.txt
-python3 -m pytest -q                 # 99 tests
+python3 -m pytest -q                 # 104 tests
 python3 -m trader compile            # research/finalists.json -> schemas/*.v1.json (idempotent: errors if present)
 python3 -m trader paper --bars 3000  # synthetic feed + SimulatedEngine
 python3 -m trader review             # runtime/review.json
 python3 scripts/record_okx.py --out tapes/okx.jsonl --duration 600   # record real OKX data (public, no keys)
-python3 -m trader replay tapes/okx.jsonl                              # rung 1: same loop on the tape
+python3 -m trader replay tapes/okx-*                                   # rung 1: same loop on the daily tapes
 ```
 
 Results on the synthetic feed (seed 7, 3,000 bars, 7 symbols): 1,095 fills, 0 risk rejects,

@@ -5,7 +5,7 @@
   python -m trader paper --engine jev      # paper loop, real Jev decisions (needs TYPESAFE_API_KEY)
   python -m trader review                  # overnight review -> runtime/review.json
   python -m trader promote PATH --approved-by NAME
-  python -m trader replay TAPE [--engine sim|jev] [--bar 60] [--schemas DIR]   # rung 1 on recorded data
+  python -m trader replay TAPE... [--engine sim|jev] [--bar 60] [--schemas DIR]   # rung 1 on recorded data
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ def main() -> None:
     r = sub.add_parser("review")
     r.add_argument("--horizon", type=int, default=5)
     rp = sub.add_parser("replay")
-    rp.add_argument("tape")
+    rp.add_argument("tape", nargs="+", help="one or more tape files (.jsonl or .jsonl.gz), e.g. tapes/okx-*")
     rp.add_argument("--engine", choices=["sim", "jev"], default="sim")
     rp.add_argument("--bar", type=float, default=60.0)
     rp.add_argument("--equity", type=float, default=100_000.0)

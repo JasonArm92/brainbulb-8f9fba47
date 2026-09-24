@@ -252,3 +252,42 @@ def test_recorder_skips_stale_book_snapshot():
     first = [l for l in rec.poll_once(1.0) if l["t"] == "book"]
     second = [l for l in rec.poll_once(2.0) if l["t"] == "book"]
     assert len(first) == 1 and second == []
+
+
+def test_aggregated_trades_preserve_flow_and_order(tmp_path):
+    from trader.okx_tape import aggregate_trades
+    raw = [{"t": "trade", "ts": 10.0 + i * 0.1, "sym": "BTC-PERP", "px": 100.0 + i, "qty": 1.0 + i,
+            "side": "buy" if i % 3 else "sell", "id": str(100 + i)} for i in range(12)]
+    agg = aggregate_trades(raw)
+    assert len(agg) == 2 and [a["ts"] for a in agg] == sorted(a["ts"] for a in agg)
+    for side in ("buy", "sell"):
+        a = next(x for x in agg if x["side"] == side)
+        src = [r for r in raw if r["side"] == side]
+        assert a["qty"] == pytest.approx(sum(r["qty"] for r in src))
+        assert a["px"] * a["qty"] == pytest.approx(sum(r["px"] * r["qty"] for r in src))  # notional kept
+        assert a["n"] == len(src) and a["ts"] == max(r["ts"] for r in src)
+
+
+def test_gzipped_tape_reads_identically(tmp_path):
+    import gzip
+    plain = write_tape(tmp_path / "t.jsonl", n_bars=20)
+    with open(plain, "rb") as f, gzip.open(str(plain) + ".gz", "wb") as g:
+        g.write(f.read())
+    a, b = TapeStats(), TapeStats()
+    ea, eb = list(read_tape(str(plain), a)), list(read_tape(str(plain) + ".gz", b))
+    assert ea == eb and a.lines == b.lines and a.malformed == 0
+
+
+def test_replay_accepts_multiple_daily_files(tmp_path):
+    import gzip
+    whole = write_tape(tmp_path / "all.jsonl", n_bars=150)
+    lines = open(whole).read().splitlines()
+    half = len(lines) // 2
+    (tmp_path / "okx-1.jsonl").write_text("\n".join(lines[:half]) + "\n")
+    with gzip.open(tmp_path / "okx-2.jsonl.gz", "wt") as g:
+        g.write("\n".join(lines[half:]) + "\n")
+    a = replay(str(whole), schemas(), SimulatedEngine(),
+               dataclasses.replace(cfg(tmp_path), ledger_path=str(tmp_path / "a.ledger")), bar_s=600)
+    b = replay([str(tmp_path / "okx-2.jsonl.gz"), str(tmp_path / "okx-1.jsonl")], schemas(), SimulatedEngine(),
+               dataclasses.replace(cfg(tmp_path), ledger_path=str(tmp_path / "b.ledger")), bar_s=600)
+    assert a.net_pnl == pytest.approx(b.net_pnl) and a.fills == b.fills
