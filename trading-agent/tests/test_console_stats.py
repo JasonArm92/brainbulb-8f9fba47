@@ -25,6 +25,8 @@ def tapes(tmp_path, monkeypatch):
     monkeypatch.setattr(cs, "CACHE", str(tmp_path / ".stats-cache.json"))
     monkeypatch.setattr(cs, "system_state", lambda: {"recorder_running": True, "pid": 1, "on_ac": True,
                                                      "disk_free_gb": 50.0, "disk_used_pct": 50.0, "tape_bytes": 0})
+    monkeypatch.setattr(cs, "FX_CACHE", str(tmp_path / ".fx.json"))
+    monkeypatch.setattr(cs, "FX_URL", "http://127.0.0.1:9/unreachable")
     return tmp_path
 
 
@@ -103,3 +105,10 @@ def test_unlock_reminders_after_the_date(tapes):
 def test_empty_tape_dir_is_critical_not_a_crash(tapes):
     out = cs.collect(now=D0)
     assert out["days"] == [] and any(a["level"] == "critical" for a in out["alerts"])
+
+
+def test_fx_falls_back_to_last_good_rate(tapes):
+    assert cs.fx_rate(D0) is None                          # nothing cached, network down
+    (tapes / ".fx.json").write_text(json.dumps({"gbp_per_usd": 0.755, "ts": D0, "source": "Coinbase", "stale": False}))
+    fx = cs.fx_rate(D0 + 60)
+    assert fx["gbp_per_usd"] == 0.755 and fx["stale"] is True

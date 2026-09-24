@@ -29,6 +29,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.request
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,6 +39,8 @@ TARGET_DAYS = 30
 GAP_MIN = 10            # minutes without a book that count as a gap
 STALE_MIN = 15          # newest book older than this -> critical
 LABEL = "com.jason.okx-recorder"
+FX_URL = "https://api.coinbase.com/v2/exchange-rates?currency=USD"
+FX_CACHE = os.path.join(TAPES, ".fx.json")
 UNLOCKS = {"SUI": "2026-10-01", "ENA": "2026-10-02", "HYPE": "2026-10-06"}
 
 _TS = re.compile(r'"ts":\s*([0-9.]+)')
@@ -156,6 +159,31 @@ def system_state() -> dict:
                               if f.startswith("okx-")) if os.path.isdir(TAPES) else 0}
 
 
+def fx_rate(now: float) -> dict | None:
+    """GBP per 1 USD from Coinbase's public rates endpoint. Falls back to the
+    last good value (marked stale) so a network blip never breaks the report."""
+    try:
+        req = urllib.request.Request(FX_URL, headers={"User-Agent": "trading-agent-console/1.0"})
+        with urllib.request.urlopen(req, timeout=6) as r:
+            rate = float(json.loads(r.read())["data"]["rates"]["GBP"])
+        if not 0.3 < rate < 2.0:
+            raise ValueError(rate)
+        fx = {"gbp_per_usd": rate, "ts": now, "source": "Coinbase", "stale": False}
+        try:
+            with open(FX_CACHE, "w") as f:
+                json.dump(fx, f)
+        except OSError:
+            pass
+        return fx
+    except Exception:
+        try:
+            fx = json.load(open(FX_CACHE))
+            fx["stale"] = True
+            return fx
+        except (OSError, ValueError):
+            return None
+
+
 def collect(now: float | None = None) -> dict:
     now = now or time.time()
     files = sorted(os.path.join(TAPES, f) for f in os.listdir(TAPES)
@@ -237,6 +265,7 @@ def collect(now: float | None = None) -> dict:
         "tape": tot,
         "newest": {k.replace("-PERP", ""): v for k, v in sorted(newest.items())},
         "system": sysst,
+        "fx": fx_rate(now),
         "alerts": alerts,
         "days": days,
     }
