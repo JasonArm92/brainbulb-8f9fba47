@@ -42,14 +42,16 @@ def main() -> None:
     sh = sub.add_parser("shadow")
     sh.add_argument("--tape-dir", default="tapes")
     sh.add_argument("--out", default=None, help="default runtime/uk-spot or runtime/shadow")
-    sh.add_argument("--profile", choices=["uk-spot", "perp-research"], default="uk-spot",
+    sh.add_argument("--profile", choices=["uk-spot", "uk-spot-fast", "perp-research"], default="uk-spot",
                     help="uk-spot: Coinbase GBP spot, up-bets only, small-account rules (UK retail). "
+                         "uk-spot-fast: same rules, trades more often for smaller gains (practice only). "
                          "perp-research: the original OKX perpetuals set-up, research only.")
-    sh.add_argument("--start-gbp", type=float, default=None, help="default 50 for uk-spot, 10000 for perp-research")
+    sh.add_argument("--start-gbp", type=float, default=None, help="default 1000 for the uk profiles, 10000 for perp-research")
     sh.add_argument("--engine", choices=["auto", "sim", "jev"], default="auto",
                     help="auto = Jev if TYPESAFE_API_KEY is set, otherwise the practice engine")
     lv = sub.add_parser("live", help="real-time web view of the auto-trader (read-only)")
-    lv.add_argument("--dir", default="runtime/uk-spot")
+    lv.add_argument("--account", action="append", metavar="NAME=DIR",
+                    help="repeatable; default careful=runtime/uk-spot fast=runtime/uk-fast")
     lv.add_argument("--host", default="0.0.0.0")
     lv.add_argument("--port", type=int, default=8787)
     lv.add_argument("--token-file", default="runtime/live_token")
@@ -61,7 +63,9 @@ def main() -> None:
 
     if a.cmd == "live":
         from .live_server import serve
-        serve(os.path.join(a.dir, "live.json"), os.path.join(a.dir, "summary.json"), a.token_file, a.host, a.port)
+        accts = dict(x.split("=", 1) for x in a.account) if a.account else {
+            "careful": "runtime/uk-spot", "fast": "runtime/uk-fast"}
+        serve(accts, a.token_file, a.host, a.port)
         return
 
     with open("research/finalists.json") as f:
@@ -143,15 +147,18 @@ def main() -> None:
         from .jev_client import JevEngine, SimulatedEngine
         from .shadow import ShadowConfig, ShadowTrader
 
-        uk = a.profile == "uk-spot"
+        uk = a.profile.startswith("uk-spot")
+        fast = a.profile == "uk-spot-fast"
         if uk:
-            from .config import COINBASE_GBP_COSTS, UK_SMALL_ACCOUNT
+            from .config import COINBASE_GBP_COSTS, UK_FAST_GATE, UK_SMALL_ACCOUNT
             with open("research/uk_spot.json") as f:
                 finalists = json.load(f)["finalists"]
             cfg = dataclasses.replace(cfg, risk=UK_SMALL_ACCOUNT, costs=COINBASE_GBP_COSTS, spot=True,
                                       min_stop_bps=250.0)
-        out = a.out or ("runtime/uk-spot" if uk else "runtime/shadow")
-        start = a.start_gbp if a.start_gbp is not None else (50.0 if uk else 10_000.0)
+            if fast:   # closer exits: 1.5% stop-loss, 1.8% take-profit
+                cfg = dataclasses.replace(cfg, gate=UK_FAST_GATE, min_stop_bps=150.0, reward_risk=1.2)
+        out = a.out or ("runtime/uk-fast" if fast else "runtime/uk-spot" if uk else "runtime/shadow")
+        start = a.start_gbp if a.start_gbp is not None else (1000.0 if uk else 10_000.0)
         schemas = {fin["symbol"]: load_latest(cfg.schema_dir, fin["symbol"]) for fin in finalists}
         use_jev = a.engine == "jev" or (a.engine == "auto" and os.environ.get("TYPESAFE_API_KEY"))
         engine = JevEngine() if use_jev else SimulatedEngine()

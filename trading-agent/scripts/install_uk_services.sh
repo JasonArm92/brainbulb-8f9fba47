@@ -2,7 +2,8 @@
 # macOS: switch the Mac to the UK set-up (practice money only).
 #   * stops the old perpetuals practice trader (derivatives are banned for UK retail)
 #   * com.jason.cb-recorder  - records Coinbase GBP prices, keeps the Mac awake on charger
-#   * com.jason.uk-trader    - practice auto-trader, UK spot rules, starts at GBP 50
+#   * com.jason.uk-trader    - careful practice auto-trader, UK spot rules
+#   * com.jason.uk-fast      - fast practice auto-trader, same UK limits, trades more often
 #   * com.jason.live-view    - the real-time web page on port 8787 (read-only, key-protected)
 # Safe to run again. Nothing here places real orders.
 set -eu
@@ -11,7 +12,8 @@ REPO="$(pwd)"
 PY="${PYTHON:-/opt/homebrew/bin/python3}"
 LA="$HOME/Library/LaunchAgents"
 UID_="$(id -u)"
-mkdir -p "$LA" runtime/uk-spot tapes
+START_GBP="${START_GBP:-1000}"   # practice money for each account
+mkdir -p "$LA" runtime/uk-spot runtime/uk-fast tapes
 
 stop() { launchctl bootout "gui/$UID_/$1" 2>/dev/null || launchctl unload "$LA/$1.plist" 2>/dev/null || true; }
 
@@ -49,9 +51,10 @@ stop com.jason.shadow-trader
 
 # 2-4. UK services
 plist com.jason.cb-recorder "$REPO/tapes/cb-recorder.log" /usr/bin/caffeinate -s /bin/bash "$REPO/scripts/run_recorder.sh"
-plist com.jason.uk-trader "$REPO/runtime/uk-spot/trader.log" "$PY" -m trader shadow --profile uk-spot
+plist com.jason.uk-trader "$REPO/runtime/uk-spot/trader.log" "$PY" -m trader shadow --profile uk-spot --start-gbp "$START_GBP"
+plist com.jason.uk-fast "$REPO/runtime/uk-fast/trader.log" "$PY" -m trader shadow --profile uk-spot-fast --start-gbp "$START_GBP"
 plist com.jason.live-view "$REPO/runtime/uk-spot/live-view.log" "$PY" -m trader live --port 8787
-for l in com.jason.cb-recorder com.jason.uk-trader com.jason.live-view; do
+for l in com.jason.cb-recorder com.jason.uk-trader com.jason.uk-fast com.jason.live-view; do
   stop "$l"
   launchctl bootstrap "gui/$UID_" "$LA/$l.plist" 2>/dev/null || launchctl load -w "$LA/$l.plist"
 done

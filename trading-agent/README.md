@@ -48,6 +48,10 @@ drawdown and 3% daily-loss stops are unchanged. `RiskLimits()` defaults are unto
 Coinbase's 0.40%/0.60% fees. Every fill goes into an HMRC-style CGT record (same-day, 30-day,
 s104 pool; UK days; 6 April tax year) in `trader/uk_tax.py`.
 
+`uk-spot-fast` (practice only) runs beside it on the same prices and limits: entry bar lowered
+(set-up >= 1, confidence > 0.65), 1.5% stop / 1.8% take-profit, and it may bet without a proven
+edge after fees, risking a fixed 0.5% of the account per bet. `GateConfig()` defaults are unchanged.
+
 ```
 trader/coinbase_tape.py   Coinbase public-data recorder (no keys, no orders); scripts/record_coinbase.py
 trader/uk_tax.py          UK CGT share-pooling record + CSV
@@ -56,7 +60,8 @@ scripts/install_uk_services.sh   macOS launchd: cb-recorder, uk-trader, live-vie
 ```
 
 ```bash
-python3 -m trader shadow --profile uk-spot     # practice money, live Coinbase prices, starts at GBP 50
+python3 -m trader shadow --profile uk-spot       # careful practice bot, live Coinbase prices, GBP 1000
+python3 -m trader shadow --profile uk-spot-fast  # fast practice bot: more trades, smaller targets, same hard limits
 python3 -m trader live --port 8787             # open http://<mac>:8787/?k=<runtime/live_token>
 ```
 

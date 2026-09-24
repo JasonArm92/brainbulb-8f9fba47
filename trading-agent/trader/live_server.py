@@ -43,7 +43,11 @@ def load_token(path: str) -> str:
     return tok
 
 
-def make_handler(live_path: str, summary_path: str, token: str, page: bytes):
+def make_handler(accounts: dict[str, str], token: str, page: bytes):
+    """accounts: name -> output folder holding live.json / summary.json / state.json.
+    The first one is shown by default; ?a=<name> picks another."""
+    names = list(accounts)
+
     class H(BaseHTTPRequestHandler):
         server_version = "trader-live/1.0"
 
@@ -78,8 +82,16 @@ def make_handler(live_path: str, summary_path: str, token: str, page: bytes):
             if not ok:
                 return self._send(403, b"Access key needed. Open the link that includes ?k=...", "text/plain")
             cookie = {"Set-Cookie": f"tl={token}; Max-Age=31536000; Path=/; HttpOnly; SameSite=Strict"} if fresh else None
+            q = urllib.parse.parse_qs(u.query)
+            acct = (q.get("a") or [names[0]])[0]
+            if acct not in accounts:
+                return self._send(404, b"unknown account", "text/plain")
+            live_path = os.path.join(accounts[acct], "live.json")
+            summary_path = os.path.join(accounts[acct], "summary.json")
             if u.path == "/":
                 return self._send(200, page, "text/html; charset=utf-8", cookie)
+            if u.path == "/accounts":
+                return self._send(200, json.dumps(names).encode(), "application/json", cookie)
             if u.path == "/live.json":
                 try:
                     with open(live_path, "rb") as f:
@@ -132,11 +144,11 @@ def make_handler(live_path: str, summary_path: str, token: str, page: bytes):
     return H
 
 
-def serve(live_path: str, summary_path: str, token_path: str, host: str = "0.0.0.0", port: int = 8787):
+def serve(accounts: dict[str, str], token_path: str, host: str = "0.0.0.0", port: int = 8787):
     token = load_token(token_path)
     with open(os.path.join(HERE, "live_page.html"), "rb") as f:
         page = f.read()
-    httpd = ThreadingHTTPServer((host, port), make_handler(live_path, summary_path, token, page))
+    httpd = ThreadingHTTPServer((host, port), make_handler(accounts, token, page))
     httpd.daemon_threads = True
     print(f"live view on http://{host}:{port}/?k={token}", flush=True)
     httpd.serve_forever()

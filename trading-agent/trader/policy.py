@@ -146,10 +146,13 @@ class Policy:
         b = win_bps / loss_bps if loss_bps > 0 else 0.0
         p = self.calibrator.p_win(d.direction_conf)
         f_star = kelly_fraction(p, b)
-        if f_star <= 0:
+        if f_star <= 0 and g.require_edge_after_costs:
             return Intent("hold", sym, reason=f"no edge after costs p={p:.3f} b={b:.2f} funding={fund:.1f}bps",
                           p_win=p)
-        f_used = min(g.kelly_fraction, g.kelly_cap) * f_star        # never above quarter Kelly
+        if f_star <= 0:
+            f_used = g.fixed_risk_frac                               # fast practice mode: small fixed risk
+        else:
+            f_used = min(g.kelly_fraction, g.kelly_cap) * f_star    # never above quarter Kelly
         equity = portfolio.equity()
         risk_capital = f_used * equity                               # capital lost if stopped
         notional = risk_capital / (loss_bps / 1e4)

@@ -30,6 +30,12 @@ body{min-height:100vh;padding:calc(12px + env(safe-area-inset-top)) 16px calc(28
 h2{margin:0 0 10px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:8px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .brand{font-weight:700;font-size:17px;letter-spacing:-.01em}
+.acs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.ac{all:unset;cursor:pointer;display:block;padding:12px 14px;border-radius:16px;background:var(--glass);border:1px solid rgba(255,255,255,.08);transition:background .3s,border-color .3s}
+.ac.on{background:linear-gradient(135deg,rgba(139,157,255,.28),rgba(192,132,252,.2));border-color:rgba(139,157,255,.55)}
+.ac .nm{font-weight:700;text-transform:capitalize}.ac .ds{font-size:12px;color:var(--mute)}
+.ac .vv{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:4px}
+.ac .cc{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);font-size:12px;color:var(--mute);white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
 .dot.on{background:var(--up);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 2s infinite}
@@ -91,6 +97,12 @@ footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
       <span class="pill" id="prof">UK spot · Coinbase</span>
     </div>
   </div>
+
+  <section class="card span" id="cmpCard" hidden>
+    <h2>Practice accounts, side by side <button class="i" data-tip="t-cmp2">i</button></h2>
+    <div class="tip" id="t-cmp2">Two bots with pretend £1,000 each, trading the same live Coinbase prices under the same UK safety limits. <b>Careful</b> only bets when the odds beat the fees. <b>Fast</b> bets more often with closer targets (1.8% profit, 1.5% stop), even without a proven edge, risking 0.5% of its account each time. Tap one to watch it below.</div>
+    <div class="acs" id="acs"></div>
+  </section>
 
   <div class="span banner" id="killbanner"></div>
 
@@ -168,7 +180,7 @@ footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
     <h2>UK tax record <button class="i" data-tip="t-tax">i</button></h2>
     <div class="tip" id="t-tax">Selling crypto is a "disposal" for Capital Gains Tax. The bot keeps an HMRC-style record using the same-day, 30-day and pooled-cost rules, with fees counted. The first £3,000 of net gains each tax year (6 April to 5 April) is tax-free. Practice trades aren't taxable; this is so the real account is ready. Not tax advice.</div>
     <div class="stats" id="tax"><div class="empty">No sells yet this tax year.</div></div>
-    <a class="btn" href="tax.csv">Download record (CSV)</a>
+    <a class="btn" id="taxlink" href="tax.csv">Download record (CSV)</a>
   </section>
 
   <footer class="span">Practice account with live Coinbase prices and pretend money. Not financial advice. Crypto can lose value fast. <span id="upd"></span></footer>
@@ -176,7 +188,7 @@ footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
 
 <script>
 const $=id=>document.getElementById(id);
-const fmt=(v,d)=>{if(v==null||isNaN(v))return"—";const a=Math.abs(v);const dp=d!=null?d:(a<1?2:a<1000?2:0);return(v<0?"-":"")+"£"+a.toLocaleString("en-GB",{minimumFractionDigits:dp,maximumFractionDigits:dp})};
+const fmt=(v,d)=>{if(v==null||isNaN(v))return"—";const a=Math.abs(v);const dp=d!=null?d:(a>=100000?0:2);return(v<0?"-":"")+"£"+a.toLocaleString("en-GB",{minimumFractionDigits:dp,maximumFractionDigits:dp})};
 const sgn=(v,d)=>(v>0?"+":"")+fmt(v,d);
 const pct=(v,d=2)=>v==null||isNaN(v)?"—":(v>0?"+":"")+v.toFixed(d)+"%";
 const px=v=>v>=1000?"£"+v.toLocaleString("en-GB",{maximumFractionDigits:0}):v>=1?"£"+v.toFixed(2):"£"+v.toFixed(4);
@@ -264,6 +276,7 @@ function render(d){
 
   actualRate();
   $("upd").textContent="Updated "+tm(d.ts)+" UK time.";
+  if(ACC)SNAP[ACC]=d;drawAccts();
 }
 function bar(id,v,max,txt){const f=max?Math.min(1,v/max):0;$(id+"b").style.width=(f*100).toFixed(1)+"%";$(id+"t").textContent=txt}
 
@@ -276,17 +289,38 @@ setInterval(()=>{
   else{$("dot").className="dot on";$("conn").textContent="Live · "+Math.round(dataAge)+"s ago"}
 },500);
 
+// accounts
+const DESC={careful:"Bets only when the odds beat fees",fast:"More trades, smaller targets"};
+let ACCTS=["careful"],ACC=null,SNAP={};
+try{ACC=localStorage.getItem("acct")}catch(_){}
+const q=()=>ACC?"?a="+encodeURIComponent(ACC):"";
+function drawAccts(){
+  if(ACCTS.length<2)return;$("cmpCard").hidden=false;
+  $("acs").innerHTML=ACCTS.map(n=>{const d=n===ACC&&L?L:SNAP[n];let v="—",c="",cl="";
+    if(d){v=fmt(d.value);const ch=d.value-d.start;c=`${sgn(ch)} (${pct(ch/d.start*100)}) · ${(d.counts||{}).fills||0} trades`;cl=ch>0?"up":ch<0?"down":"mute"}
+    return `<button class="ac${n===ACC?" on":""}" data-a="${esc(n)}"><div class="nm">${esc(n)}</div><div class="ds">${esc(DESC[n]||"")}</div><div class="vv">${v}</div><div class="cc ${cl}">${c}</div></button>`}).join("");
+  document.querySelectorAll(".ac").forEach(b=>b.onclick=()=>switchTo(b.dataset.a));
+}
+function refreshOthers(){ACCTS.filter(n=>n!==ACC).forEach(n=>fetch("live.json?a="+encodeURIComponent(n),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d){SNAP[n]=d;drawAccts()}}).catch(()=>{}))}
+function switchTo(n){if(n===ACC)return;ACC=n;try{localStorage.setItem("acct",n)}catch(_){}
+  seenTrades=new Set();firstPaint=true;L=null;lastMsg=0;
+  try{es&&es.close()}catch(_){}if(polling){clearInterval(polling);polling=null}
+  $("taxlink").href="tax.csv"+q();drawAccts();start()}
+
 // transport: SSE, polling fallback
 let es,polling=null;
-function poll(){if(polling)return;polling=setInterval(()=>fetch("live.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>d&&render(d)).catch(()=>{}),3000)}
+function poll(){if(polling)return;polling=setInterval(()=>fetch("live.json"+q(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>d&&render(d)).catch(()=>{}),3000)}
 function connect(){
   if(!window.EventSource){poll();return}
-  es=new EventSource("events");
+  es=new EventSource("events"+q());
   es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(_){}; if(polling){clearInterval(polling);polling=null}};
   es.onerror=()=>{poll()};
 }
-fetch("live.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>d&&render(d)).catch(()=>{});
-connect();
+function start(){fetch("live.json"+q(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>d&&render(d)).catch(()=>{});connect()}
+fetch("accounts",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(a=>{
+  if(Array.isArray(a)&&a.length){ACCTS=a;if(!ACCTS.includes(ACC))ACC=a[0]}else ACC=null;
+  $("taxlink").href="tax.csv"+q();drawAccts();refreshOthers();setInterval(refreshOthers,4000);start()
+}).catch(()=>{ACC=null;start()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&(!es||es.readyState===2)){try{es&&es.close()}catch(_){}connect()}});
 
 // compound calculator

@@ -182,3 +182,42 @@ def test_uk_spot_end_to_end_live_view_and_tax(tmp_path):
     tax = json.load(open(tmp_path / "uk" / "summary.json"))["tax"]
     assert tax["disposals"] == 1 and "2026/27" in tax["years"]
     assert tax["recent"][0]["asset"] == "BTC" and tax["recent"][0]["rule"] == "same-day"
+
+
+# ------------------------------------------------------------------ fast practice profile
+from trader.config import UK_FAST_GATE
+
+
+def fast_policy(tmp_path):
+    return Policy(UK_FAST_GATE, limits(tmp_path), Calibrator(prior_shrink=1.0, prior_strength=1e9),
+                  exits=ExitRules(min_stop_bps=150.0, reward_risk=1.2))
+
+
+def test_fast_profile_leaves_defaults_and_hard_limits_alone():
+    assert GateConfig().require_edge_after_costs is True
+    assert (GateConfig().min_setup_quality, GateConfig().min_direction_confidence) == (2, 0.80)
+    assert UK_FAST_GATE.kelly_cap == GateConfig().kelly_cap
+
+
+def test_fast_bets_without_edge_but_risks_only_half_a_percent(tmp_path):
+    d = decision(symbol="BTC-GBP", direction_conf=0.70, setup_quality=1.0)
+    careful = spot_policy(tmp_path).evaluate(d, snap(sym="BTC-GBP"), Portfolio(cash=1000.0),
+                                             schema(symbol="BTC-GBP"), cost_bps=125.0)
+    assert careful.kind == "hold"
+    it = fast_policy(tmp_path).evaluate(d, snap(sym="BTC-GBP"), Portfolio(cash=1000.0),
+                                        schema(symbol="BTC-GBP"), cost_bps=125.0)
+    assert it.kind == "enter" and it.side == "buy"
+    # at most 0.5% of GBP 1000 lost if stopped out (stop 150 + costs 125 bps), and inside the 30% cap
+    assert it.notional * (150 + 125) / 1e4 <= 5.0 + 1e-6 and it.notional <= 300.0 + 1e-6
+
+
+def test_fast_still_obeys_uk_rules(tmp_path):
+    it = fast_policy(tmp_path).evaluate(decision(symbol="BTC-GBP", direction="short", direction_conf=0.9),
+                                        snap(sym="BTC-GBP"), Portfolio(cash=1000.0), schema(symbol="BTC-GBP"),
+                                        cost_bps=125.0)
+    assert it.kind == "hold" and "down-bets not allowed" in it.reason
+    rm = RiskManager(limits(tmp_path))
+    v = rm.check(Order("BTC-GBP", "buy", 2.0, 100.0), Portfolio(cash=1000.0), snap(sym="BTC-GBP"), 100)
+    assert v.ok
+    v = rm.check(Order("BTC-GBP", "buy", 40.0, 100.0), Portfolio(cash=1000.0), snap(sym="BTC-GBP"), 100)
+    assert not v.ok                                                  # GBP 4000 > 30% cap

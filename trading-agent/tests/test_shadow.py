@@ -185,9 +185,20 @@ def test_cli_shadow_command_wires_up(monkeypatch, tmp_path):
     assert seen["ran"] and seen["engine_name"] == "practice"
     assert sorted(seen["schemas"]) == ["AAVE-GBP", "BTC-GBP", "ETH-GBP", "SOL-GBP"]
     s, c = seen["scfg"], seen["cfg"]
-    assert (s.start_gbp, s.tape_prefix, s.currency) == (50.0, "cb", "GBP")
+    assert (s.start_gbp, s.tape_prefix, s.currency) == (1000.0, "cb", "GBP")
+    assert c.gate.require_edge_after_costs and c.min_stop_bps == 250.0
     assert c.spot and not c.risk.allow_short and c.risk.require_cash and c.costs.taker_fee_bps == 60.0
     assert all(sch.allowed_directions == ("long", "neutral") for sch in seen["schemas"].values())
+
+    seen.clear()
+    monkeypatch.setattr(sys, "argv", ["trader", "shadow", "--profile", "uk-spot-fast", "--tape-dir", str(tmp_path)])
+    cli.main()
+    s, c = seen["scfg"], seen["cfg"]
+    assert s.out_dir == "runtime/uk-fast" and s.start_gbp == 1000.0 and s.profile == "uk-spot-fast"
+    assert not c.gate.require_edge_after_costs and (c.min_stop_bps, c.reward_risk) == (150.0, 1.2)
+    assert c.risk == c.risk.__class__(**{**c.risk.__dict__})           # same UK hard limits object values
+    from trader.config import UK_SMALL_ACCOUNT
+    assert c.risk == UK_SMALL_ACCOUNT
 
     seen.clear()
     monkeypatch.setattr(sys, "argv", ["trader", "shadow", "--profile", "perp-research", "--tape-dir", str(tmp_path),

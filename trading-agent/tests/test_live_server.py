@@ -15,6 +15,8 @@ from trader import live_server
 
 @pytest.fixture
 def srv(tmp_path):
+    (tmp_path / "fast").mkdir()
+    (tmp_path / "fast" / "live.json").write_text(json.dumps({"ts": 1.0, "value": 990.0}))
     live = tmp_path / "live.json"
     live.write_text(json.dumps({"ts": 1.0, "value": 50.0}))
     (tmp_path / "state.json").write_text(json.dumps({"book": {"fills_all": [
@@ -24,7 +26,8 @@ def srv(tmp_path):
     assert oct(os.stat(tmp_path / "tok").st_mode)[-3:] == "600"
     assert live_server.load_token(str(tmp_path / "tok")) == tok        # stable across restarts
     page = open(os.path.join(live_server.HERE, "live_page.html"), "rb").read()
-    h = ThreadingHTTPServer(("127.0.0.1", 0), live_server.make_handler(str(live), str(tmp_path / "summary.json"), tok, page))
+    h = ThreadingHTTPServer(("127.0.0.1", 0), live_server.make_handler(
+        {"careful": str(tmp_path), "fast": str(tmp_path / "fast")}, tok, page))
     h.daemon_threads = True
     threading.Thread(target=h.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{h.server_port}", tok, live
@@ -83,3 +86,13 @@ def test_tax_csv(srv):
     rows = body.strip().splitlines()
     assert rows[0].startswith("date,tax_year,asset") and len(rows) == 2
     assert ",BTC," in rows[1] and "same-day" in rows[1]
+
+
+def test_two_accounts(srv):
+    base, tok, _ = srv
+    assert json.load(get(f"{base}/accounts?k={tok}")) == ["careful", "fast"]
+    assert json.load(get(f"{base}/live.json?a=fast&k={tok}"))["value"] == 990.0
+    assert json.load(get(f"{base}/live.json?k={tok}"))["value"] == 50.0
+    with pytest.raises(urllib.error.HTTPError) as e:
+        get(f"{base}/live.json?a=../etc&k={tok}")
+    assert e.value.code == 404

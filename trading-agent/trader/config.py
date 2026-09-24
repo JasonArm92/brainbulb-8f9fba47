@@ -45,6 +45,11 @@ class GateConfig:
     freeze_expiry_bars: int | None = 60
     kelly_fraction: float = 0.25          # fractional Kelly multiplier
     kelly_cap: float = 0.25               # hard cap: never above quarter Kelly
+    # True (default): only bet when the calibrated odds beat fees and slippage.
+    # False is for the practice-only fast profile below: it may bet without a
+    # proven edge, risking a small fixed slice of the account instead.
+    require_edge_after_costs: bool = True
+    fixed_risk_frac: float = 0.005        # used only when the edge check is off
 
 
 @dataclass(frozen=True)
@@ -79,6 +84,15 @@ UK_SMALL_ACCOUNT = RiskLimits(
 COINBASE_GBP_COSTS = CostModel(taker_fee_bps=60.0, maker_fee_bps=40.0,
                                slippage_bps_per_frac_of_depth=20.0, min_slippage_bps=1.0)
 
+# Fast practice profile (chosen by the operator, 2026-09-24): trades more often
+# for smaller gains, run side by side with the careful profile on pretend money
+# to see which does better. Entry bar lowered (set-up >= 1, confidence > 0.65)
+# and bets are allowed without a proven edge after fees, each risking 0.5% of
+# the account. Every hard limit in UK_SMALL_ACCOUNT still applies unchanged,
+# including the 15% and 3% loss stops. Practice only: not for real money.
+UK_FAST_GATE = GateConfig(min_setup_quality=1, min_direction_confidence=0.65,
+                          require_edge_after_costs=False, fixed_risk_frac=0.005)
+
 
 @dataclass(frozen=True)
 class AgentConfig:
@@ -90,3 +104,4 @@ class AgentConfig:
     snapshot_token_budget: int = 400
     spot: bool = False                    # spot market: no funding payments
     min_stop_bps: float = 40.0            # smallest stop-loss distance; spot uses a wider one to clear fees
+    reward_risk: float = 1.5              # take-profit distance / stop distance

@@ -55,7 +55,7 @@ class Agent:
         self.risk = RiskManager(cfg.risk, beta=self.beta)
         self.broker = RiskGuardedBroker(PaperBroker(cfg.costs), self.risk, portfolio)
         self.policy = Policy(cfg.gate, cfg.risk, calibrator or Calibrator(), beta=self.beta,
-                             exits=ExitRules(min_stop_bps=cfg.min_stop_bps))
+                             exits=ExitRules(min_stop_bps=cfg.min_stop_bps, reward_risk=cfg.reward_risk))
         self.ledger = ledger or Ledger(cfg.ledger_path)
         self.jev_timeout_s = jev_timeout_s
         self.frozen: dict[str, int] = {}  # symbol -> bar index of last escalation trigger
