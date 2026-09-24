@@ -1,0 +1,61 @@
+{
+  "pulled_utc": "2026-09-24T16:00:00Z/2026-09-24T17:00:00Z",
+  "method": "Fetched over HTTPS from each source's own API or page. Where the source returns its own timestamp it is recorded as source_ts_utc. Some exchange responses were served from an upstream cache, so their source_ts_utc is earlier than the pull time.",
+  "not_reachable": {
+    "coingecko": "robots.txt disallows automated fetch",
+    "binance_fapi": "HTTP 451 (geo-restricted)",
+    "bybit": "HTTP 403",
+    "tokenomist_amounts": "unlock dates are public; amounts/USD values are Tokenomist Pro (paid) - left for later",
+    "etf_issuer_files": "used Farside's per-issuer daily table (compiled from issuer disclosures) instead of each issuer's file"
+  },
+  "macro": {
+    "fomc_2026_09_16": {"decision": "raise target range 25bp to 3.75-4.00%", "vote": "12-0", "source": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm"}
+  },
+  "prices_usd": {
+    "BTC":  {"value": 84068.75, "venue": "Coinbase BTC-USD spot", "source_ts_utc": "2026-09-24T13:33:49Z", "source": "https://api.exchange.coinbase.com/products/BTC-USD/ticker"},
+    "BTC_perp": {"value": 83315.5, "open24h": 85870.8, "venue": "OKX BTC-USDT-SWAP", "source_ts_utc": "2026-09-24T09:29:41Z"},
+    "ETH_perp": {"value": 2694.46, "open24h": 2741.31, "venue": "OKX ETH-USDT-SWAP", "source_ts_utc": "2026-09-24T07:46:35Z"},
+    "SOL_perp": {"value": 114.53, "open24h": 118.0, "venue": "OKX SOL-USDT-SWAP", "source_ts_utc": "2026-09-23T21:42:10Z"},
+    "HYPE_perp": {"value": 93.17, "open24h": 95.685, "high24h": 97.983, "venue": "OKX HYPE-USDT-SWAP", "source_ts_utc": "2026-09-23T20:16:56Z"},
+    "AAVE_perp": {"value": 144.9, "open24h": 140.14, "venue": "OKX AAVE-USDT-SWAP", "source_ts_utc": "2026-09-24T16:45:44Z"},
+    "ENA_perp": {"value": 0.20566, "open24h": 0.20805, "venue": "OKX ENA-USDT-SWAP", "source_ts_utc": "2026-09-23T21:42:10Z"},
+    "SUI_perp": {"value": 0.9662, "open24h": 1.0094, "venue": "OKX SUI-USDT-SWAP", "source_ts_utc": "2026-09-23T21:42:10Z"}
+  },
+  "open_interest_usd_okx": {
+    "source_ts_utc": "2026-09-24T03:14:06Z", "source": "https://www.okx.com/api/v5/public/open-interest?instType=SWAP",
+    "BTC": 2483246735, "ETH": 1641692140, "SOL": 351170727, "HYPE": 109017406, "AAVE": 15974653, "ENA": 18256235, "SUI": 36484030,
+    "note": "OKX only. Not an all-venue total; not comparable to the ~$31.5B ETH OI in secondary coverage."
+  },
+  "funding_okx": {
+    "BTC": {"current_period_rate": 0.0000445799827361, "last_settled": 0.0000947238992798, "interval_h": 8,
+            "mean_last_90_periods": 0.0000566, "mean_last_30_periods": 0.0000665, "annualised_90p": 0.062,
+            "window_utc": "2026-08-26T00:00Z..2026-09-24T08:00Z", "series": "tests/fixtures/okx_btc_usdt_swap_funding.csv"},
+    "ENA": {"interval_h": 4, "cap_per_period": 0.00005, "window_utc": "2026-08-17..2026-08-31", "note": "history endpoint returned an older page; mostly pinned at the +0.005%/4h cap with negative spells"},
+    "SUI": {"interval_h": 8, "cap_per_period": 0.0001, "window_utc": "2026-08-05..2026-09-02", "note": "history endpoint returned an older page; often pinned at the +0.01%/8h cap"}
+  },
+  "btc_dominance": {"value_pct": 56.34, "total_mcap_usd": 2991729595696, "source": "https://api.coinpaprika.com/v1/global", "source_ts_utc": "2026-09-24T06:07:25Z", "note": "methodology-dependent (coin universe); coinpaprika counts 12,487 assets"},
+  "stablecoins": {"total_usd": 306053000000, "change_7d_pct": 0.55, "usdt_dominance_pct": 59.95, "source": "https://defillama.com/stablecoins", "USDT": 183503053108, "USDC": 75586876924, "USDe": 4891725831, "per_asset_source": "https://stablecoins.llama.fi/stablecoins"},
+  "etf_flows_usd_m": {
+    "source": "https://farside.co.uk/btc/ , /eth/ , /sol/ (daily issuer-level table)",
+    "BTC_total": {"2026-09-15": -450.4, "2026-09-16": -295.9, "2026-09-17": 159.5, "2026-09-18": 433.0, "2026-09-21": 999.0, "2026-09-22": 714.7, "2026-09-23": 346.9, "cumulative_since_launch": 57290},
+    "BTC_IBIT": {"2026-09-15": -161.7, "2026-09-16": -144.1, "2026-09-17": 183.7, "2026-09-18": 108.4, "2026-09-21": 381.4, "2026-09-22": 350.3, "2026-09-23": 166.3},
+    "ETH_total": {"2026-09-08": -24.3, "2026-09-09": 34.7, "2026-09-10": -29.9, "2026-09-11": 216.4, "2026-09-14": 121.1, "2026-09-15": -142.0, "2026-09-16": -224.1, "2026-09-17": -39.3, "2026-09-18": 143.7, "2026-09-21": 270.0, "2026-09-22": 162.2, "2026-09-23": 2.5},
+    "SOL_total": {"2026-09-08": -0.7, "2026-09-09": 11.8, "2026-09-10": -0.5, "2026-09-11": -0.3, "2026-09-14": 11.0, "2026-09-15": 1.3, "2026-09-16": 0.8, "2026-09-17": 0.0, "2026-09-18": 47.6, "2026-09-21": 26.0, "2026-09-22": 28.9, "2026-09-23": 13.7, "cumulative_since_launch": 1479}
+  },
+  "protocol_financials_defillama": {
+    "source_ts_utc": "2026-09-24", "source": "https://api.llama.fi/summary/fees/<protocol>?dataType=dailyFees|dailyRevenue",
+    "hyperliquid": {"fees_30d": 76131974, "fees_1y": 918259415, "revenue_30d": 60576287, "revenue_1y": 694506800, "revenue_all_time": 1274061500},
+    "aave":        {"fees_30d": 36374172, "fees_1y": 749596077, "revenue_30d": 5128691, "revenue_1y": 97492274}
+  },
+  "governance": {
+    "ethena_fee_switch": {"vote_passed": "2026-09-08", "trigger": "14-day trailing avg USDe supply", "tiers_usd_b": {"7.5": "5%", "10": "10%", "15": "15%", "20": "20%"}, "source": "https://gov.ethenafoundation.com/t/ena-fee-switch-activation/830"},
+    "aave_buyback_budget": {"change": "~$50M -> ~$30M per year", "posted": "2026-02-28", "reason": "borrow fees ~25% below peak", "source": "https://governance.aave.com/t/aave-dao-funding-insights/24192"}
+  },
+  "unlocks_tokenomist": {
+    "SUI":  {"date": "2026-10-01", "recipient": "Community Reserve", "amount": null},
+    "ENA":  {"date": "2026-10-02", "recipient": "Core Contributors", "amount": null},
+    "HYPE": {"date": "2026-10-06", "recipient": "Core Contributors", "amount": null, "unlocked_to_date_pct_total": 22.24},
+    "ASTER": {"date": null, "note": "no Tokenomist page (404)"},
+    "note": "amounts are Tokenomist Pro only"
+  }
+}

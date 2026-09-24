@@ -1,6 +1,6 @@
 {
   "as_of": "2026-09-24",
-  "data_quality": "Figures come from secondary sources found by web search on 2026-09-24; primary APIs were unreachable from the build environment. Every number must be re-verified against a primary source before the gate opens. See research/REPORT.md.",
+  "data_quality": "Re-verified against primary sources on 2026-09-24; see research/REPORT.md and research/metrics/2026-09-24.json. Corrections not yet reflected in thesis text (they need a schema v2 via promote, with an approver): ENA unlock is 2026-10-02 (not 10-05) and USDe supply is $4.89B; SUI unlock goes to the Community Reserve; AAVE protocol revenue is ~$97M/yr (not $402M), so AAVE is recommended for watch-only. Unlock amounts remain unverified (Tokenomist Pro).",
   "finalists": [
     {
       "symbol": "BTC-PERP",

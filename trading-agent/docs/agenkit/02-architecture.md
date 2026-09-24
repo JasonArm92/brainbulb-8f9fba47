@@ -33,6 +33,11 @@
 | Schema revisions cannot widen | `jev_schema.validate_revision` | `test_revision_cannot_widen_or_change_options` |
 | Candidates are not live until promoted | `review.promote` | `test_review_brier_calibration_and_candidate` |
 | Brain failure = fail closed | `brain.py` | `FailClosedBrain` default; `OpusBrain` returns stay_frozen on any error |
+| Beta-weighted gross cap can only tighten | `risk.py`, `correlation.py` | `test_beta_cap_blocks_correlated_book_that_raw_gross_allows`, `test_faulty_beta_provider_cannot_loosen` |
+| Existing hard limits unchanged | `config.py` | `test_existing_hard_limits_unchanged` |
+| Funding never increases size | `policy.py`, `funding.py` | `test_received_funding_never_increases_size`, `test_receiving_side_is_never_credited` |
+| Replay uses the same loop and is causal | `replay.py` | `test_replay_runs_loop_books_funding_and_is_causal`, `test_stale_symbol_cannot_trade` |
+| Jev output parsed only via the documented SDK shape | `jev_client.py` | `test_real_sdk_end_to_end_over_mock_transport`, `test_malformed_response_is_rejected[*]` |
 
 ## Why confidence ≠ win probability
 Jev's confidence summarises the shape of its own output distribution. Kelly needs P(trade wins after

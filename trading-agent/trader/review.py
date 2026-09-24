@@ -138,6 +138,7 @@ def run_review(ledger_path: str, schema_dir: str, cfg: ReviewConfig | None = Non
         "symbols": report_syms,
         "fills": len(fills),
         "fees_paid": fees,
+        "funding_paid": bars[-1].get("funding_paid") if bars else None,
         "avg_slippage_bps": (sum(slip) / len(slip)) if slip else None,
         "risk_rejects": dict(rejects),
         "misses_by_reason": {k: {**v, "would_win_rate": v["would_win"] / v["n"]} for k, v in misses.items()},

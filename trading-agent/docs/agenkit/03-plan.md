@@ -25,5 +25,16 @@ All paths are relative to `trading-agent/`.
 **Remaining tasks before capped-live (not built on purpose):**
 - `trader/feeds/<venue>.py`: websocket book + trades using the exchange timestamp. Reject on gaps and resync from a REST snapshot.
 - `trader/venues/<venue>.py`: a `Broker` implementation with idempotent client IDs, fill reconciliation and a reduce-only flag.
-- `trader/research_refresh.py`: pulls primary metrics (DefiLlama fees/TVL, Tokenomist unlocks, venue funding/OI, ETF issuer flows) into `research/metrics/<date>.json`.
-- A replay harness over recorded real books, so the nightly review can A/B schema versions on the same tape.
+- `trader/research_refresh.py`: automate the pull that produced `research/metrics/2026-09-24.json` by hand.
+- ~~A replay harness over recorded real books~~ **done:** `trader/replay.py` + `trader/okx_tape.py` +
+  `scripts/record_okx.py`. A/B = `python -m trader replay TAPE --schemas schemas/candidates` vs the default.
+- A websocket recorder, to replace REST polling (which samples the book and can drop trades; gaps are logged).
+
+**Added 2026-09-24:**
+
+| File | Responsibility | Tests |
+|---|---|---|
+| `trader/funding.py` | Pessimistic funding cost for sizing; exact settlement for P&L | `tests/test_funding_and_correlation.py` |
+| `trader/correlation.py` | EWMA beta-to-BTC, floored at 1.0 | same |
+| `trader/replay.py` | Tape reader + validator, bars, replay through `Agent`, daily P&L, held-out Brier, `rung1_check` | `tests/test_replay.py` |
+| `trader/okx_tape.py`, `scripts/record_okx.py` | Public-data OKX recorder (no keys, no orders) | same, against real OKX responses |

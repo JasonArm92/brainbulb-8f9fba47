@@ -16,6 +16,7 @@ from __future__ import annotations
 import math
 import os
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from .config import RiskLimits
@@ -40,9 +41,17 @@ class RiskVerdict:
     reasons: tuple[str, ...] = ()
 
 
+def unit_beta(symbol: str) -> float:
+    return 1.0
+
+
 @dataclass
 class RiskManager:
     limits: RiskLimits
+    # Beta-to-BTC per symbol, from market prices (trader/correlation.py). Values
+    # below 1.0 are clamped up here as well, so a faulty provider cannot loosen
+    # the cap below the raw gross limit.
+    beta: Callable[[str], float] = unit_beta
     tripped: bool = False
     trip_reason: str = ""
     _order_times: deque = field(default_factory=lambda: deque(maxlen=1000))
@@ -74,6 +83,15 @@ class RiskManager:
             or self.tripped
             or portfolio.daily_pnl_frac() <= -self.limits.max_daily_loss
         )
+
+    def safe_beta(self, symbol: str) -> float:
+        try:
+            b = float(self.beta(symbol))
+        except Exception:
+            return 3.0  # provider failure: assume the worst
+        if not math.isfinite(b):
+            return 3.0
+        return max(1.0, b)
 
     # --- pre-trade check -------------------------------------------------
     def check(self, order: Order, portfolio: Portfolio, snap: Snapshot, now: float) -> RiskVerdict:
@@ -133,6 +151,9 @@ class RiskManager:
             gross_post = portfolio.gross_notional() - abs(cur) + abs(post)
             if gross_post > L.max_gross_frac * equity + 1e-9:
                 r.append("post-trade gross exposure exceeds max_gross_frac")
+            beta_post = portfolio.beta_gross_notional(self.safe_beta, override=(order.symbol, post))
+            if beta_post > L.max_beta_gross_frac * equity + 1e-9:
+                r.append("post-trade beta-weighted gross exceeds max_beta_gross_frac")
 
         recent = [t for t in self._order_times if now - t < 60]
         if len(recent) >= L.max_orders_per_minute:

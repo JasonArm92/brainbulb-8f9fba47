@@ -17,7 +17,9 @@ from datetime import datetime, timezone
 from .brain import Brain, BrainVerdict, FailClosedBrain
 from .calibration import Calibrator
 from .config import AgentConfig
+from .correlation import BetaEstimator
 from .execution import PaperBroker, RiskGuardedBroker
+from .funding import FundingBook, FundingEvent
 from .jev_client import DecisionEngine, decide_batch
 from .jev_schema import CompiledSchema
 from .ledger import Ledger
@@ -38,6 +40,8 @@ class Agent:
         calibrator: Calibrator | None = None,
         ledger: Ledger | None = None,
         jev_timeout_s: float = 0.5,
+        funding: FundingBook | None = None,
+        beta: BetaEstimator | None = None,
     ):
         self.cfg = cfg
         self.engine = engine
@@ -45,9 +49,12 @@ class Agent:
         self.portfolio = portfolio
         self.brain = brain or FailClosedBrain()
         self.state = StateEngine(token_budget=cfg.snapshot_token_budget)
-        self.risk = RiskManager(cfg.risk)
+        ref = "BTC-PERP" if "BTC-PERP" in schemas else next(iter(schemas), "BTC-PERP")
+        self.beta = beta or BetaEstimator(reference=ref)
+        self.funding = funding or FundingBook()
+        self.risk = RiskManager(cfg.risk, beta=self.beta)
         self.broker = RiskGuardedBroker(PaperBroker(cfg.costs), self.risk, portfolio)
-        self.policy = Policy(cfg.gate, cfg.risk, calibrator or Calibrator())
+        self.policy = Policy(cfg.gate, cfg.risk, calibrator or Calibrator(), beta=self.beta)
         self.ledger = ledger or Ledger(cfg.ledger_path)
         self.jev_timeout_s = jev_timeout_s
         self.frozen: dict[str, int] = {}  # symbol -> bar index of last escalation trigger
@@ -55,6 +62,7 @@ class Agent:
         self._brain_pool = ThreadPoolExecutor(max_workers=2)
         self._jev_pool = ThreadPoolExecutor(max_workers=max(1, len(schemas)))
         self._n = 0
+        self._books: dict[str, BookUpdate] = {}  # newest ingested book per symbol, for execution
 
     # ------------------------------------------------------------------
     def _cost_bps(self, spread_bps: float) -> float:
@@ -91,7 +99,8 @@ class Agent:
         return done
 
     # ------------------------------------------------------------------
-    def on_bar(self, now: float, books: dict[str, BookUpdate], trades: list[Trade]) -> None:
+    def on_bar(self, now: float, books: dict[str, BookUpdate], trades: list[Trade],
+               funding: list[FundingEvent] | None = None) -> None:
         self._n += 1
         t_start = time.perf_counter()
         self.portfolio.roll_day(datetime.fromtimestamp(now, timezone.utc).strftime("%Y-%m-%d"))
@@ -103,8 +112,24 @@ class Agent:
                 continue  # never ingest the future
             (self.state.on_book if kind == 0 else self.state.on_trade)(ev)
 
+        mids = {}
         for sym, b in books.items():
-            self.portfolio.mark(sym, (b.bids[0][0] + b.asks[0][0]) / 2)
+            if b.ts > now:
+                continue
+            if sym in self._books and b.ts < self._books[sym].ts:
+                continue
+            self._books[sym] = b
+            mids[sym] = (b.bids[0][0] + b.asks[0][0]) / 2
+            self.portfolio.mark(sym, mids[sym])
+        self.beta.update(mids)
+
+        # funding settlements that fell inside this bar: book cash, update the sizing view
+        for ev in sorted(funding or [], key=lambda e: e.ts):
+            if ev.ts > now:
+                continue
+            paid = FundingBook.settle(self.portfolio, ev)
+            self.funding.observe(ev.symbol, ev.rate, ev.interval_h)
+            self.ledger.write("funding", now, symbol=ev.symbol, rate=ev.rate, paid=paid, event_ts=ev.ts)
         self.risk.update(self.portfolio)
 
         verdicts = self._apply_brain_verdicts(now)
@@ -134,7 +159,7 @@ class Agent:
                 n = self.portfolio.notional(sym)
                 if abs(n) > 1e-9:
                     it = Intent("exit", sym, "sell" if n > 0 else "buy", abs(n), "kill switch flatten")
-                    self._execute(it, s, books[sym], now)
+                    self._execute(it, s, now)
             self.ledger.write("halt", now, reason=self.risk.trip_reason)
             return
 
@@ -146,7 +171,7 @@ class Agent:
                 n = self.portfolio.notional(sym)
                 if abs(n) > 1e-9:
                     it = Intent("reduce", sym, "sell" if n > 0 else "buy", abs(n) * 0.5, "brain: reduce")
-                    self._execute(it, snaps[sym], books[sym], now)
+                    self._execute(it, snaps[sym], now)
 
         for sym, snap in snaps.items():
             d = decisions.get(sym)
@@ -154,7 +179,8 @@ class Agent:
                               decision=d, schema_version=self.schemas[sym].version)
             intent = self.policy.evaluate(d, snap, self.portfolio, self.schemas[sym],
                                           frozen=sym in self.frozen,
-                                          cost_bps=self._cost_bps(snap.spread_bps))
+                                          cost_bps=self._cost_bps(snap.spread_bps),
+                                          funding_bps=self.funding.cost_by_side(sym))
             if self.risk.halted_for_new_risk(self.portfolio) and intent.kind == "enter":
                 intent = Intent("hold", sym, reason="halted for new risk (daily loss / kill)")
             self.ledger.write("intent", now, intent=intent)
@@ -168,16 +194,21 @@ class Agent:
                 self.ledger.write("escalation", now, symbol=sym, reason=intent.reason)
 
             if intent.kind in ("enter", "exit", "reduce"):
-                self._execute(intent, snap, books[sym], now)
+                self._execute(intent, snap, now)
             elif intent.kind == "hold" and d is not None and d.direction != "neutral":
                 # a directional view that the gate rejected: scored overnight as a "miss"
                 self.ledger.write("miss", now, symbol=sym, direction=d.direction,
                                   conf=d.direction_conf, reason=intent.reason)
 
         self.ledger.write("bar", now, loop_ms=(time.perf_counter() - t_start) * 1e3,
-                          equity=self.portfolio.equity(), drawdown=self.portfolio.drawdown())
+                          equity=self.portfolio.equity(), drawdown=self.portfolio.drawdown(),
+                          funding_paid=self.portfolio.funding_paid, fees_paid=self.portfolio.fees_paid)
 
-    def _execute(self, intent: Intent, snap, book: BookUpdate, now: float) -> None:
+    def _execute(self, intent: Intent, snap, now: float) -> None:
+        book = self._books.get(intent.symbol)
+        if book is None:
+            self.ledger.write("no_book", now, symbol=intent.symbol, intent_kind=intent.kind)
+            return
         order = self._order_for(intent, book, snap.mid)
         if order.qty <= 0:
             return

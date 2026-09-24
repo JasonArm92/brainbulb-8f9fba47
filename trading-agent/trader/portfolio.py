@@ -24,6 +24,7 @@ class Portfolio:
     day_start_equity: float = 0.0
     day: str = ""
     fees_paid: float = 0.0
+    funding_paid: float = 0.0             # net: + paid, - received
 
     def __post_init__(self) -> None:
         eq = self.equity()
@@ -65,6 +66,16 @@ class Portfolio:
         self.marks.setdefault(symbol, price)
         self.peak_equity = max(self.peak_equity, self.equity())
 
+    def apply_funding(self, symbol: str, rate: float) -> float:
+        """One perp funding settlement. Positive rate: longs pay, shorts receive."""
+        pos = self.positions.get(symbol)
+        if not pos or pos.qty == 0:
+            return 0.0
+        payment = self.notional(symbol) * rate
+        self.cash -= payment
+        self.funding_paid += payment
+        return payment
+
     # --- derived ---------------------------------------------------------
     def notional(self, symbol: str) -> float:
         pos = self.positions.get(symbol)
@@ -74,6 +85,15 @@ class Portfolio:
 
     def gross_notional(self) -> float:
         return sum(abs(self.notional(s)) for s in self.positions)
+
+    def beta_gross_notional(self, beta, override: tuple[str, float] | None = None) -> float:
+        """Sum of |notional| x beta. `override=(symbol, notional)` swaps in a post-trade value."""
+        syms = set(self.positions) | ({override[0]} if override else set())
+        total = 0.0
+        for s in syms:
+            n = override[1] if override and s == override[0] else self.notional(s)
+            total += abs(n) * beta(s)
+        return total
 
     def equity(self) -> float:
         return self.cash + sum(self.notional(s) for s in self.positions)

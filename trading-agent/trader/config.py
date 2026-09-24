@@ -16,6 +16,9 @@ class RiskLimits:
     max_daily_loss: float = 0.03          # fraction of start-of-day equity
     max_position_frac: float = 0.10       # per-symbol notional / equity
     max_gross_frac: float = 0.30          # sum of |notional| / equity
+    # sum of |notional| x beta-to-BTC / equity. Betas are floored at 1.0
+    # (trader/correlation.py), so this can only be tighter than max_gross_frac.
+    max_beta_gross_frac: float = 0.30
     max_order_frac: float = 0.05          # single order notional / equity
     max_price_deviation_bps: float = 50.0 # limit price vs mid sanity band
     max_snapshot_age_s: float = 5.0       # stale data -> no orders

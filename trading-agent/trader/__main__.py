@@ -5,6 +5,7 @@
   python -m trader paper --engine jev      # paper loop, real Jev decisions (needs TYPESAFE_API_KEY)
   python -m trader review                  # overnight review -> runtime/review.json
   python -m trader promote PATH --approved-by NAME
+  python -m trader replay TAPE [--engine sim|jev] [--bar 60] [--schemas DIR]   # rung 1 on recorded data
 """
 
 from __future__ import annotations
@@ -28,6 +29,14 @@ def main() -> None:
     p.add_argument("--seed", type=int, default=7)
     r = sub.add_parser("review")
     r.add_argument("--horizon", type=int, default=5)
+    rp = sub.add_parser("replay")
+    rp.add_argument("tape")
+    rp.add_argument("--engine", choices=["sim", "jev"], default="sim")
+    rp.add_argument("--bar", type=float, default=60.0)
+    rp.add_argument("--equity", type=float, default=100_000.0)
+    rp.add_argument("--heldout", type=float, default=0.3)
+    rp.add_argument("--schemas", default=None, help="schema dir to replay (e.g. schemas/candidates for A/B)")
+    rp.add_argument("--out", default="runtime/replay")
     pr = sub.add_parser("promote")
     pr.add_argument("path")
     pr.add_argument("--approved-by", required=True)
@@ -78,6 +87,34 @@ def main() -> None:
         with open("runtime/review.json", "w") as f:
             json.dump(rep, f, indent=2, default=str)
         print(json.dumps({k: rep[k] for k in ("fills", "fees_paid", "max_drawdown", "candidates")}, indent=2, default=str))
+        return
+
+    if a.cmd == "replay":
+        import dataclasses
+        import time as _time
+
+        from .calibration import Calibrator
+        from .jev_client import JevEngine, SimulatedEngine
+        from .replay import replay, rung1_check
+
+        sdir = a.schemas or cfg.schema_dir
+        schemas = {fin["symbol"]: load_latest(sdir, fin["symbol"]) for fin in finalists}
+        os.makedirs(a.out, exist_ok=True)
+        stamp = _time.strftime("%Y%m%dT%H%M%SZ", _time.gmtime())
+        rcfg = dataclasses.replace(cfg, ledger_path=os.path.join(a.out, f"ledger-{stamp}.jsonl"))
+        engine = JevEngine() if a.engine == "jev" else SimulatedEngine()
+        res = replay(a.tape, schemas, engine, rcfg, bar_s=a.bar, equity=a.equity, heldout_frac=a.heldout,
+                     calibrator=Calibrator.load("runtime/calibration.json"))
+        ok, fails = rung1_check(res)
+        rep = {**res.to_json(), "rung1_passed": ok, "rung1_failures": fails, "engine": a.engine,
+               "schema_dir": sdir}
+        path = os.path.join(a.out, f"replay-{stamp}.json")
+        with open(path, "w") as f:
+            json.dump(rep, f, indent=2, default=str)
+        print(json.dumps({k: rep[k] for k in ("days", "net_pnl", "heldout_net_pnl", "funding_paid", "fees",
+                                              "heldout_brier_skill", "rung1_passed", "rung1_failures")},
+                         indent=2, default=str))
+        print(path)
         return
 
     if a.cmd == "promote":

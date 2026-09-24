@@ -4,8 +4,10 @@ AgenKit ([agenkit.xyz](https://agenkit.xyz/)) is a guided harness for Claude Cod
 Codex. It runs brainstorm → architecture → test-first build → review → ship through the
 `/agenkit` command and pauses for operator approval at each step.
 
-**Status:** AgenKit was **not** installed in this build. agenkit.xyz was blocked by the build
-environment's network policy. The six phase documents below are the gate artifacts, written so
+**Status (2026-09-24):** AgenKit is **not installed. Deferred for cost.** It is a paid product
+($3.49/month founding rate, then $15/month), and activation needs a licence key
+(`npm install -g agenkit` → `npx agenkit activate <license-key>` →
+`npx agenkit install engineering-kit`). The operator chose not to buy it for now. The six phase documents below are the gate artifacts, written so
 you can run `/agenkit` against this directory yourself. Every phase ends in an explicit operator
 approval, and no phase is allowed to loosen a hard limit.
 

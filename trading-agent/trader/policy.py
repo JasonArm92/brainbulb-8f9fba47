@@ -12,6 +12,7 @@ Jev judges; this module decides. Order of evaluation:
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from .calibration import Calibrator
@@ -19,6 +20,7 @@ from .config import GateConfig, RiskLimits
 from .decision import Decision
 from .jev_schema import CompiledSchema
 from .portfolio import Portfolio
+from .risk import unit_beta
 from .state_engine import Snapshot
 
 
@@ -57,6 +59,7 @@ class Policy:
     calibrator: Calibrator
     exits: ExitRules = ExitRules()
     stops: dict[str, float] = field(default_factory=dict)  # symbol -> stop bps set at entry
+    beta: Callable[[str], float] = unit_beta                 # same provider the risk layer uses
 
     def stop_bps(self, snap: Snapshot) -> float:
         return max(self.exits.min_stop_bps, self.exits.stop_rv_mult * snap.rv_bps)
@@ -69,6 +72,7 @@ class Policy:
         schema: CompiledSchema,
         frozen: bool = False,
         cost_bps: float = 0.0,
+        funding_bps: dict[str, float] | None = None,
     ) -> Intent:
         sym = snap.symbol
         pos_notional = portfolio.notional(sym)
@@ -128,24 +132,31 @@ class Policy:
         if fails:
             return Intent("hold", sym, reason="; ".join(fails))
 
-        # sizing: Kelly on our calibrated p_win, payoff net of round-trip costs
+        # sizing: Kelly on our calibrated p_win, payoff net of round-trip costs and
+        # the funding this side expects to PAY over the hold (never credited).
+        fund = max(0.0, (funding_bps or {}).get(want, 0.0))
         stop = self.stop_bps(snap)
-        win_bps = stop * self.exits.reward_risk - cost_bps
-        loss_bps = stop + cost_bps
+        win_bps = stop * self.exits.reward_risk - cost_bps - fund
+        loss_bps = stop + cost_bps + fund
         b = win_bps / loss_bps if loss_bps > 0 else 0.0
         p = self.calibrator.p_win(d.direction_conf)
         f_star = kelly_fraction(p, b)
         if f_star <= 0:
-            return Intent("hold", sym, reason=f"no edge after costs p={p:.3f} b={b:.2f}", p_win=p)
+            return Intent("hold", sym, reason=f"no edge after costs p={p:.3f} b={b:.2f} funding={fund:.1f}bps",
+                          p_win=p)
         f_used = min(g.kelly_fraction, g.kelly_cap) * f_star        # never above quarter Kelly
         equity = portfolio.equity()
         risk_capital = f_used * equity                               # capital lost if stopped
         notional = risk_capital / (loss_bps / 1e4)
         room = self.limits.max_position_frac * equity - abs(pos_notional)
         gross_room = self.limits.max_gross_frac * equity - portfolio.gross_notional()
-        notional = max(0.0, min(notional, self.limits.max_order_frac * equity, room, gross_room))
+        b_sym = max(1.0, self.beta(sym))
+        beta_room = (self.limits.max_beta_gross_frac * equity
+                     - portfolio.beta_gross_notional(lambda s: max(1.0, self.beta(s)))) / b_sym
+        notional = max(0.0, min(notional, self.limits.max_order_frac * equity, room, gross_room, beta_room))
         if notional <= 0 or not math.isfinite(notional):
-            return Intent("hold", sym, reason="no room under position/gross limit", p_win=p, kelly=f_star)
+            return Intent("hold", sym, reason="no room under position/gross/beta-gross limit", p_win=p, kelly=f_star)
         self.stops[sym] = stop
-        return Intent("enter", sym, want, notional, f"gate pass p={p:.3f} b={b:.2f} f*={f_star:.3f}",
+        return Intent("enter", sym, want, notional,
+                      f"gate pass p={p:.3f} b={b:.2f} f*={f_star:.3f} funding={fund:.1f}bps",
                       p_win=p, kelly=f_star)
