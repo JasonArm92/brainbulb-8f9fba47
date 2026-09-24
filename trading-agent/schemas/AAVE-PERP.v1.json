@@ -1,0 +1,49 @@
+{
+  "allowed_directions": [
+    "long",
+    "neutral"
+  ],
+  "context": "AAVE thesis: Aavenomics 3.0 (live since 2026-06-27) routes protocol revenue to open-market buybacks; revenue is organic interest spread, not emissions. Invalidate if: Borrow revenue keeps falling, buyback budget cut again, or a bad-debt event on a major market.",
+  "finalist": "AAVE",
+  "questions": {
+    "direction": {
+      "instructions": "Given the thesis context and the snapshot, which direction has positive expected value over the next bars AFTER fees and slippage? Answer neutral unless the evidence is clear.",
+      "options": [
+        "long",
+        "short",
+        "neutral"
+      ],
+      "type": "choice"
+    },
+    "regime": {
+      "instructions": "Classify the current market regime from the snapshot. trending: rN and r1 agree in sign and rN magnitude is large relative to rv. mean_reverting: rN small vs rv, price oscillating. high_vol: rv elevated, spread widening, depth thinning. crisis: extreme rv, very wide spread, collapsing depth or dd near limits.",
+      "options": [
+        "trending",
+        "mean_reverting",
+        "high_vol",
+        "crisis"
+      ],
+      "type": "choice"
+    },
+    "risk_state": {
+      "instructions": "Given inventory, unrealized P&L, drawdown and daily P&L in the snapshot, is it safe to add risk, near a limit, or should exposure be reduced?",
+      "options": [
+        "safe",
+        "near_limit",
+        "reduce"
+      ],
+      "type": "choice"
+    },
+    "setup_quality": {
+      "instructions": "Rate the setup for this thesis right now: 0 no setup, 1 weak, 2 valid with acceptable risk/reward after costs, 3 strong with confluence of flow, book and trend.",
+      "levels": 4,
+      "type": "score"
+    },
+    "toxic_flow": {
+      "instructions": "Is current order flow likely informed/toxic, meaning a passive or new position would be adversely selected (e.g. one-sided aggressive flow against the book, thinning depth, widening spread)?",
+      "type": "noul"
+    }
+  },
+  "symbol": "AAVE-PERP",
+  "version": 1
+}

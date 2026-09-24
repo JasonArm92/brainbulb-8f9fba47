@@ -1,0 +1,3 @@
+# Core has no third-party dependencies. Optional:
+# anthropic        # Brain (Claude Opus 5.5) for escalations and nightly rewrites
+# typesafe-sdk     # Jev reflex engine (verify API surface at docs.typesafe.ai first)
