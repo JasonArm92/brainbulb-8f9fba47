@@ -198,6 +198,24 @@ def fx_rate(now: float) -> dict | None:
             return None
 
 
+OKX_CANDLES = "https://www.okx.com/api/v5/market/candles?instId={inst}&bar=1H&limit=48"
+COINS = {"BTC": "BTC-USDT-SWAP", "ETH": "ETH-USDT-SWAP", "SOL": "SOL-USDT-SWAP", "HYPE": "HYPE-USDT-SWAP",
+         "AAVE": "AAVE-USDT-SWAP", "ENA": "ENA-USDT-SWAP", "SUI": "SUI-USDT-SWAP"}
+
+
+def okx_hourly(coin: str) -> list | None:
+    """48 hourly closes from OKX's public candles endpoint, oldest first."""
+    try:
+        req = urllib.request.Request(OKX_CANDLES.format(inst=COINS[coin]), headers={"User-Agent": "trading-agent-console/1.0"})
+        with urllib.request.urlopen(req, timeout=6) as r:
+            d = json.loads(r.read())
+        if str(d.get("code")) != "0":
+            return None
+        return sorted([int(c[0]) / 1000, float(c[4])] for c in d["data"])
+    except Exception:
+        return None
+
+
 def hourly(points: list) -> list:
     """Keep the last point of each hour (and the very last point), at most 30 days."""
     by_h = {}
@@ -263,6 +281,11 @@ def collect(now: float | None = None) -> dict:
         for k, pts in scans[d].get("spark", {}).items():
             spark.setdefault(k.replace("-PERP", ""), []).extend(pts)
     spark = {k: [p for p in v if p[0] >= now - 48 * 3600] for k, v in spark.items()}
+    spark_src = "tape"
+    if os.environ.get("CONSOLE_OFFLINE") != "1":
+        fetched = {c: okx_hourly(c) for c in COINS}
+        if all(fetched.values()):
+            spark, spark_src = fetched, "okx_1h"
     tot = {k: sum(s[k] for s in scans.values()) for k in ("malformed", "crossed", "out_of_order", "recorder_gaps")}
     sysst = system_state()
 
@@ -322,6 +345,7 @@ def collect(now: float | None = None) -> dict:
         "alerts": alerts,
         "days": days,
         "spark": spark,
+        "spark_source": spark_src,
         "shadow": {k: v for k, v in sh.items() if k != "equity_series"} if sh else None,
         "shadow_equity": hourly(sh.get("equity_series", [])) if sh else [],
     }

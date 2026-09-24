@@ -135,3 +135,21 @@ def test_shadow_summary_and_alerts(tapes, monkeypatch):
     assert out["shadow_equity"] == [[D0 + 900, 12000]]              # one point per hour
     texts = " ".join(a["text"] for a in out["alerts"])
     assert "emergency stop" in texts and "not updated" in texts and "daily limit" in texts
+
+
+def test_okx_hourly_parses_and_sorts(monkeypatch):
+    import io
+    body = json.dumps({"code": "0", "data": [["1790272800000", "1", "1", "1", "84100.5", "0"],
+                                             ["1790269200000", "1", "1", "1", "84000.0", "0"]]}).encode()
+
+    class R(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(cs.urllib.request, "urlopen", lambda req, timeout=0: R(body))
+    assert cs.okx_hourly("BTC") == [[1790269200.0, 84000.0], [1790272800.0, 84100.5]]
+    monkeypatch.setattr(cs.urllib.request, "urlopen", lambda req, timeout=0: R(b'{"code":"50011","data":[]}'))
+    assert cs.okx_hourly("BTC") is None
