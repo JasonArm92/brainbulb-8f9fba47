@@ -56,7 +56,13 @@ plist com.jason.uk-fast "$REPO/runtime/uk-fast/trader.log" "$PY" -m trader shado
 plist com.jason.live-view "$REPO/runtime/uk-spot/live-view.log" "$PY" -m trader live --port 8787
 for l in com.jason.cb-recorder com.jason.uk-trader com.jason.uk-fast com.jason.live-view; do
   stop "$l"
-  launchctl bootstrap "gui/$UID_" "$LA/$l.plist" 2>/dev/null || launchctl load -w "$LA/$l.plist"
+  sleep 1                                 # launchd needs a moment after bootout
+  for try in 1 2 3; do
+    launchctl bootstrap "gui/$UID_" "$LA/$l.plist" 2>/dev/null && break
+    launchctl list "$l" >/dev/null 2>&1 && break
+    sleep 2
+  done
+  launchctl list "$l" >/dev/null 2>&1 || { echo "could not start $l" >&2; exit 1; }
 done
 "$PY" -c "from trader.live_server import load_token; print(load_token('runtime/live_token'))" > /dev/null
 echo "installed. live view key: runtime/live_token"

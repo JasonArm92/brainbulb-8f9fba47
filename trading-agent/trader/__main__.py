@@ -155,8 +155,9 @@ def main() -> None:
                 finalists = json.load(f)["finalists"]
             cfg = dataclasses.replace(cfg, risk=UK_SMALL_ACCOUNT, costs=COINBASE_GBP_COSTS, spot=True,
                                       min_stop_bps=250.0)
-            if fast:   # closer exits: 1.5% stop-loss, 1.8% take-profit
-                cfg = dataclasses.replace(cfg, gate=UK_FAST_GATE, min_stop_bps=150.0, reward_risk=1.2)
+            if fast:   # closer exits: 1.5% stop-loss, 1.8% take-profit (see trader/settings.py PROFILES)
+                from .settings import profile_config
+                cfg = profile_config(cfg, "uk-spot-fast")
         out = a.out or ("runtime/uk-fast" if fast else "runtime/uk-spot" if uk else "runtime/shadow")
         start = a.start_gbp if a.start_gbp is not None else (1000.0 if uk else 10_000.0)
         schemas = {fin["symbol"]: load_latest(cfg.schema_dir, fin["symbol"]) for fin in finalists}

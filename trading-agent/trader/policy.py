@@ -60,6 +60,8 @@ class Policy:
     exits: ExitRules = ExitRules()
     stops: dict[str, float] = field(default_factory=dict)  # symbol -> stop bps set at entry
     beta: Callable[[str], float] = unit_beta                 # same provider the risk layer uses
+    blocked: set = field(default_factory=set)                # coins switched off by the operator (e.g. "BTC")
+    paused: bool = False                                     # operator pause: no new bets, exits still run
 
     def stop_bps(self, snap: Snapshot) -> float:
         return max(self.exits.min_stop_bps, self.exits.stop_rv_mult * snap.rv_bps)
@@ -113,6 +115,10 @@ class Policy:
 
         # 6. entry gate
         fails = []
+        if self.paused and not has_pos:
+            fails.append("paused by you")
+        if sym.split("-")[0] in self.blocked and not has_pos:
+            fails.append("coin switched off in settings")
         if frozen:
             fails.append("symbol frozen pending brain review")
         if d.setup_quality < g.min_setup_quality:

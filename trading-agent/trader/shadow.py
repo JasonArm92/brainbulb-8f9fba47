@@ -29,6 +29,7 @@ How it works
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import math
 import os
@@ -46,6 +47,7 @@ from .ledger import Ledger
 from .portfolio import Portfolio, Position
 from .replay import TapeParser, bars
 from .state_engine import BookUpdate, Trade
+from . import settings as settings_mod
 from . import uk_tax
 
 STATE_VERSION = 1
@@ -64,6 +66,8 @@ HOLD_WORDS = [
     ("not allowed", "Direction not allowed for this coin"),
     ("no edge", "Not worth it after fees"),
     ("no room", "Safety limits already full"),
+    ("paused by you", "Paused by you"),
+    ("switched off", "Coin switched off by you"),
 ]
 
 
@@ -178,19 +182,30 @@ class ShadowBook:
     trades: list = field(default_factory=list)          # newest last, capped
     fills_all: list = field(default_factory=list)       # every fill, for the tax record
     equity: list = field(default_factory=list)          # [ts, equity_usd] every 15 min, capped
+    thoughts: list = field(default_factory=list)        # latest decision per coin + why, for the live view
+    _last_dec: dict = field(default_factory=dict)
 
     def observe(self, kind: str, ts: float, d: dict) -> None:
         c = self.counts
         if kind == "decision" and d.get("decision") is not None:
             c["decisions"] += 1
+            dec = d["decision"]
+            self._last_dec[_g(dec, "symbol")] = {k: _g(dec, k) for k in (
+                "direction", "direction_conf", "setup_quality", "regime", "risk_state", "toxic_flow_p")}
         elif kind == "intent":
             it = d["intent"]
             k = it.kind if hasattr(it, "kind") else it["kind"]
             reason = it.reason if hasattr(it, "reason") else it.get("reason", "")
+            sym = it.symbol if hasattr(it, "symbol") else it.get("symbol", "")
             if k == "hold":
                 c["holds"] += 1
                 lab = hold_label(reason)
                 self.holds[lab] = self.holds.get(lab, 0) + 1
+            dec = self._last_dec.pop(sym, None)
+            self.thoughts.append({"ts": ts, "sym": sym, "kind": k, "reason": reason,
+                                  "label": hold_label(reason) if k == "hold" else k,
+                                  "p_win": _g(it, "p_win"), **({"ai": dec} if dec else {})})
+            self.thoughts = self.thoughts[-40:]
         elif kind == "fill":
             o, f = d["order"], d["fill"]
             ik = d.get("intent_kind", "")
@@ -229,6 +244,7 @@ class ShadowConfig:
     currency: str = "USD"                 # account currency; "GBP" for the UK spot profile
     profile: str = "perp-research"
     live_every_s: float = 2.0
+    settings_every_s: float = 1.0
 
 
 class ShadowTrader:
@@ -241,6 +257,10 @@ class ShadowTrader:
         self.summary_path = os.path.join(cfg.out_dir, "summary.json")
         self.book = ShadowBook()
         self.engine_name = engine_name
+        self.settings_path = os.path.join(cfg.out_dir, "settings.json")
+        self.reset_path = os.path.join(cfg.out_dir, "reset.json")
+        self._handle_reset(clock())
+        cfg = self.cfg
         st = self._load()
         if st:
             self.meta = st["meta"]
@@ -266,6 +286,65 @@ class ShadowTrader:
         self.clockbars = BarClock(cfg.bar_s, cfg.grace_s, math.floor(now / cfg.bar_s) * cfg.bar_s + cfg.bar_s)
         self.warmed = False
         self._stop = False
+        self.settings: dict | None = None
+        self._settings_mtime: float | None = -1.0
+        self._settings_check = 0.0
+        self.apply_settings(now)
+
+    # ---- operator settings -------------------------------------------------
+    def _profile(self) -> str | None:
+        p = self.meta.get("profile") or self.cfg.profile
+        return p if p in settings_mod.PROFILES else None
+
+    def apply_settings(self, now: float) -> bool:
+        """Re-read settings.json if it changed and apply it to the running bot."""
+        prof = self._profile()
+        if prof is None:
+            return False
+        try:
+            m = os.stat(self.settings_path).st_mtime
+        except OSError:
+            m = None
+        if m == self._settings_mtime:
+            return False
+        self._settings_mtime = m
+        s = settings_mod.load(self.settings_path, prof)
+        gate, lim, stop_bps, rr = settings_mod.apply_to(prof, s, self.agent.risk.limits.kill_switch_path)
+        pol = self.agent.policy
+        pol.gate = gate
+        pol.limits = lim
+        self.agent.risk.limits = lim
+        pol.exits = dataclasses.replace(pol.exits, min_stop_bps=stop_bps, reward_risk=rr)
+        pol.paused = bool(s["paused"])
+        pol.blocked = set(settings_mod.COINS) - set(s["coins"])
+        bar = float(s["decision_every_s"])
+        if bar != self.clockbars.bar_s:
+            self.clockbars.bar_s = bar
+            self.clockbars.next_end = math.floor(now / bar) * bar + bar
+        self.settings = s
+        return True
+
+    def _handle_reset(self, now: float) -> None:
+        """A reset request from the live view: archive this account and start again."""
+        if not os.path.exists(self.reset_path):
+            return
+        try:
+            with open(self.reset_path) as f:
+                req = json.load(f)
+            start = float(req.get("start_gbp", self.cfg.start_gbp))
+            if not 10 <= start <= 1_000_000:
+                raise ValueError(start)
+        except (OSError, ValueError, TypeError):
+            start = self.cfg.start_gbp
+        arch = os.path.join(os.path.dirname(os.path.abspath(self.cfg.out_dir)), "archive",
+                            f"{os.path.basename(os.path.abspath(self.cfg.out_dir))}-{int(now)}")
+        os.makedirs(arch, exist_ok=True)
+        for name in os.listdir(self.cfg.out_dir):
+            if name in ("settings.json", "reset.json") or name.endswith(".log"):
+                continue
+            os.replace(os.path.join(self.cfg.out_dir, name), os.path.join(arch, name))
+        os.remove(self.reset_path)
+        self.cfg = dataclasses.replace(self.cfg, start_gbp=start)
 
     # ---- persistence -------------------------------------------------------
     def _ledger_path(self, ts: float) -> str:
@@ -401,6 +480,8 @@ class ShadowTrader:
             "limits": {k: getattr(risk.limits, k) for k in ("max_drawdown", "max_daily_loss", "max_gross_frac",
                                                             "max_position_frac", "max_open_positions")},
             "equity_series": self.book.equity[-400:], "tax": self.tax_summary(),
+            "decision_every_s": self.clockbars.bar_s, "paused": self.agent.policy.paused,
+            "settings": self.settings, "thoughts": self.book.thoughts[-24:],
         }
 
     # ---- loop --------------------------------------------------------------
@@ -423,6 +504,11 @@ class ShadowTrader:
         evs = self.tape.poll(now)
         self._note_prices(evs)
         self.clockbars.push(evs)
+        if now - self._settings_check >= self.cfg.settings_every_s:
+            self._settings_check = now
+            self.apply_settings(now)
+            if os.path.exists(self.reset_path):
+                self._stop = True            # launchd restarts us; __init__ archives and starts fresh
         n = 0
         for end, books, trades, funding in self.clockbars.due(now):
             if utc_day(end) != self._day:

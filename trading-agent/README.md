@@ -55,7 +55,12 @@ edge after fees, risking a fixed 0.5% of the account per bet. `GateConfig()` def
 ```
 trader/coinbase_tape.py   Coinbase public-data recorder (no keys, no orders); scripts/record_coinbase.py
 trader/uk_tax.py          UK CGT share-pooling record + CSV
-trader/live_server.py     real-time page (SSE, every ~2 s), read-only, key in runtime/live_token
+trader/live_server.py     real-time page (SSE, every ~2 s), key in runtime/live_token; also serves Coinbase
+                          candles, order-book depth from the tape, and practice-bot settings/resets
+trader/settings.py        live-view settings: strategy knobs within bounds, hard limits tighten-only
+trader/static/            charts.js (chart modes, indicators, pattern spotting, breakdowns, heatmap, 3D),
+                          learn.js (lessons, glossary, pattern library, quiz), lwc.js (TradingView
+                          lightweight-charts 5.2.1, Apache-2.0, see LICENSE-lightweight-charts.txt)
 scripts/install_uk_services.sh   macOS launchd: cb-recorder, uk-trader, live-view
 ```
 

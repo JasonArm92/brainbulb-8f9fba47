@@ -1,5 +1,6 @@
 """Real-time view: token-gated, read-only, streams live.json."""
 
+import io
 import json
 import os
 import threading
@@ -26,8 +27,35 @@ def srv(tmp_path):
     assert oct(os.stat(tmp_path / "tok").st_mode)[-3:] == "600"
     assert live_server.load_token(str(tmp_path / "tok")) == tok        # stable across restarts
     page = open(os.path.join(live_server.HERE, "live_page.html"), "rb").read()
+    tapes = tmp_path / "tapes"
+    tapes.mkdir()
+    now = time.time()
+    day = time.strftime("%Y%m%d", time.gmtime(now))
+    with open(tapes / f"cb-{day}.jsonl", "w") as f:
+        for i in range(120):
+            for sym in ("BTC-GBP", "ETH-GBP"):
+                f.write(json.dumps({"t": "book", "ts": now - 600 + i * 5, "sym": sym,
+                                    "bids": [[100 - k, 1.0] for k in range(12)],
+                                    "asks": [[101 + k, 1.0] for k in range(12)]}) + "\n")
+
+    class Resp(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    calls = []
+
+    def opener(req, timeout=0):
+        calls.append(req.full_url)
+        # Coinbase order: [time, low, high, open, close, volume], newest first
+        return Resp(json.dumps([[1060, 9, 12, 10, 11, 5.5], [1000, 8, 11, 9, 10, 2.0]]).encode())
+
+    live_server._cache.clear()
     h = ThreadingHTTPServer(("127.0.0.1", 0), live_server.make_handler(
-        {"careful": str(tmp_path), "fast": str(tmp_path / "fast")}, tok, page))
+        {"careful": str(tmp_path), "fast": str(tmp_path / "fast")}, tok, page, str(tapes), "cb", opener))
+    h.calls = calls
     h.daemon_threads = True
     threading.Thread(target=h.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{h.server_port}", tok, live
@@ -57,12 +85,13 @@ def test_key_sets_cookie_then_cookie_works(srv):
     assert d["value"] == 50.0
 
 
-def test_read_only(srv):
+def test_a_key_link_alone_cannot_write(srv):
     base, tok, _ = srv
-    req = urllib.request.Request(f"{base}/live.json?k={tok}", data=b"{}", method="POST")
+    req = urllib.request.Request(f"{base}/settings?k={tok}", data=b"{}", method="POST",
+                                 headers={"X-Trader": "1"})
     with pytest.raises(urllib.error.HTTPError) as e:
         urllib.request.urlopen(req, timeout=5)
-    assert e.value.code == 501
+    assert e.value.code == 403
 
 
 def test_events_stream_new_snapshots(srv):
@@ -96,3 +125,57 @@ def test_two_accounts(srv):
     with pytest.raises(urllib.error.HTTPError) as e:
         get(f"{base}/live.json?a=../etc&k={tok}")
     assert e.value.code == 404
+
+
+def post(url, body, cookie=None, header=True, origin=None):
+    h = {"Content-Type": "application/json"}
+    if cookie:
+        h["Cookie"] = cookie
+    if header:
+        h["X-Trader"] = "1"
+    if origin:
+        h["Origin"] = origin
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=h, method="POST")
+    return urllib.request.urlopen(req, timeout=5)
+
+
+def test_settings_round_trip_and_write_guards(srv, tmp_path):
+    base, tok, _ = srv
+    ck = f"tl={tok}"
+    d = json.load(get(f"{base}/settings?a=fast", cookie=ck))
+    assert d["profile"] == "uk-spot-fast" and d["settings"]["require_edge"] is False
+    assert any(x["key"] == "daily_loss_pct" and x["max"] == 3.0 for x in d["spec"])
+    r = json.load(post(f"{base}/settings?a=careful", {"decision_every_s": 15, "daily_loss_pct": 9}, cookie=ck))
+    assert r["settings"]["decision_every_s"] == 15 and r["settings"]["daily_loss_pct"] == 3.0 and r["notes"]
+    assert json.load(open(tmp_path / "settings.json"))["decision_every_s"] == 15
+    for kw in ({"cookie": None}, {"cookie": ck, "header": False}, {"cookie": ck, "origin": "http://evil.example"}):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            post(f"{base}/settings?a=careful&k={tok}", {"paused": True}, **kw)
+        assert e.value.code == 403
+    assert not json.load(open(tmp_path / "settings.json"))["paused"]
+
+
+def test_reset_request(srv, tmp_path):
+    base, tok, _ = srv
+    ck = f"tl={tok}"
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(f"{base}/reset?a=fast", {"start_gbp": 5}, cookie=ck)
+    assert e.value.code == 400
+    assert json.load(post(f"{base}/reset?a=fast", {"start_gbp": 1500}, cookie=ck))["ok"]
+    assert json.load(open(tmp_path / "fast" / "reset.json"))["start_gbp"] == 1500
+
+
+def test_candles_depth_static(srv):
+    base, tok, _ = srv
+    ck = f"tl={tok}"
+    rows = json.load(get(f"{base}/candles?coin=btc&g=60", cookie=ck))
+    assert rows == [[1000, 9.0, 11.0, 8.0, 10.0, 2.0], [1060, 10.0, 12.0, 9.0, 11.0, 5.5]]   # t,o,h,l,c,v
+    json.load(get(f"{base}/candles?coin=BTC&g=60", cookie=ck))
+    with pytest.raises(urllib.error.HTTPError):
+        get(f"{base}/candles?coin=DOGE&g=60", cookie=ck)
+    dep = json.load(get(f"{base}/depth?coin=ETH&mins=5", cookie=ck))
+    assert 50 <= len(dep) <= 62 and len(dep[0]["bids"]) == 10
+    js = get(f"{base}/static/lwc.js", cookie=ck).read()
+    assert b"LightweightCharts" in js[:5000] or len(js) > 100000
+    with pytest.raises(urllib.error.HTTPError):
+        get(f"{base}/static/../live_server.py", cookie=ck)

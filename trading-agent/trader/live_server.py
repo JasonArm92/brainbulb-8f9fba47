@@ -7,7 +7,10 @@ browser with Server-Sent Events, so prices, the account value, open bets and
 new trades appear within a couple of seconds.
 
 Safety:
-  * read-only: GET only, no endpoint changes anything;
+  * the only writes are practice-bot settings and practice-account resets
+    (POST /settings, POST /reset). Hard safety limits can only be tightened
+    (trader/settings.py). Writes need the cookie (not a ?k= link) plus an
+    X-Trader header, so another website cannot trigger them;
   * every request needs the access key from runtime/live_token (created on first
     start), passed once as ?k=... and then kept in a cookie;
   * meant to be reached over Tailscale (private network between your devices)
@@ -22,9 +25,66 @@ import os
 import secrets
 import time
 import urllib.parse
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from . import settings as settings_mod
 from . import uk_tax
+
+COIN_OK = set(settings_mod.COINS)
+GRANULARITY = {60, 300, 900, 3600, 21600, 86400}
+CB_CANDLES = "https://api.exchange.coinbase.com/products/{coin}-GBP/candles?granularity={g}"
+STATIC = {"lwc.js": "application/javascript", "LICENSE-lightweight-charts.txt": "text/plain",
+          "learn.js": "application/javascript", "charts.js": "application/javascript"}
+_cache: dict = {}
+
+
+def fetch_candles(coin: str, g: int, now: float | None = None, opener=None) -> list:
+    """Coinbase public candles, oldest first, as [t, open, high, low, close, volume].
+    Cached for a few seconds so several phones do not hammer the API."""
+    now = now or time.time()
+    key = (coin, g)
+    hit = _cache.get(key)
+    if hit and now - hit[0] < (5 if g == 60 else 20):
+        return hit[1]
+    req = urllib.request.Request(CB_CANDLES.format(coin=coin, g=g), headers={"User-Agent": "trader-live/1.0"})
+    with (opener or urllib.request.urlopen)(req, timeout=8) as r:
+        rows = json.loads(r.read())
+    out = sorted([int(c[0]), float(c[3]), float(c[2]), float(c[1]), float(c[4]), float(c[5])] for c in rows)
+    _cache[key] = (now, out)
+    return out
+
+
+def read_depth(tape_dir: str, prefix: str, coin: str, minutes: float, now: float | None = None,
+               step_s: float = 10.0, max_bytes: int = 24_000_000) -> list:
+    """Order-book snapshots for one coin from the tail of today's tape, one every step_s."""
+    now = now or time.time()
+    day = time.strftime("%Y%m%d", time.gmtime(now))
+    path = os.path.join(tape_dir, f"{prefix}-{day}.jsonl")
+    sym = f'"sym": "{coin}-GBP"'
+    out, last = [], -1e18
+    try:
+        with open(path, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - max_bytes))
+            if f.tell():
+                f.readline()
+            for raw in f:
+                if b'"t": "book"' not in raw or sym.encode() not in raw:
+                    continue
+                try:
+                    ev = json.loads(raw)
+                except ValueError:
+                    continue
+                ts = float(ev.get("ts", 0))
+                if ts < now - minutes * 60 or ts - last < step_s:
+                    continue
+                last = ts
+                out.append({"ts": ts, "bids": ev["bids"][:10], "asks": ev["asks"][:10]})
+    except OSError:
+        return []
+    return out
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -43,7 +103,8 @@ def load_token(path: str) -> str:
     return tok
 
 
-def make_handler(accounts: dict[str, str], token: str, page: bytes):
+def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: str = "tapes",
+                 tape_prefix: str = "cb", opener=None):
     """accounts: name -> output folder holding live.json / summary.json / state.json.
     The first one is shown by default; ?a=<name> picks another."""
     names = list(accounts)
@@ -76,6 +137,58 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes):
             self.end_headers()
             self.wfile.write(body)
 
+        def _profile(self, acct: str) -> str:
+            for name in ("live.json", "state.json"):
+                try:
+                    with open(os.path.join(accounts[acct], name)) as f:
+                        d = json.load(f)
+                    p = d.get("profile") or d.get("meta", {}).get("profile")
+                    if p in settings_mod.PROFILES:
+                        return p
+                except (OSError, ValueError):
+                    pass
+            return "uk-spot-fast" if "fast" in acct else "uk-spot"
+
+        def do_POST(self):
+            u = urllib.parse.urlparse(self.path)
+            ok, _ = self._authed({})                    # cookie only for writes, never a ?k= link
+            if not ok:
+                return self._send(403, b"forbidden", "text/plain")
+            # cross-site guard: a custom header forces a CORS preflight that this server never answers
+            if self.headers.get("X-Trader") != "1":
+                return self._send(403, b"missing header", "text/plain")
+            origin = self.headers.get("Origin")
+            if origin and urllib.parse.urlparse(origin).netloc != self.headers.get("Host"):
+                return self._send(403, b"bad origin", "text/plain")
+            q = urllib.parse.parse_qs(u.query)
+            acct = (q.get("a") or [names[0]])[0]
+            if acct not in accounts:
+                return self._send(404, b"unknown account", "text/plain")
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
+                if not isinstance(body, dict):
+                    raise ValueError
+            except ValueError:
+                return self._send(400, b"bad json", "text/plain")
+            d = accounts[acct]
+            if u.path == "/settings":
+                s, notes = settings_mod.save(os.path.join(d, "settings.json"), self._profile(acct), body)
+                return self._send(200, json.dumps({"settings": s, "notes": notes}).encode(), "application/json")
+            if u.path == "/reset":
+                try:
+                    start = float(body.get("start_gbp"))
+                except (TypeError, ValueError):
+                    return self._send(400, b"start_gbp needed", "text/plain")
+                if not 10 <= start <= 1_000_000:
+                    return self._send(400, b"start_gbp must be 10 to 1,000,000", "text/plain")
+                tmp = os.path.join(d, "reset.json.tmp")
+                with open(tmp, "w") as f:
+                    json.dump({"start_gbp": start, "requested_ts": time.time()}, f)
+                os.replace(tmp, os.path.join(d, "reset.json"))
+                return self._send(200, b'{"ok":true}', "application/json")
+            return self._send(404, b"not found", "text/plain")
+
         def do_GET(self):
             u = urllib.parse.urlparse(self.path)
             ok, fresh = self._authed(urllib.parse.parse_qs(u.query))
@@ -92,6 +205,48 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes):
                 return self._send(200, page, "text/html; charset=utf-8", cookie)
             if u.path == "/accounts":
                 return self._send(200, json.dumps(names).encode(), "application/json", cookie)
+            if u.path.startswith("/static/"):
+                name = u.path[len("/static/"):]
+                if name not in STATIC:
+                    return self._send(404, b"not found", "text/plain")
+                with open(os.path.join(HERE, "static", name), "rb") as f:
+                    return self._send(200, f.read(), STATIC[name], {"Cache-Control": "max-age=3600"})
+            if u.path == "/settings":
+                prof = self._profile(acct)
+                s = settings_mod.load(os.path.join(accounts[acct], "settings.json"), prof)
+                return self._send(200, json.dumps({"profile": prof, "settings": s,
+                                                   "spec": settings_mod.spec_for(prof)}).encode(), "application/json")
+            if u.path == "/candles":
+                coin = (q.get("coin") or ["BTC"])[0].upper()
+                try:
+                    g = int((q.get("g") or ["60"])[0])
+                except ValueError:
+                    g = 0
+                if coin not in COIN_OK or g not in GRANULARITY:
+                    return self._send(400, b"bad coin or granularity", "text/plain")
+                try:
+                    rows = fetch_candles(coin, g, opener=opener)
+                except Exception:
+                    return self._send(502, b'{"error":"Coinbase candles unavailable"}', "application/json")
+                return self._send(200, json.dumps(rows).encode(), "application/json")
+            if u.path == "/depth":
+                coin = (q.get("coin") or ["BTC"])[0].upper()
+                try:
+                    mins = max(1.0, min(60.0, float((q.get("mins") or ["15"])[0])))
+                except ValueError:
+                    mins = 15.0
+                if coin not in COIN_OK:
+                    return self._send(400, b"bad coin", "text/plain")
+                step = max(2.0, mins * 60 / 120)
+                return self._send(200, json.dumps(read_depth(tape_dir, tape_prefix, coin, mins, step_s=step)).encode(),
+                                  "application/json")
+            if u.path == "/fills":
+                try:
+                    with open(os.path.join(accounts[acct], "state.json")) as f:
+                        fills = json.load(f)["book"].get("fills_all", [])[-500:]
+                except (OSError, ValueError, KeyError):
+                    fills = []
+                return self._send(200, json.dumps(fills).encode(), "application/json")
             if u.path == "/live.json":
                 try:
                     with open(live_path, "rb") as f:
@@ -144,11 +299,12 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes):
     return H
 
 
-def serve(accounts: dict[str, str], token_path: str, host: str = "0.0.0.0", port: int = 8787):
+def serve(accounts: dict[str, str], token_path: str, host: str = "0.0.0.0", port: int = 8787,
+          tape_dir: str = "tapes", tape_prefix: str = "cb"):
     token = load_token(token_path)
     with open(os.path.join(HERE, "live_page.html"), "rb") as f:
         page = f.read()
-    httpd = ThreadingHTTPServer((host, port), make_handler(accounts, token, page))
+    httpd = ThreadingHTTPServer((host, port), make_handler(accounts, token, page, tape_dir, tape_prefix))
     httpd.daemon_threads = True
     print(f"live view on http://{host}:{port}/?k={token}", flush=True)
     httpd.serve_forever()
