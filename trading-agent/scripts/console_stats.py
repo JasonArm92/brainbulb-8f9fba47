@@ -39,6 +39,8 @@ TARGET_DAYS = 30
 GAP_MIN = 10            # minutes without a book that count as a gap
 STALE_MIN = 15          # newest book older than this -> critical
 LABEL = "com.jason.okx-recorder"
+SHADOW_LABEL = "com.jason.shadow-trader"
+SHADOW_SUMMARY = os.path.join(ROOT, "runtime", "shadow", "summary.json")
 FX_URL = "https://api.coinbase.com/v2/exchange-rates?currency=USD"
 FX_CACHE = os.path.join(TAPES, ".fx.json")
 UNLOCKS = {"SUI": "2026-10-01", "ENA": "2026-10-02", "HYPE": "2026-10-06"}
@@ -55,6 +57,7 @@ def scan_file(path: str) -> dict:
     """One pass over a tape file. Book lines are parsed with a cheap regex;
     everything else is only type-checked."""
     minutes: set[int] = set()
+    hourly: dict[str, dict[int, str]] = {}      # sym -> hour -> last book line in that hour
     books: dict[str, int] = {}
     last: dict[str, list] = {}
     st = {"lines": 0, "malformed": 0, "crossed": 0, "out_of_order": 0, "recorder_gaps": 0,
@@ -78,6 +81,7 @@ def scan_file(path: str) -> dict:
                 st["first_ts"] = ts if st["first_ts"] is None else min(st["first_ts"], ts)
                 st["last_ts"] = ts if st["last_ts"] is None else max(st["last_ts"], ts)
                 last[sym] = [ts, line]
+                hourly.setdefault(sym, {})[int(ts // 3600)] = line
             elif line.startswith('{"t": "gap"'):
                 st["recorder_gaps"] += 1
             elif line.startswith('{"t": "trade"'):
@@ -107,7 +111,17 @@ def scan_file(path: str) -> dict:
             newest[sym] = {"ts": ts, "mid": mid, "spread_bp": (ask - bid) / mid * 1e4}
         except (ValueError, KeyError, IndexError):
             st["malformed"] += 1
-    return {"minutes": sorted(minutes), "books": books, "newest": newest, **st}
+    spark = {}
+    for sym, hrs in hourly.items():
+        pts = []
+        for h, line in sorted(hrs.items()):
+            try:
+                r = json.loads(line)
+                pts.append([h * 3600, round((r["bids"][0][0] + r["asks"][0][0]) / 2, 8)])
+            except (ValueError, KeyError, IndexError):
+                pass
+        spark[sym] = pts
+    return {"minutes": sorted(minutes), "books": books, "newest": newest, "spark": spark, **st}
 
 
 def day_of(path: str) -> str:
@@ -184,6 +198,28 @@ def fx_rate(now: float) -> dict | None:
             return None
 
 
+def hourly(points: list) -> list:
+    """Keep the last point of each hour (and the very last point), at most 30 days."""
+    by_h = {}
+    for ts, v in points:
+        by_h[int(ts // 3600)] = [ts, v]
+    out = [by_h[h] for h in sorted(by_h)]
+    return out[-720:]
+
+
+def shadow_state(now: float) -> dict | None:
+    """The auto-trader's own summary, trimmed for the console."""
+    try:
+        with open(SHADOW_SUMMARY) as f:
+            s = json.load(f)
+    except (OSError, ValueError):
+        return None
+    out = _run(["launchctl", "print", f"gui/{os.getuid()}/{SHADOW_LABEL}"])
+    s["process_running"] = bool(re.search(r"^\s*state = running", out, re.M)) if out else None
+    s["age_s"] = now - s.get("updated_ts", 0)
+    return s
+
+
 def collect(now: float | None = None) -> dict:
     now = now or time.time()
     files = sorted(os.path.join(TAPES, f) for f in os.listdir(TAPES)
@@ -222,6 +258,11 @@ def collect(now: float | None = None) -> dict:
         for k, v in scans[d]["books"].items():
             books[k] = books.get(k, 0) + v
         newest.update(scans[d]["newest"])
+    spark: dict[str, list] = {}
+    for d in sorted(scans):
+        for k, pts in scans[d].get("spark", {}).items():
+            spark.setdefault(k.replace("-PERP", ""), []).extend(pts)
+    spark = {k: [p for p in v if p[0] >= now - 48 * 3600] for k, v in spark.items()}
     tot = {k: sum(s[k] for s in scans.values()) for k in ("malformed", "crossed", "out_of_order", "recorder_gaps")}
     sysst = system_state()
 
@@ -251,6 +292,18 @@ def collect(now: float | None = None) -> dict:
         t = datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()
         if now >= t:
             alerts.append({"level": "info", "text": f"The {coin} unlock ({d}) has passed. Re-check its thesis."})
+    sh = shadow_state(now)
+    if sh is not None:
+        if sh.get("kill", {}).get("tripped"):
+            alerts.append({"level": "critical", "text": "The auto-trader hit its emergency stop: "
+                           + (sh["kill"].get("reason") or "no reason recorded") + ". It will only close bets until reset."})
+        if sh.get("process_running") is False or sh.get("age_s", 0) > 600:
+            alerts.append({"level": "warning", "text": "The auto-trader has not updated for "
+                           f"{int(sh.get('age_s', 0) // 60)} min."})
+        lim = sh.get("limits", {})
+        if lim and sh.get("day_pnl_frac", 0) <= -0.8 * lim.get("max_daily_loss", 1):
+            alerts.append({"level": "warning", "text": f"Today's paper loss is {abs(sh['day_pnl_frac']) * 100:.1f}%, "
+                           f"close to the {lim['max_daily_loss'] * 100:.0f}% daily limit."})
     if rec_start and covered_h >= TARGET_DAYS * 24 * 0.97:
         alerts.append({"level": "info", "text": "30 days of tape recorded. Ready for the replay rung."})
 
@@ -268,6 +321,9 @@ def collect(now: float | None = None) -> dict:
         "fx": fx_rate(now),
         "alerts": alerts,
         "days": days,
+        "spark": spark,
+        "shadow": {k: v for k, v in sh.items() if k != "equity_series"} if sh else None,
+        "shadow_equity": hourly(sh.get("equity_series", [])) if sh else [],
     }
 
 

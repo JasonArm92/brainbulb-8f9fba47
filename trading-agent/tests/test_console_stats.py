@@ -26,6 +26,7 @@ def tapes(tmp_path, monkeypatch):
     monkeypatch.setattr(cs, "system_state", lambda: {"recorder_running": True, "pid": 1, "on_ac": True,
                                                      "disk_free_gb": 50.0, "disk_used_pct": 50.0, "tape_bytes": 0})
     monkeypatch.setattr(cs, "FX_CACHE", str(tmp_path / ".fx.json"))
+    monkeypatch.setattr(cs, "SHADOW_SUMMARY", str(tmp_path / "no-shadow.json"))
     monkeypatch.setattr(cs, "FX_URL", "http://127.0.0.1:9/unreachable")
     return tmp_path
 
@@ -112,3 +113,25 @@ def test_fx_falls_back_to_last_good_rate(tapes):
     (tapes / ".fx.json").write_text(json.dumps({"gbp_per_usd": 0.755, "ts": D0, "source": "Coinbase", "stale": False}))
     fx = cs.fx_rate(D0 + 60)
     assert fx["gbp_per_usd"] == 0.755 and fx["stale"] is True
+
+
+def test_hourly_spark_points(tapes):
+    write_day(tapes / "okx-20260924.jsonl", D0, D0 + 5 * 3600, step=60)
+    out = cs.collect(now=D0 + 5 * 3600)
+    pts = out["spark"]["BTC"]
+    assert [p[0] for p in pts] == [D0 + h * 3600 for h in range(5)]
+    assert pts[0][1] == pytest.approx(100.05)
+
+
+def test_shadow_summary_and_alerts(tapes, monkeypatch):
+    write_day(tapes / "okx-20260924.jsonl", D0, D0 + 600)
+    sfile = tapes / "summary.json"
+    sfile.write_text(json.dumps({"updated_ts": D0 - 1200, "equity_usd": 12000, "day_pnl_frac": -0.026,
+                                 "limits": {"max_daily_loss": 0.03}, "kill": {"tripped": True, "reason": "max drawdown 15%"},
+                                 "equity_series": [[D0, 12500], [D0 + 900, 12000]]}))
+    monkeypatch.setattr(cs, "SHADOW_SUMMARY", str(sfile))
+    out = cs.collect(now=D0 + 600)
+    assert out["shadow"]["equity_usd"] == 12000 and "equity_series" not in out["shadow"]
+    assert out["shadow_equity"] == [[D0 + 900, 12000]]              # one point per hour
+    texts = " ".join(a["text"] for a in out["alerts"])
+    assert "emergency stop" in texts and "not updated" in texts and "daily limit" in texts

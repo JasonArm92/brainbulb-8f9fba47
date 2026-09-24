@@ -5,12 +5,14 @@
   python -m trader paper --engine jev      # paper loop, real Jev decisions (needs TYPESAFE_API_KEY)
   python -m trader review                  # overnight review -> runtime/review.json
   python -m trader promote PATH --approved-by NAME
+  python -m trader shadow [--start-gbp 10000]   # live prices from the recorder, paper account, runs until stopped
   python -m trader replay TAPE... [--engine sim|jev] [--bar 60] [--schemas DIR]   # rung 1 on recorded data
 """
 
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import os
 
@@ -37,6 +39,12 @@ def main() -> None:
     rp.add_argument("--heldout", type=float, default=0.3)
     rp.add_argument("--schemas", default=None, help="schema dir to replay (e.g. schemas/candidates for A/B)")
     rp.add_argument("--out", default="runtime/replay")
+    sh = sub.add_parser("shadow")
+    sh.add_argument("--tape-dir", default="tapes")
+    sh.add_argument("--out", default="runtime/shadow")
+    sh.add_argument("--start-gbp", type=float, default=10_000.0)
+    sh.add_argument("--engine", choices=["auto", "sim", "jev"], default="auto",
+                    help="auto = Jev if TYPESAFE_API_KEY is set, otherwise the practice engine")
     pr = sub.add_parser("promote")
     pr.add_argument("path")
     pr.add_argument("--approved-by", required=True)
@@ -90,7 +98,6 @@ def main() -> None:
         return
 
     if a.cmd == "replay":
-        import dataclasses
         import time as _time
 
         from .calibration import Calibrator
@@ -115,6 +122,26 @@ def main() -> None:
                                               "heldout_brier_skill", "rung1_passed", "rung1_failures")},
                          indent=2, default=str))
         print(path)
+        return
+
+    if a.cmd == "shadow":
+        from .brain import make_brain
+        from .calibration import Calibrator
+        from .jev_client import JevEngine, SimulatedEngine
+        from .shadow import ShadowConfig, ShadowTrader
+
+        schemas = {fin["symbol"]: load_latest(cfg.schema_dir, fin["symbol"]) for fin in finalists}
+        use_jev = a.engine == "jev" or (a.engine == "auto" and os.environ.get("TYPESAFE_API_KEY"))
+        engine = JevEngine() if use_jev else SimulatedEngine()
+        try:
+            with open(os.path.join(a.tape_dir, ".fx.json")) as f:
+                fx = float(json.load(f)["gbp_per_usd"])
+        except (OSError, ValueError, KeyError):
+            fx = 0.755
+        scfg = ShadowConfig(tape_dir=a.tape_dir, out_dir=a.out, start_gbp=a.start_gbp)
+        rcfg = dataclasses.replace(cfg, ledger_path=os.path.join(a.out, "unused.jsonl"))
+        ShadowTrader(scfg, rcfg, schemas, engine, fx, engine_name="jev" if use_jev else "practice",
+                     brain=make_brain(), calibrator=Calibrator.load("runtime/calibration.json")).run()
         return
 
     if a.cmd == "promote":

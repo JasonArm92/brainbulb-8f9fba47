@@ -70,60 +70,74 @@ def _levels(raw) -> tuple[tuple[float, float], ...]:
     return out
 
 
+class TapeParser:
+    """Validates one tape line at a time. Shared by replay (files) and the
+    shadow trader (a live, growing file), so both apply identical hygiene."""
+
+    def __init__(self, stats: TapeStats | None = None):
+        self.st = stats if stats is not None else TapeStats()
+        self._last: dict[tuple[str, str], float] = {}
+
+    def feed(self, line: str) -> BookUpdate | Trade | FundingEvent | None:
+        st = self.st
+        line = line.strip()
+        if not line:
+            return None
+        st.lines += 1
+        try:
+            r = json.loads(line)
+            kind = r["t"]
+            if kind == "meta":
+                return None
+            if kind == "gap":
+                st.recorder_gaps += 1
+                return None
+            ts, sym = float(r["ts"]), str(r["sym"])
+            if not math.isfinite(ts):
+                raise ValueError("ts")
+            if kind == "book":
+                ev = BookUpdate(ts, sym, _levels(r["bids"]), _levels(r["asks"]))
+                if ev.bids[0][0] >= ev.asks[0][0]:
+                    st.crossed += 1
+                    return None
+            elif kind == "trade":
+                px, qty, side = float(r["px"]), float(r["qty"]), r["side"]
+                if side not in ("buy", "sell") or not (px > 0 and qty > 0):
+                    raise ValueError("trade")
+                ev = Trade(ts, sym, px, qty, side)
+            elif kind == "funding":
+                ev = FundingEvent(ts, sym, float(r["rate"]), float(r.get("interval_h", 8.0)))
+            else:
+                raise ValueError(f"kind {kind!r}")
+        except (KeyError, ValueError, TypeError, json.JSONDecodeError):
+            st.malformed += 1
+            return None
+        stream = (sym, kind)
+        if ts < self._last.get(stream, -math.inf):
+            st.out_of_order += 1
+            return None
+        self._last[stream] = ts
+        st.symbols.add(sym)
+        st.first_ts = ts if st.first_ts is None else min(st.first_ts, ts)
+        st.last_ts = ts if st.last_ts is None else max(st.last_ts, ts)
+        if kind == "book":
+            st.books += 1
+        elif kind == "trade":
+            st.trades += 1
+        else:
+            st.funding += 1
+        return ev
+
+
 def read_tape(path: str, stats: TapeStats | None = None) -> Iterator[BookUpdate | Trade | FundingEvent]:
     """Parse and validate a tape. Yields events in file order, dropping bad ones."""
-    st = stats if stats is not None else TapeStats()
-    last: dict[tuple[str, str], float] = {}
+    parser = TapeParser(stats)
     opener = gzip.open if path.endswith(".gz") else open
     with opener(path, "rt") as f:
         for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            st.lines += 1
-            try:
-                r = json.loads(line)
-                kind = r["t"]
-                if kind == "meta":
-                    continue
-                if kind == "gap":
-                    st.recorder_gaps += 1
-                    continue
-                ts, sym = float(r["ts"]), str(r["sym"])
-                if not math.isfinite(ts):
-                    raise ValueError("ts")
-                if kind == "book":
-                    ev = BookUpdate(ts, sym, _levels(r["bids"]), _levels(r["asks"]))
-                    if ev.bids[0][0] >= ev.asks[0][0]:
-                        st.crossed += 1
-                        continue
-                elif kind == "trade":
-                    px, qty, side = float(r["px"]), float(r["qty"]), r["side"]
-                    if side not in ("buy", "sell") or not (px > 0 and qty > 0):
-                        raise ValueError("trade")
-                    ev = Trade(ts, sym, px, qty, side)
-                elif kind == "funding":
-                    ev = FundingEvent(ts, sym, float(r["rate"]), float(r.get("interval_h", 8.0)))
-                else:
-                    raise ValueError(f"kind {kind!r}")
-            except (KeyError, ValueError, TypeError, json.JSONDecodeError):
-                st.malformed += 1
-                continue
-            stream = (sym, kind)
-            if ts < last.get(stream, -math.inf):
-                st.out_of_order += 1
-                continue
-            last[stream] = ts
-            st.symbols.add(sym)
-            st.first_ts = ts if st.first_ts is None else min(st.first_ts, ts)
-            st.last_ts = ts if st.last_ts is None else max(st.last_ts, ts)
-            if kind == "book":
-                st.books += 1
-            elif kind == "trade":
-                st.trades += 1
-            else:
-                st.funding += 1
-            yield ev
+            ev = parser.feed(line)
+            if ev is not None:
+                yield ev
 
 
 def bars(events: Iterable[BookUpdate | Trade | FundingEvent], bar_s: float

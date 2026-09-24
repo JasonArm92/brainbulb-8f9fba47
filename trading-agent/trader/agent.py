@@ -99,12 +99,7 @@ class Agent:
         return done
 
     # ------------------------------------------------------------------
-    def on_bar(self, now: float, books: dict[str, BookUpdate], trades: list[Trade],
-               funding: list[FundingEvent] | None = None) -> None:
-        self._n += 1
-        t_start = time.perf_counter()
-        self.portfolio.roll_day(datetime.fromtimestamp(now, timezone.utc).strftime("%Y-%m-%d"))
-
+    def _ingest(self, now: float, books: dict[str, BookUpdate], trades: list[Trade]) -> dict[str, float]:
         # ingest strictly in timestamp order
         events = [(b.ts, 0, b) for b in books.values()] + [(t.ts, 1, t) for t in trades]
         for _, kind, ev in sorted(events, key=lambda e: (e[0], e[1])):
@@ -122,6 +117,25 @@ class Agent:
             mids[sym] = (b.bids[0][0] + b.asks[0][0]) / 2
             self.portfolio.mark(sym, mids[sym])
         self.beta.update(mids)
+        return mids
+
+    def warm(self, now: float, books: dict[str, BookUpdate], trades: list[Trade]) -> None:
+        """Feed history without deciding anything: builds the price window, marks
+        and betas so the first live bar is not trading blind. Never trades."""
+        self._ingest(now, books, trades)
+        for sym in self.schemas:
+            try:
+                self.state.snapshot(sym, now, self.portfolio)
+            except (CausalityError, ValueError):
+                pass
+
+    def on_bar(self, now: float, books: dict[str, BookUpdate], trades: list[Trade],
+               funding: list[FundingEvent] | None = None) -> None:
+        self._n += 1
+        t_start = time.perf_counter()
+        self.portfolio.roll_day(datetime.fromtimestamp(now, timezone.utc).strftime("%Y-%m-%d"))
+
+        self._ingest(now, books, trades)
 
         # funding settlements that fell inside this bar: book cash, update the sizing view
         for ev in sorted(funding or [], key=lambda e: e.ts):
