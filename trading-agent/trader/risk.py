@@ -139,6 +139,9 @@ class RiskManager:
         if order.reduce_only and not reduces:
             r.append("reduce_only order would not reduce exposure")
 
+        if not L.allow_short and post_qty < -1e-12:
+            r.append("short selling is not allowed (spot only)")
+
         if not reduces:
             if self.tripped:
                 r.append(f"kill switch tripped: {self.trip_reason}")
@@ -151,6 +154,14 @@ class RiskManager:
             gross_post = portfolio.gross_notional() - abs(cur) + abs(post)
             if gross_post > L.max_gross_frac * equity + 1e-9:
                 r.append("post-trade gross exposure exceeds max_gross_frac")
+            if L.require_cash and order.side == "buy" and order_notional > portfolio.cash + 1e-9:
+                r.append("not enough cash to pay for this buy")
+            if L.max_open_positions is not None and cur_qty == 0:
+                held = sum(1 for p in portfolio.positions.values() if abs(p.qty) > 1e-12)
+                if held >= L.max_open_positions:
+                    r.append(f"already holding the maximum of {L.max_open_positions} coins")
+            if order_notional < L.min_order_notional - 1e-12:
+                r.append("order below the exchange minimum")
             beta_post = portfolio.beta_gross_notional(self.safe_beta, override=(order.symbol, post))
             if beta_post > L.max_beta_gross_frac * equity + 1e-9:
                 r.append("post-trade beta-weighted gross exceeds max_beta_gross_frac")

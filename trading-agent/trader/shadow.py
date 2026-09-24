@@ -9,7 +9,8 @@ is `PaperBroker`.
     python -m trader shadow --tape-dir tapes --start-gbp 10000
 
 How it works
-  * Follows tapes/okx-YYYYMMDD.jsonl as the recorder appends to it, and moves
+  * Follows tapes/<prefix>-YYYYMMDD.jsonl (okx-, or cb- for the UK Coinbase
+    GBP spot profile) as the recorder appends to it, and moves
     to the next day's file at UTC midnight (an open handle keeps reading the
     old file even after the recorder gzips it).
   * Every line goes through `replay.TapeParser`, the same validation replay
@@ -45,6 +46,7 @@ from .ledger import Ledger
 from .portfolio import Portfolio, Position
 from .replay import TapeParser, bars
 from .state_engine import BookUpdate, Trade
+from . import uk_tax
 
 STATE_VERSION = 1
 
@@ -81,15 +83,16 @@ def utc_day(ts: float) -> str:
 class LiveTape:
     """Reads new complete lines from the recorder's growing daily file."""
 
-    def __init__(self, tape_dir: str, parser: TapeParser):
+    def __init__(self, tape_dir: str, parser: TapeParser, prefix: str = "okx"):
         self.dir = tape_dir
+        self.prefix = prefix
         self.parser = parser
         self._f = None
         self._day = None
         self._buf = ""
 
     def _path(self, day: str) -> str:
-        return os.path.join(self.dir, f"okx-{day}.jsonl")
+        return os.path.join(self.dir, f"{self.prefix}-{day}.jsonl")
 
     def _drain(self, min_ts: float | None = None) -> list:
         out = []
@@ -173,6 +176,7 @@ class ShadowBook:
                                                   "reduces": 0, "holds": 0, "escalations": 0, "rejects": 0})
     holds: dict = field(default_factory=dict)
     trades: list = field(default_factory=list)          # newest last, capped
+    fills_all: list = field(default_factory=list)       # every fill, for the tax record
     equity: list = field(default_factory=list)          # [ts, equity_usd] every 15 min, capped
 
     def observe(self, kind: str, ts: float, d: dict) -> None:
@@ -193,6 +197,8 @@ class ShadowBook:
             c[{"enter": "entries", "exit": "exits", "reduce": "reduces"}.get(ik, "entries")] += 1
             self.trades.append({"ts": ts, "sym": _g(o, "symbol"), "side": _g(o, "side"), "qty": _g(f, "qty"),
                                 "px": _g(f, "price"), "fee": _g(f, "fee"), "kind": ik, "reason": _g(o, "reason")})
+            self.fills_all.append(self.trades[-1])
+            self.fills_all = self.fills_all[-20000:]
             self.trades = self.trades[-60:]
         elif kind == "reject":
             c["rejects"] += 1
@@ -219,6 +225,10 @@ class ShadowConfig:
     warm_s: float = 45 * 60
     poll_s: float = 1.0
     start_gbp: float = 10_000.0
+    tape_prefix: str = "okx"
+    currency: str = "USD"                 # account currency; "GBP" for the UK spot profile
+    profile: str = "perp-research"
+    live_every_s: float = 2.0
 
 
 class ShadowTrader:
@@ -236,9 +246,10 @@ class ShadowTrader:
             self.meta = st["meta"]
             pf = Portfolio(cash=st["cash"])
         else:
-            start_usd = cfg.start_gbp / gbp_per_usd
-            self.meta = {"started_ts": clock(), "start_gbp": cfg.start_gbp, "fx_at_start": gbp_per_usd,
-                         "start_usd": start_usd}
+            fx = 1.0 if cfg.currency == "GBP" else gbp_per_usd
+            start_usd = cfg.start_gbp / fx
+            self.meta = {"started_ts": clock(), "start_gbp": cfg.start_gbp, "fx_at_start": fx,
+                         "start_usd": start_usd, "currency": cfg.currency, "profile": cfg.profile}
             pf = Portfolio(cash=start_usd)
         now = clock()
         self._day = utc_day(now)
@@ -247,7 +258,11 @@ class ShadowTrader:
         if st:
             self._restore(st)
         self.parser = TapeParser()
-        self.tape = LiveTape(cfg.tape_dir, self.parser)
+        self.tape = LiveTape(cfg.tape_dir, self.parser, cfg.tape_prefix)
+        self.live_path = os.path.join(cfg.out_dir, "live.json")
+        self.latest: dict[str, tuple[float, float]] = {}      # sym -> (ts, mid) from the newest book seen
+        self.hist: dict[str, list] = {}                       # sym -> [[ts, mid]] every 10 s, last hour
+        self._last_live = 0.0
         self.clockbars = BarClock(cfg.bar_s, cfg.grace_s, math.floor(now / cfg.bar_s) * cfg.bar_s + cfg.bar_s)
         self.warmed = False
         self._stop = False
@@ -278,6 +293,7 @@ class ShadowTrader:
         self.book.holds.update(b.get("holds", {}))
         self.book.trades = b.get("trades", [])
         self.book.equity = b.get("equity", [])
+        self.book.fills_all = b.get("fills_all", list(self.book.trades))
 
     def _atomic(self, path: str, obj: dict) -> None:
         tmp = path + ".tmp"
@@ -294,7 +310,7 @@ class ShadowTrader:
             "fees": pf.fees_paid, "funding": pf.funding_paid, "stops": self.agent.policy.stops,
             "tripped": self.agent.risk.tripped, "trip_reason": self.agent.risk.trip_reason,
             "book": {"counts": self.book.counts, "holds": self.book.holds, "trades": self.book.trades,
-                     "equity": self.book.equity},
+                     "equity": self.book.equity, "fills_all": self.book.fills_all},
         })
         self._atomic(self.summary_path, self.summary())
 
@@ -307,7 +323,7 @@ class ShadowTrader:
                 continue
             mark = pf.marks.get(s, p.avg_price)
             upnl = (mark - p.avg_price) * p.qty
-            positions.append({"sym": s.replace("-PERP", ""), "side": "up" if p.qty > 0 else "down",
+            positions.append({"sym": s.split("-")[0], "side": "up" if p.qty > 0 else "down",
                               "qty": p.qty, "entry": p.avg_price, "mark": mark, "notional_usd": abs(p.qty * mark),
                               "upnl_usd": upnl, "upnl_pct": (mark / p.avg_price - 1) * (1 if p.qty > 0 else -1) * 100})
         beta = self.agent.risk.safe_beta
@@ -320,16 +336,78 @@ class ShadowTrader:
             "kill": {"tripped": risk.tripped, "reason": risk.trip_reason, "file": risk.kill_file_present()},
             "limits": {"max_drawdown": risk.limits.max_drawdown, "max_daily_loss": risk.limits.max_daily_loss,
                        "max_gross_frac": risk.limits.max_gross_frac,
-                       "max_beta_gross_frac": risk.limits.max_beta_gross_frac},
+                       "max_beta_gross_frac": risk.limits.max_beta_gross_frac,
+                       "max_position_frac": risk.limits.max_position_frac,
+                       "max_open_positions": risk.limits.max_open_positions,
+                       "allow_short": risk.limits.allow_short},
             "positions": positions, "trades": self.book.trades[-25:], "counts": self.book.counts,
             "holds": dict(sorted(self.book.holds.items(), key=lambda kv: -kv[1])[:6]),
             "equity_series": self.book.equity,
+            "tax": self.tax_summary(),
+        }
+
+    def tax_summary(self) -> dict | None:
+        if self.meta.get("currency") != "GBP":
+            return None
+        rep = uk_tax.compute(uk_tax.from_trades(self.book.fills_all))
+        return {"years": rep.by_year(), "disposals": len(rep.disposals), "warnings": rep.warnings[:5],
+                "recent": [{"day": d.day.isoformat(), "asset": d.asset, "qty": d.qty, "proceeds": d.proceeds,
+                            "cost": d.cost, "gain": d.gain, "rule": d.rule} for d in rep.disposals[-10:]]}
+
+    # ---- real-time view ----------------------------------------------------
+    def _note_prices(self, events: list) -> None:
+        for e in events:
+            if isinstance(e, BookUpdate):
+                mid = (e.bids[0][0] + e.asks[0][0]) / 2
+                self.latest[e.symbol] = (e.ts, mid)
+                h = self.hist.setdefault(e.symbol, [])
+                if not h or e.ts - h[-1][0] >= 10:
+                    h.append([e.ts, mid])
+                    if len(h) > 360:
+                        del h[:len(h) - 360]
+
+    def live(self, now: float) -> dict:
+        """Account marked to the newest prices seen, not just the last bar."""
+        pf = self.agent.portfolio
+        mark = lambda s: self.latest.get(s, (0, pf.marks.get(s, 0.0)))[1]
+        positions, value = [], pf.cash
+        for s, p in sorted(pf.positions.items()):
+            if p.qty == 0:
+                continue
+            m = mark(s) or p.avg_price
+            value += p.qty * m
+            positions.append({"sym": s.split("-")[0], "side": "up" if p.qty > 0 else "down", "qty": p.qty,
+                              "entry": p.avg_price, "mark": m, "value": abs(p.qty * m),
+                              "upnl": (m - p.avg_price) * p.qty,
+                              "upnl_pct": (m / p.avg_price - 1) * (1 if p.qty > 0 else -1) * 100,
+                              "stop_bps": self.agent.policy.stops.get(s)})
+        prices = {}
+        for s in self.agent.schemas:
+            if s in self.latest:
+                ts, m = self.latest[s]
+                h = self.hist.get(s, [])
+                prices[s.split("-")[0]] = {"mid": m, "ts": ts, "chg_1h": (m / h[0][1] - 1) * 100 if h else 0.0,
+                                           "hist": [[round(a), round(b, 6)] for a, b in h[-180:]]}
+        risk = self.agent.risk
+        return {
+            "ts": now, "currency": self.meta.get("currency", "USD"), "profile": self.meta.get("profile"),
+            "engine": self.engine_name, "start": self.meta["start_usd"], "started_ts": self.meta["started_ts"],
+            "value": value, "cash": pf.cash, "peak": max(pf.peak_equity, value),
+            "day_start": pf.day_start_equity, "fees": pf.fees_paid,
+            "next_decision_s": max(0.0, self.clockbars.next_end + self.cfg.grace_s - now),
+            "positions": positions, "prices": prices, "trades": self.book.trades[-20:], "counts": self.book.counts,
+            "holds": dict(sorted(self.book.holds.items(), key=lambda kv: -kv[1])[:6]),
+            "kill": {"tripped": risk.tripped, "reason": risk.trip_reason, "file": risk.kill_file_present()},
+            "limits": {k: getattr(risk.limits, k) for k in ("max_drawdown", "max_daily_loss", "max_gross_frac",
+                                                            "max_position_frac", "max_open_positions")},
+            "equity_series": self.book.equity[-400:], "tax": self.tax_summary(),
         }
 
     # ---- loop --------------------------------------------------------------
     def warm_up(self) -> None:
         now = self.clock()
         recent = self.tape.poll(now, min_ts=now - self.cfg.warm_s)
+        self._note_prices(recent)
         for end, books, trades, _funding in bars(sorted(recent, key=lambda e: e.ts), self.cfg.bar_s):
             if end <= now:
                 self.agent.warm(end, books, trades)
@@ -342,7 +420,9 @@ class ShadowTrader:
         now = self.clock()
         if not self.warmed:
             self.warm_up()
-        self.clockbars.push(self.tape.poll(now))
+        evs = self.tape.poll(now)
+        self._note_prices(evs)
+        self.clockbars.push(evs)
         n = 0
         for end, books, trades, funding in self.clockbars.due(now):
             if utc_day(end) != self._day:
@@ -356,6 +436,9 @@ class ShadowTrader:
             n += 1
         if n:
             self.save()
+        if n or now - self._last_live >= self.cfg.live_every_s:
+            self._last_live = now
+            self._atomic(self.live_path, self.live(now))
         return n
 
     def run(self) -> None:

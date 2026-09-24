@@ -24,6 +24,12 @@ class RiskLimits:
     max_snapshot_age_s: float = 5.0       # stale data -> no orders
     max_orders_per_minute: int = 20
     kill_switch_path: str = "runtime/KILL"
+    # Spot-market switches. Defaults change nothing; the UK profile below turns
+    # them on, and each one can only refuse orders, never allow more.
+    allow_short: bool = True              # False: no position may go below zero
+    require_cash: bool = False            # True: a buy must be paid for in full from cash
+    max_open_positions: int | None = None # cap on coins held at once
+    min_order_notional: float = 0.0       # exchange minimum order, in account currency
 
 
 @dataclass(frozen=True)
@@ -49,6 +55,31 @@ class CostModel:
     min_slippage_bps: float = 1.0
 
 
+# ---------------------------------------------------------------------------
+# UK retail profile (chosen by the operator, 2026-09-24).
+# The FCA bans crypto derivatives for UK retail, so this profile trades spot
+# only: real coins bought with pounds, no down-bets, no borrowing. It is sized
+# for a GBP 50 account, where the default 5%-per-order cap (GBP 2.50) would sit
+# below useful order sizes: one bet may use up to 30% of the account and at
+# most two coins are held at once. The loss stops (15% worst fall, 3% a day)
+# are unchanged.
+UK_SMALL_ACCOUNT = RiskLimits(
+    max_position_frac=0.30,
+    max_order_frac=0.30,
+    max_gross_frac=0.50,
+    max_beta_gross_frac=0.50,
+    allow_short=False,
+    require_cash=True,
+    max_open_positions=2,
+    min_order_notional=0.72,              # Coinbase GBP pairs: min_market_funds 0.72
+)
+
+# Coinbase Advanced, lowest volume tier (Aug 2026): 0.40% maker, 0.60% taker.
+# The paper broker fills as a taker, so every trade pays 0.60%.
+COINBASE_GBP_COSTS = CostModel(taker_fee_bps=60.0, maker_fee_bps=40.0,
+                               slippage_bps_per_frac_of_depth=20.0, min_slippage_bps=1.0)
+
+
 @dataclass(frozen=True)
 class AgentConfig:
     risk: RiskLimits = field(default_factory=RiskLimits)
@@ -57,3 +88,5 @@ class AgentConfig:
     schema_dir: str = "schemas"
     ledger_path: str = "runtime/ledger.jsonl"
     snapshot_token_budget: int = 400
+    spot: bool = False                    # spot market: no funding payments
+    min_stop_bps: float = 40.0            # smallest stop-loss distance; spot uses a wider one to clear fees

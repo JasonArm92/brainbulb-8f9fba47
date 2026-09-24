@@ -1,0 +1,47 @@
+{
+  "as_of": "2026-09-24",
+  "venue": "Coinbase Advanced (FCA-registered), GBP spot pairs",
+  "rules": "UK retail: spot only. The FCA bans crypto derivatives for retail consumers, so there are no down-bets, no leverage and no funding payments. Coins limited to those with a GBP pair on Coinbase: BTC, ETH, SOL, AAVE.",
+  "finalists": [
+    {
+      "symbol": "BTC-GBP",
+      "name": "BTC",
+      "thesis_short": "ETF creations flipped 2026 flows positive; funding moderate, not euphoric. Trend-following on flow, not a valuation call. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+      "invalidation_short": "ETF flows turn net negative for a week, or funding above 0.03%/8h with falling price, or daily close back below the September breakout.",
+      "allowed_directions": [
+        "long",
+        "neutral"
+      ]
+    },
+    {
+      "symbol": "ETH-GBP",
+      "name": "ETH",
+      "thesis_short": "Open interest at a four-month high with ETF flows mixed; a leverage-led move that can run or unwind. Trade both sides. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+      "invalidation_short": "OI keeps rising while price stalls (crowded longs), or ETF outflows resume for a full week.",
+      "allowed_directions": [
+        "long",
+        "neutral"
+      ]
+    },
+    {
+      "symbol": "SOL-GBP",
+      "name": "SOL",
+      "thesis_short": "Twelve straight weeks of US spot ETF inflows and ~70% staked supply; Alpenglow finality upgrade is a speculative catalyst (still in testing, no confirmed mainnet date). UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+      "invalidation_short": "ETF inflow streak breaks, or Alpenglow slips with no date, or network outage.",
+      "allowed_directions": [
+        "long",
+        "neutral"
+      ]
+    },
+    {
+      "symbol": "AAVE-GBP",
+      "name": "AAVE",
+      "thesis_short": "Aavenomics 3.0 (live since 2026-06-27) routes protocol revenue to open-market buybacks; revenue is organic interest spread, not emissions. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+      "invalidation_short": "Borrow revenue keeps falling, buyback budget cut again, or a bad-debt event on a major market.",
+      "allowed_directions": [
+        "long",
+        "neutral"
+      ]
+    }
+  ]
+}

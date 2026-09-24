@@ -38,6 +38,28 @@ python3 -m trader replay tapes/okx-*                         # rung 1 on real da
 # with keys:  TYPESAFE_API_KEY=... ANTHROPIC_API_KEY=... python3 -m trader paper --engine jev
 ```
 
+## UK set-up (default)
+
+UK retail can't use crypto derivatives (FCA ban), so the default profile is **uk-spot**:
+Coinbase GBP spot (BTC, ETH, SOL, AAVE), up-bets only, no borrowing, paid in cash. It also
+uses the named `UK_SMALL_ACCOUNT` limits for a GBP 50 account: at most 2 coins, 30% per bet, 50%
+total in bets, the Coinbase minimum order, and a stop-loss of at least 2.5% on every bet. The 15%
+drawdown and 3% daily-loss stops are unchanged. `RiskLimits()` defaults are untouched. Costs are
+Coinbase's 0.40%/0.60% fees. Every fill goes into an HMRC-style CGT record (same-day, 30-day,
+s104 pool; UK days; 6 April tax year) in `trader/uk_tax.py`.
+
+```
+trader/coinbase_tape.py   Coinbase public-data recorder (no keys, no orders); scripts/record_coinbase.py
+trader/uk_tax.py          UK CGT share-pooling record + CSV
+trader/live_server.py     real-time page (SSE, every ~2 s), read-only, key in runtime/live_token
+scripts/install_uk_services.sh   macOS launchd: cb-recorder, uk-trader, live-view
+```
+
+```bash
+python3 -m trader shadow --profile uk-spot     # practice money, live Coinbase prices, starts at GBP 50
+python3 -m trader live --port 8787             # open http://<mac>:8787/?k=<runtime/live_token>
+```
+
 Changing a hard limit means editing `trader/config.py`, which goes through review. Creating a
 file at `runtime/KILL` halts every order, including reduce-only ones.
 

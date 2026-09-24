@@ -22,6 +22,8 @@ def book(ts, sym="BTC-PERP", bid=100.0, ask=100.1):
 @pytest.fixture
 def tapes(tmp_path, monkeypatch):
     monkeypatch.setattr(cs, "TAPES", str(tmp_path))
+    monkeypatch.setattr(cs, "PREFIX", "okx")
+    monkeypatch.setattr(cs, "UNLOCKS", cs.OKX_UNLOCKS)
     monkeypatch.setattr(cs, "CACHE", str(tmp_path / ".stats-cache.json"))
     monkeypatch.setattr(cs, "system_state", lambda: {"recorder_running": True, "pid": 1, "on_ac": True,
                                                      "disk_free_gb": 50.0, "disk_used_pct": 50.0, "tape_bytes": 0})
@@ -153,3 +155,24 @@ def test_okx_hourly_parses_and_sorts(monkeypatch):
     assert cs.okx_hourly("BTC") == [[1790269200.0, 84000.0], [1790272800.0, 84100.5]]
     monkeypatch.setattr(cs.urllib.request, "urlopen", lambda req, timeout=0: R(b'{"code":"50011","data":[]}'))
     assert cs.okx_hourly("BTC") is None
+
+
+def test_coinbase_tapes_and_gbp_candles(tapes, monkeypatch):
+    import io
+    monkeypatch.setattr(cs, "PREFIX", "cb")
+    write_day(tapes / "cb-20260924.jsonl", D0, D0 + 3 * 3600, step=60)
+    write_day(tapes / "okx-20260924.jsonl", D0, D0 + 600)                 # ignored in UK mode
+    monkeypatch.setenv("CONSOLE_OFFLINE", "1")
+    out = cs.collect(now=D0 + 3 * 3600)
+    assert out["covered_hours"] == pytest.approx(3, abs=0.05)
+    body = json.dumps([[D0 + 3600, 1, 1, 1, 64000.5, 2], [D0, 1, 1, 1, 64000.0, 2], [D0 - 60 * 3600, 1, 1, 1, 1, 1]]).encode()
+
+    class R(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(cs.urllib.request, "urlopen", lambda req, timeout=0: R(body))
+    assert cs.cb_hourly("BTC", D0 + 7200) == [[D0, 64000.0], [D0 + 3600, 64000.5]]

@@ -23,7 +23,7 @@ from .funding import FundingBook, FundingEvent
 from .jev_client import DecisionEngine, decide_batch
 from .jev_schema import CompiledSchema
 from .ledger import Ledger
-from .policy import Intent, Policy
+from .policy import ExitRules, Intent, Policy
 from .portfolio import Portfolio
 from .risk import Order, RiskManager
 from .state_engine import BookUpdate, CausalityError, StateEngine, Trade
@@ -49,12 +49,13 @@ class Agent:
         self.portfolio = portfolio
         self.brain = brain or FailClosedBrain()
         self.state = StateEngine(token_budget=cfg.snapshot_token_budget)
-        ref = "BTC-PERP" if "BTC-PERP" in schemas else next(iter(schemas), "BTC-PERP")
+        ref = next((s for s in schemas if s.startswith("BTC")), next(iter(schemas), "BTC-PERP"))
         self.beta = beta or BetaEstimator(reference=ref)
         self.funding = funding or FundingBook()
         self.risk = RiskManager(cfg.risk, beta=self.beta)
         self.broker = RiskGuardedBroker(PaperBroker(cfg.costs), self.risk, portfolio)
-        self.policy = Policy(cfg.gate, cfg.risk, calibrator or Calibrator(), beta=self.beta)
+        self.policy = Policy(cfg.gate, cfg.risk, calibrator or Calibrator(), beta=self.beta,
+                             exits=ExitRules(min_stop_bps=cfg.min_stop_bps))
         self.ledger = ledger or Ledger(cfg.ledger_path)
         self.jev_timeout_s = jev_timeout_s
         self.frozen: dict[str, int] = {}  # symbol -> bar index of last escalation trigger
@@ -194,7 +195,7 @@ class Agent:
             intent = self.policy.evaluate(d, snap, self.portfolio, self.schemas[sym],
                                           frozen=sym in self.frozen,
                                           cost_bps=self._cost_bps(snap.spread_bps),
-                                          funding_bps=self.funding.cost_by_side(sym))
+                                          funding_bps=None if self.cfg.spot else self.funding.cost_by_side(sym))
             if self.risk.halted_for_new_risk(self.portfolio) and intent.kind == "enter":
                 intent = Intent("hold", sym, reason="halted for new risk (daily loss / kill)")
             self.ledger.write("intent", now, intent=intent)

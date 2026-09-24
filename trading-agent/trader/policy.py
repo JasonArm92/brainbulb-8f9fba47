@@ -125,10 +125,15 @@ class Policy:
             fails.append(f"toxic {d.toxic_flow_p:.2f}")
         if d.direction == "neutral" or want is None:
             fails.append("neutral")
+        elif want == "sell" and not self.limits.allow_short and not has_pos:
+            fails.append("down-bets not allowed (spot only)")
         elif d.direction not in schema.allowed_directions:
             fails.append(f"{d.direction} not allowed for {schema.finalist}")
         if low_conf:
             fails.append(f"low confidence {d.direction_conf:.2f}")
+        if (self.limits.max_open_positions is not None and not has_pos
+                and sum(1 for p in portfolio.positions.values() if abs(p.qty) > 1e-12) >= self.limits.max_open_positions):
+            fails.append(f"no room: already holding {self.limits.max_open_positions} coins")
         if fails:
             return Intent("hold", sym, reason="; ".join(fails))
 
@@ -154,6 +159,10 @@ class Policy:
         beta_room = (self.limits.max_beta_gross_frac * equity
                      - portfolio.beta_gross_notional(lambda s: max(1.0, self.beta(s)))) / b_sym
         notional = max(0.0, min(notional, self.limits.max_order_frac * equity, room, gross_room, beta_room))
+        if self.limits.require_cash and want == "buy":
+            notional = min(notional, portfolio.cash * 0.98)             # keep a little back for fees
+        if 0 < notional < self.limits.min_order_notional:
+            return Intent("hold", sym, reason="no room: bet would be below the exchange minimum", p_win=p, kelly=f_star)
         if notional <= 0 or not math.isfinite(notional):
             return Intent("hold", sym, reason="no room under position/gross/beta-gross limit", p_win=p, kelly=f_star)
         self.stops[sym] = stop

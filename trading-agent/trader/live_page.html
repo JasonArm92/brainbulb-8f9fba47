@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Live Trader</title>
+<style>
+:root{
+  --bg:#0b0d14;--ink:#f3f5fb;--mute:#9aa3b8;--faint:#5d6579;
+  --glass:rgba(255,255,255,.07);--glass2:rgba(255,255,255,.11);--edge:rgba(255,255,255,.16);
+  --up:#34d399;--down:#fb7185;--warn:#fbbf24;--acc:#8b9dff;--acc2:#c084fc;
+  --r:22px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding:calc(12px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));overflow-x:hidden}
+.aur{position:fixed;inset:-20%;z-index:-1;filter:blur(70px);opacity:.55;pointer-events:none;
+  background:radial-gradient(40% 35% at 20% 15%,#4f46e5 0,transparent 70%),radial-gradient(35% 30% at 85% 25%,#a21caf 0,transparent 70%),radial-gradient(40% 35% at 60% 90%,#0e7490 0,transparent 70%);
+  animation:drift 28s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate3d(3%,-4%,0) rotate(8deg)}}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:860px){.wrap{grid-template-columns:1.35fr 1fr}.span{grid-column:1/-1}}
+.card{position:relative;background:linear-gradient(160deg,var(--glass2),var(--glass));border:1px solid var(--edge);border-radius:var(--r);padding:16px;
+  backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 40px rgba(0,0,0,.35);min-width:0}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.12),transparent 40%)}
+h2{margin:0 0 10px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:8px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:17px;letter-spacing:-.01em}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);font-size:12px;color:var(--mute);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.dot.on{background:var(--up);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 2s infinite}
+.dot.bad{background:var(--down)}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.hero .big{font-size:clamp(40px,11vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.chg{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}.mute{color:var(--mute)}.faint{color:var(--faint)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:14px}
+.stat{background:var(--glass);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 12px;min-width:0}
+.stat b{display:block;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat span{font-size:12px;color:var(--mute)}
+.ring{--p:0;width:54px;height:54px;border-radius:50%;background:conic-gradient(var(--acc) calc(var(--p)*1%),rgba(255,255,255,.08) 0);display:grid;place-items:center;flex:none}
+.ring i{width:44px;height:44px;border-radius:50%;background:#141726;display:grid;place-items:center;font-style:normal;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.next{display:flex;align-items:center;gap:12px;margin-top:14px}
+svg{display:block;width:100%;overflow:visible}
+.coins{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.coin{background:var(--glass);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px;transition:background .6s}
+.coin .n{font-weight:700}.coin .p{font-size:18px;font-variant-numeric:tabular-nums;margin:2px 0}
+.flash-up{background:rgba(52,211,153,.18)!important}.flash-down{background:rgba(251,113,133,.18)!important}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid rgba(255,255,255,.07)}
+.row:first-of-type{border-top:0}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;letter-spacing:.04em}
+.tag.buy{background:rgba(52,211,153,.16);color:var(--up)}.tag.sell{background:rgba(251,113,133,.16);color:var(--down)}
+.feed .row{animation:none}
+.feed .row.new{animation:slide .7s cubic-bezier(.2,.8,.2,1)}
+@keyframes slide{from{opacity:0;transform:translateY(-10px);background:rgba(139,157,255,.18)}to{opacity:1;transform:none}}
+.empty{color:var(--mute);font-size:14px;padding:6px 0}
+.bar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0 2px}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--up),var(--warn) 70%,var(--down));transition:width .6s}
+.lim{margin-bottom:12px}.lim .t{display:flex;justify-content:space-between;font-size:13px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+label b{color:var(--ink);float:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--acc)}
+input[type=number]{width:100%;background:var(--glass);border:1px solid var(--edge);color:var(--ink);border-radius:12px;padding:9px 12px;font:inherit}
+.seg{display:flex;gap:6px;margin-top:6px}
+.seg button{flex:1;background:var(--glass);border:1px solid var(--edge);color:var(--ink);border-radius:12px;padding:8px;font:inherit;font-size:13px;cursor:pointer}
+.seg button.on{background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:transparent;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:inline-block;margin-top:10px;padding:9px 14px;border-radius:12px;background:var(--glass2);border:1px solid var(--edge);color:var(--ink);text-decoration:none;font-size:13px}
+.note{font-size:12px;color:var(--faint);margin-top:10px}
+.i{width:20px;height:20px;border-radius:50%;border:1px solid var(--edge);background:var(--glass);color:var(--mute);font:600 11px/18px Georgia,serif;cursor:pointer;padding:0;flex:none}
+.tip{display:none;margin:-4px 0 10px;padding:10px 12px;border-radius:12px;background:#1a1e30;border:1px solid var(--edge);font-size:13px;color:#d6dbea;text-transform:none;letter-spacing:0;font-weight:400}
+.tip.show{display:block}
+.banner{display:none;padding:12px 14px;border-radius:14px;background:rgba(251,113,133,.16);border:1px solid rgba(251,113,133,.4);color:#ffd1d9;font-weight:600}
+.banner.show{display:block}
+footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="aur"></div>
+<div class="wrap">
+
+  <div class="span top">
+    <div class="brand">Live Trader <span class="mute" style="font-weight:500">· practice money</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="pill"><span id="dot" class="dot"></span><span id="conn">Connecting…</span></span>
+      <span class="pill" id="prof">UK spot · Coinbase</span>
+    </div>
+  </div>
+
+  <div class="span banner" id="killbanner"></div>
+
+  <section class="card hero">
+    <h2>Account value <button class="i" data-tip="t-val">i</button></h2>
+    <div class="tip" id="t-val">What the practice account is worth right now: cash plus any coins held, priced at the latest Coinbase price. Updates every couple of seconds. No real money is used yet.</div>
+    <div class="big" id="val">—</div>
+    <div class="chg" id="chg">&nbsp;</div>
+    <svg id="eq" height="70" viewBox="0 0 300 70" preserveAspectRatio="none"></svg>
+    <div class="stats">
+      <div class="stat"><span>Cash</span><b id="cash">—</b></div>
+      <div class="stat"><span>In coins</span><b id="inv">—</b></div>
+      <div class="stat"><span>Today</span><b id="today">—</b></div>
+      <div class="stat"><span>Fees paid</span><b id="fees">—</b></div>
+    </div>
+    <div class="next">
+      <div class="ring" id="ring"><i id="cd">—</i></div>
+      <div><b>Next decision</b><div class="mute" style="font-size:13px">Once a minute the bot looks at each coin and decides to buy, sell or wait. <span id="eng"></span></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Open bets <button class="i" data-tip="t-pos">i</button></h2>
+    <div class="tip" id="t-pos">Coins the bot currently holds. "Profit/loss" is what you'd get back or lose if it sold right now, before the selling fee. Every bet has a stop-loss: if the price falls by the stop amount, the bot sells automatically.</div>
+    <div id="pos"><div class="empty">No bets open, all in cash.</div></div>
+    <h2 style="margin-top:16px">Why it's waiting <button class="i" data-tip="t-hold">i</button></h2>
+    <div class="tip" id="t-hold">The most common reasons the bot chose not to trade. Waiting is normal: with UK fees of about 1.2% for a buy and sell, it only bets when it expects a bigger move than that.</div>
+    <div id="holds" class="mute" style="font-size:13px">—</div>
+  </section>
+
+  <section class="card span">
+    <h2>Live prices, last hour <button class="i" data-tip="t-px">i</button></h2>
+    <div class="tip" id="t-px">Coinbase prices in pounds, straight from the order book. The line shows the last hour; the % is the change over that hour. Cards flash green or red when the price ticks.</div>
+    <div class="coins" id="coins"></div>
+  </section>
+
+  <section class="card">
+    <h2>Trades, as they happen <button class="i" data-tip="t-tr">i</button></h2>
+    <div class="tip" id="t-tr">Every buy and sell the bot makes, newest first. New ones slide in within a few seconds. Fee is the Coinbase charge (about 0.6% each way).</div>
+    <div class="feed" id="feed"><div class="empty">No trades yet. The bot only trades when the odds look good enough to beat fees.</div></div>
+    <div class="note" id="counts"></div>
+  </section>
+
+  <section class="card">
+    <h2>Safety limits <button class="i" data-tip="t-safe">i</button></h2>
+    <div class="tip" id="t-safe">Hard rules the bot cannot break. If the account falls 15% from its best, or 3% in one day, it stops trading by itself. It can hold at most 2 coins, never bets more than 30% on one, never borrows and never bets on prices falling (not allowed for UK retail).</div>
+    <div class="lim"><div class="t"><span>Drop from best</span><span id="ddt">—</span></div><div class="bar"><i id="ddb" style="width:0"></i></div></div>
+    <div class="lim"><div class="t"><span>Today's loss</span><span id="dlt">—</span></div><div class="bar"><i id="dlb" style="width:0"></i></div></div>
+    <div class="lim"><div class="t"><span>Money in bets</span><span id="gt">—</span></div><div class="bar"><i id="gb" style="width:0"></i></div></div>
+    <div class="lim"><div class="t"><span>Coins held</span><span id="nt">—</span></div><div class="bar"><i id="nb" style="width:0"></i></div></div>
+  </section>
+
+  <section class="card span">
+    <h2>Compound growth <button class="i" data-tip="t-cmp">i</button></h2>
+    <div class="tip" id="t-cmp">Compounding is on: every bet is sized from the account's current value, so profits make the next bets bigger (and losses make them smaller). This calculator shows what steady monthly returns plus top-ups would add up to. It is maths, not a forecast: real returns go up and down, and can be negative.</div>
+    <div class="grid2">
+      <div><label>Start <b id="lS"></b></label><input id="cS" type="number" min="0" step="10" value="50"></div>
+      <div><label>Top-up each month <b id="lT"></b></label><input id="cT" type="number" min="0" step="5" value="0"></div>
+    </div>
+    <label>Monthly return <b id="lR"></b></label>
+    <input id="cR" type="range" min="-10" max="20" step="0.5" value="3">
+    <div class="seg" id="cM"><button data-m="12" class="on">1 year</button><button data-m="24">2 years</button><button data-m="36">3 years</button></div>
+    <svg id="cChart" height="140" viewBox="0 0 300 140" preserveAspectRatio="none" style="margin-top:14px"></svg>
+    <div class="stats">
+      <div class="stat"><span>Ends at</span><b id="cEnd">—</b></div>
+      <div class="stat"><span>You put in</span><b id="cIn">—</b></div>
+      <div class="stat"><span>Growth</span><b id="cG">—</b></div>
+      <div class="stat"><span>Bot so far, per month</span><b id="cAct">—</b></div>
+    </div>
+    <button class="btn" id="useAct" style="display:none">Use the bot's rate so far</button>
+    <div class="note">"Bot so far" is the practice account's return turned into a monthly rate. Early on it swings wildly and says little about the future.</div>
+  </section>
+
+  <section class="card span">
+    <h2>UK tax record <button class="i" data-tip="t-tax">i</button></h2>
+    <div class="tip" id="t-tax">Selling crypto is a "disposal" for Capital Gains Tax. The bot keeps an HMRC-style record using the same-day, 30-day and pooled-cost rules, with fees counted. The first £3,000 of net gains each tax year (6 April to 5 April) is tax-free. Practice trades aren't taxable; this is so the real account is ready. Not tax advice.</div>
+    <div class="stats" id="tax"><div class="empty">No sells yet this tax year.</div></div>
+    <a class="btn" href="tax.csv">Download record (CSV)</a>
+  </section>
+
+  <footer class="span">Practice account with live Coinbase prices and pretend money. Not financial advice. Crypto can lose value fast. <span id="upd"></span></footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(v,d)=>{if(v==null||isNaN(v))return"—";const a=Math.abs(v);const dp=d!=null?d:(a<1?2:a<1000?2:0);return(v<0?"-":"")+"£"+a.toLocaleString("en-GB",{minimumFractionDigits:dp,maximumFractionDigits:dp})};
+const sgn=(v,d)=>(v>0?"+":"")+fmt(v,d);
+const pct=(v,d=2)=>v==null||isNaN(v)?"—":(v>0?"+":"")+v.toFixed(d)+"%";
+const px=v=>v>=1000?"£"+v.toLocaleString("en-GB",{maximumFractionDigits:0}):v>=1?"£"+v.toFixed(2):"£"+v.toFixed(4);
+const cls=(el,v)=>{el.classList.toggle("up",v>0);el.classList.toggle("down",v<0)};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const tm=ts=>new Date(ts*1000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"Europe/London"});
+
+document.querySelectorAll(".i").forEach(b=>b.onclick=()=>$(b.dataset.tip).classList.toggle("show"));
+
+function spark(svg,pts,opt={}){
+  const W=300,H=+svg.getAttribute("height");
+  if(!pts||pts.length<2){svg.innerHTML="";return}
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  let lo=Math.min(...ys),hi=Math.max(...ys);if(opt.base!=null){lo=Math.min(lo,opt.base);hi=Math.max(hi,opt.base)}
+  if(hi-lo<1e-9){hi+=1;lo-=1}
+  const x0=xs[0],x1=xs[xs.length-1]||x0+1;
+  const X=x=>(x-x0)/(x1-x0||1)*W,Y=y=>H-4-(y-lo)/(hi-lo)*(H-8);
+  const d=pts.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join("");
+  const up=ys[ys.length-1]>=(opt.base!=null?opt.base:ys[0]);
+  const c=opt.color||(up?"#34d399":"#fb7185"),id="g"+Math.random().toString(36).slice(2,7);
+  let base="";if(opt.base!=null){const by=Y(opt.base).toFixed(1);base=`<line x1="0" x2="${W}" y1="${by}" y2="${by}" stroke="rgba(255,255,255,.18)" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>`}
+  svg.innerHTML=`<defs><linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".35"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>${base}<path d="${d}L${W},${H}L0,${H}Z" fill="url(#${id})"/><path d="${d}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`+(opt.extra||"");
+}
+
+let L=null,lastPx={},seenTrades=new Set(),firstPaint=true,lastMsg=0,cdBase=null;
+
+function render(d){
+  L=d;lastMsg=Date.now();
+  const start=d.start,val=d.value,inv=val-d.cash;
+  $("val").textContent=fmt(val);
+  const ch=val-start;$("chg").textContent=`${sgn(ch)} (${pct(ch/start*100)}) since start`;cls($("chg"),ch);
+  $("cash").textContent=fmt(d.cash);$("inv").textContent=fmt(inv);
+  const td=val-d.day_start;$("today").textContent=sgn(td);cls($("today"),td);
+  $("fees").textContent=fmt(d.fees);
+  $("eng").textContent=d.engine?`(using ${d.engine})`:"";
+  $("prof").textContent=(d.profile==="uk-spot"?"UK spot · Coinbase":d.profile||"")+" · "+(d.currency||"GBP");
+  const eq=(d.equity_series||[]).slice();eq.push([d.ts,val]);
+  spark($("eq"),eq,{base:start});
+  cdBase={s:d.next_decision_s,at:Date.now()};
+
+  // kill
+  const k=d.kill||{};const kb=$("killbanner");
+  if(k.tripped||k.file){kb.textContent="Trading stopped: "+(k.reason||"stop file present")+". The bot will not open new bets until this is cleared.";kb.classList.add("show")}else kb.classList.remove("show");
+
+  // positions
+  const P=d.positions||[];
+  $("pos").innerHTML=P.length?P.map(p=>`<div class="row"><div><b>${esc(p.sym)}</b> <span class="mute" style="font-size:13px">${fmt(p.value)} · bought at ${px(p.entry)}</span><div class="faint" style="font-size:12px">stop-loss ${p.stop_bps?(p.stop_bps/100).toFixed(1)+"% below":"set"} · now ${px(p.mark)}</div></div><div style="text-align:right"><b class="${p.upnl>=0?"up":"down"}">${sgn(p.upnl)}</b><div class="${p.upnl>=0?"up":"down"}" style="font-size:12px">${pct(p.upnl_pct)}</div></div></div>`).join(""):`<div class="empty">No bets open, all in cash.</div>`;
+  const H=Object.entries(d.holds||{});
+  $("holds").innerHTML=H.length?H.slice(0,4).map(([r,n])=>`<div class="row" style="padding:6px 0"><span>${esc(r)}</span><span class="faint">${n}×</span></div>`).join(""):"—";
+
+  // prices
+  const C=d.prices||{},box=$("coins");
+  Object.entries(C).forEach(([s,p])=>{
+    let el=$("c-"+s);
+    if(!el){el=document.createElement("div");el.className="coin";el.id="c-"+s;el.innerHTML=`<div style="display:flex;justify-content:space-between"><span class="n">${esc(s)}</span><span class="h" style="font-size:13px;font-weight:600"></span></div><div class="p"></div><svg height="44" viewBox="0 0 300 44" preserveAspectRatio="none"></svg>`;box.appendChild(el)}
+    el.querySelector(".p").textContent=px(p.mid);
+    const h=el.querySelector(".h");h.textContent=pct(p.chg_1h);cls(h,p.chg_1h);
+    const hs=(p.hist||[]).slice();hs.push([p.ts,p.mid]);spark(el.querySelector("svg"),hs);
+    if(lastPx[s]!=null&&p.mid!==lastPx[s]){const c=p.mid>lastPx[s]?"flash-up":"flash-down";el.classList.remove("flash-up","flash-down");void el.offsetWidth;el.classList.add(c);setTimeout(()=>el.classList.remove(c),700)}
+    lastPx[s]=p.mid;
+  });
+
+  // trades
+  const T=(d.trades||[]).slice().reverse();
+  $("feed").innerHTML=T.length?T.map(t=>{const key=t.ts+t.sym+t.side+t.qty;const isNew=!firstPaint&&!seenTrades.has(key);seenTrades.add(key);
+    const n=t.qty*t.px;return `<div class="row${isNew?" new":""}"><div><span class="tag ${t.side==="buy"?"buy":"sell"}">${t.side==="buy"?"BUY":"SELL"}</span> <b>${esc((t.sym||"").split("-")[0])}</b> <span class="mute" style="font-size:13px">${fmt(n)} at ${px(t.px)}</span><div class="faint" style="font-size:12px">${tm(t.ts)} · fee ${fmt(t.fee,2)}${t.reason?" · "+esc(t.reason):""}</div></div></div>`}).join(""):`<div class="empty">No trades yet. The bot only trades when the odds look good enough to beat fees.</div>`;
+  const c=d.counts||{};$("counts").textContent=c.decisions!=null?`${c.decisions||0} decisions · ${c.fills||0} trades · ${c.rejects||0} blocked by safety rules`:"";
+  firstPaint=false;
+
+  // limits
+  const lim=d.limits||{};
+  const dd=d.peak>0?(1-val/d.peak):0,dl=d.day_start>0?Math.max(0,1-val/d.day_start):0;
+  bar("dd",dd,lim.max_drawdown,`${(dd*100).toFixed(1)}% of ${(lim.max_drawdown*100).toFixed(0)}% limit`);
+  bar("dl",dl,lim.max_daily_loss,`${(dl*100).toFixed(1)}% of ${(lim.max_daily_loss*100).toFixed(0)}% limit`);
+  const g=val>0?inv/val:0;bar("g",g,lim.max_gross_frac,`${(g*100).toFixed(0)}% of ${(lim.max_gross_frac*100).toFixed(0)}% max`);
+  const mo=lim.max_open_positions||2;bar("n",P.length,mo,`${P.length} of ${mo}`);
+
+  // tax
+  const tx=d.tax;
+  if(tx&&tx.years&&Object.keys(tx.years).length){
+    const [yr,y]=Object.entries(tx.years).sort()[Object.keys(tx.years).length-1];
+    const left=Math.max(0,y.annual_exempt_amount-Math.max(0,y.net));
+    $("tax").innerHTML=`<div class="stat"><span>Tax year</span><b>${esc(yr)}</b></div><div class="stat"><span>Sells</span><b>${y.disposals}</b></div><div class="stat"><span>Gains</span><b class="up">${fmt(y.gains)}</b></div><div class="stat"><span>Losses</span><b class="down">${fmt(y.losses)}</b></div><div class="stat"><span>Net</span><b>${sgn(y.net)}</b></div><div class="stat"><span>Tax-free left</span><b>${fmt(left,0)}</b></div>`;
+  }else $("tax").innerHTML=`<div class="empty">No sells yet this tax year, so nothing to report.</div>`;
+
+  actualRate();
+  $("upd").textContent="Updated "+tm(d.ts)+" UK time.";
+}
+function bar(id,v,max,txt){const f=max?Math.min(1,v/max):0;$(id+"b").style.width=(f*100).toFixed(1)+"%";$(id+"t").textContent=txt}
+
+// countdown and staleness
+setInterval(()=>{
+  if(cdBase){const s=Math.max(0,cdBase.s-(Date.now()-cdBase.at)/1000);$("cd").textContent=Math.ceil(s)+"s";$("ring").style.setProperty("--p",(100-s/60*100).toFixed(0))}
+  const age=(Date.now()-lastMsg)/1000,dataAge=L?Date.now()/1000-L.ts:1e9;
+  if(!lastMsg){return}
+  if(age>20||dataAge>60){$("dot").className="dot bad";$("conn").textContent=dataAge>60?"Trader paused ("+Math.round(dataAge/60)+" min old)":"Reconnecting…"}
+  else{$("dot").className="dot on";$("conn").textContent="Live · "+Math.round(dataAge)+"s ago"}
+},500);
+
+// transport: SSE, polling fallback
+let es,polling=null;
+function poll(){if(polling)return;polling=setInterval(()=>fetch("live.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>d&&render(d)).catch(()=>{}),3000)}
+function connect(){
+  if(!window.EventSource){poll();return}
+  es=new EventSource("events");
+  es.onmessage=e=>{try{render(JSON.parse(e.data))}catch(_){}; if(polling){clearInterval(polling);polling=null}};
+  es.onerror=()=>{poll()};
+}
+fetch("live.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>d&&render(d)).catch(()=>{});
+connect();
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&(!es||es.readyState===2)){try{es&&es.close()}catch(_){}connect()}});
+
+// compound calculator
+let months=12;
+function compound(){
+  const S=Math.max(0,+$("cS").value||0),T=Math.max(0,+$("cT").value||0),r=(+$("cR").value)/100;
+  $("lS").textContent=fmt(S,0);$("lT").textContent=fmt(T,0);$("lR").textContent=pct(r*100,1);
+  let v=S,inp=S;const pts=[[0,v]],base=[[0,S]];
+  for(let m=1;m<=months;m++){v=v*(1+r)+T;inp+=T;pts.push([m,v]);base.push([m,inp])}
+  const W=300,H=140,X=m=>m/months*W;
+  const all=pts.concat(base).map(p=>p[1]),lo2=Math.min(0,...all),hi2=Math.max(...all);
+  const Y2=y=>H-4-(y-lo2)/((hi2-lo2)||1)*(H-8);
+  // redraw with shared scale
+  const d=pts.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+","+Y2(p[1]).toFixed(1)).join("");
+  const b=base.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+","+Y2(p[1]).toFixed(1)).join("");
+  const c=r>=0?"#8b9dff":"#fb7185";
+  $("cChart").innerHTML=`<defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".4"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs><path d="${d}L${W},${H}L0,${H}Z" fill="url(#cg)"/><path d="${b}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="${c}" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`;
+  $("cEnd").textContent=fmt(v);$("cIn").textContent=fmt(inp);const g=v-inp;$("cG").textContent=sgn(g);cls($("cG"),g);
+}
+["cS","cT","cR"].forEach(id=>$(id).addEventListener("input",compound));
+document.querySelectorAll("#cM button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#cM button").forEach(x=>x.classList.remove("on"));b.classList.add("on");months=+b.dataset.m;compound()});
+let actRate=null;
+function actualRate(){
+  if(!L||!L.started_ts)return;
+  const days=(L.ts-L.started_ts)/86400;
+  if(days<7){$("cAct").textContent="after 1 week";$("useAct").style.display="none";return}
+  actRate=(Math.pow(L.value/L.start,30.44/days)-1)*100;
+  $("cAct").textContent=pct(actRate,1);cls($("cAct"),actRate);$("useAct").style.display="inline-block";
+}
+$("useAct").onclick=()=>{if(actRate!=null){$("cR").value=Math.max(-10,Math.min(20,actRate)).toFixed(1);compound()}};
+compound();
+</script>
+</body>
+</html>

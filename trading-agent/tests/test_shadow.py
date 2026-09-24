@@ -163,7 +163,7 @@ def test_shadow_module_cannot_reach_a_venue():
 
 
 def test_cli_shadow_command_wires_up(monkeypatch, tmp_path):
-    """Runs the real `python -m trader shadow` path up to the loop."""
+    """Runs the real `python -m trader shadow` path up to the loop, for both profiles."""
     import sys
     import trader.__main__ as cli
     import trader.shadow as sh
@@ -171,7 +171,7 @@ def test_cli_shadow_command_wires_up(monkeypatch, tmp_path):
 
     class Stub:
         def __init__(self, scfg, cfg, schemas, engine, fx, engine_name, brain=None, calibrator=None):
-            seen.update(scfg=scfg, schemas=schemas, engine_name=engine_name, fx=fx)
+            seen.update(scfg=scfg, cfg=cfg, schemas=schemas, engine_name=engine_name, fx=fx)
 
         def run(self):
             seen["ran"] = True
@@ -179,7 +179,18 @@ def test_cli_shadow_command_wires_up(monkeypatch, tmp_path):
     monkeypatch.setattr(sh, "ShadowTrader", Stub)
     monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
     monkeypatch.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
     monkeypatch.setattr(sys, "argv", ["trader", "shadow", "--tape-dir", str(tmp_path), "--out", str(tmp_path / "o")])
     cli.main()
-    assert seen["ran"] and seen["engine_name"] == "practice" and len(seen["schemas"]) == 7
-    assert seen["scfg"].start_gbp == 10_000 and 0.3 < seen["fx"] < 2
+    assert seen["ran"] and seen["engine_name"] == "practice"
+    assert sorted(seen["schemas"]) == ["AAVE-GBP", "BTC-GBP", "ETH-GBP", "SOL-GBP"]
+    s, c = seen["scfg"], seen["cfg"]
+    assert (s.start_gbp, s.tape_prefix, s.currency) == (50.0, "cb", "GBP")
+    assert c.spot and not c.risk.allow_short and c.risk.require_cash and c.costs.taker_fee_bps == 60.0
+    assert all(sch.allowed_directions == ("long", "neutral") for sch in seen["schemas"].values())
+
+    seen.clear()
+    monkeypatch.setattr(sys, "argv", ["trader", "shadow", "--profile", "perp-research", "--tape-dir", str(tmp_path),
+                                      "--out", str(tmp_path / "p")])
+    cli.main()
+    assert len(seen["schemas"]) == 7 and seen["scfg"].start_gbp == 10_000 and seen["scfg"].tape_prefix == "okx"

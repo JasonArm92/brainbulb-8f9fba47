@@ -1,0 +1,5 @@
+{
+  "_note": "Raw Coinbase Exchange public API responses captured 2026-09-24 ~22:18 UTC. book: top 3 levels of BTC-GBP level=2. trades: BTC-GBP limit=3 (side = maker side).",
+  "book": {"bids":[["63640.03","0.0039",1],["63640.02","0.00713358",1],["63632.44","0.0039",1]],"asks":[["63650.77","0.00713238",1],["63659.04","0.01122957",1],["63659.05","0.01881",1]],"sequence":40136655877,"auction_mode":false,"auction":null,"time":"2026-09-24T22:18:41.278374160Z"},
+  "trades": [{"trade_id":49432251,"side":"sell","size":"0.00387509","price":"63691.58000000","time":"2026-09-24T22:18:10.175705Z"},{"trade_id":49432250,"side":"buy","size":"0.00029445","price":"63682.93000000","time":"2026-09-24T22:18:00.367606Z"},{"trade_id":49432249,"side":"sell","size":"0.00006233","price":"63690.40000000","time":"2026-09-24T22:17:51.437501Z"}]
+}

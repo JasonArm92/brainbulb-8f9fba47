@@ -41,15 +41,28 @@ def main() -> None:
     rp.add_argument("--out", default="runtime/replay")
     sh = sub.add_parser("shadow")
     sh.add_argument("--tape-dir", default="tapes")
-    sh.add_argument("--out", default="runtime/shadow")
-    sh.add_argument("--start-gbp", type=float, default=10_000.0)
+    sh.add_argument("--out", default=None, help="default runtime/uk-spot or runtime/shadow")
+    sh.add_argument("--profile", choices=["uk-spot", "perp-research"], default="uk-spot",
+                    help="uk-spot: Coinbase GBP spot, up-bets only, small-account rules (UK retail). "
+                         "perp-research: the original OKX perpetuals set-up, research only.")
+    sh.add_argument("--start-gbp", type=float, default=None, help="default 50 for uk-spot, 10000 for perp-research")
     sh.add_argument("--engine", choices=["auto", "sim", "jev"], default="auto",
                     help="auto = Jev if TYPESAFE_API_KEY is set, otherwise the practice engine")
+    lv = sub.add_parser("live", help="real-time web view of the auto-trader (read-only)")
+    lv.add_argument("--dir", default="runtime/uk-spot")
+    lv.add_argument("--host", default="0.0.0.0")
+    lv.add_argument("--port", type=int, default=8787)
+    lv.add_argument("--token-file", default="runtime/live_token")
     pr = sub.add_parser("promote")
     pr.add_argument("path")
     pr.add_argument("--approved-by", required=True)
     a = ap.parse_args()
     cfg = AgentConfig()
+
+    if a.cmd == "live":
+        from .live_server import serve
+        serve(os.path.join(a.dir, "live.json"), os.path.join(a.dir, "summary.json"), a.token_file, a.host, a.port)
+        return
 
     with open("research/finalists.json") as f:
         finalists = json.load(f)["finalists"]
@@ -130,6 +143,15 @@ def main() -> None:
         from .jev_client import JevEngine, SimulatedEngine
         from .shadow import ShadowConfig, ShadowTrader
 
+        uk = a.profile == "uk-spot"
+        if uk:
+            from .config import COINBASE_GBP_COSTS, UK_SMALL_ACCOUNT
+            with open("research/uk_spot.json") as f:
+                finalists = json.load(f)["finalists"]
+            cfg = dataclasses.replace(cfg, risk=UK_SMALL_ACCOUNT, costs=COINBASE_GBP_COSTS, spot=True,
+                                      min_stop_bps=250.0)
+        out = a.out or ("runtime/uk-spot" if uk else "runtime/shadow")
+        start = a.start_gbp if a.start_gbp is not None else (50.0 if uk else 10_000.0)
         schemas = {fin["symbol"]: load_latest(cfg.schema_dir, fin["symbol"]) for fin in finalists}
         use_jev = a.engine == "jev" or (a.engine == "auto" and os.environ.get("TYPESAFE_API_KEY"))
         engine = JevEngine() if use_jev else SimulatedEngine()
@@ -138,8 +160,9 @@ def main() -> None:
                 fx = float(json.load(f)["gbp_per_usd"])
         except (OSError, ValueError, KeyError):
             fx = 0.755
-        scfg = ShadowConfig(tape_dir=a.tape_dir, out_dir=a.out, start_gbp=a.start_gbp)
-        rcfg = dataclasses.replace(cfg, ledger_path=os.path.join(a.out, "unused.jsonl"))
+        scfg = ShadowConfig(tape_dir=a.tape_dir, out_dir=out, start_gbp=start,
+                            tape_prefix="cb" if uk else "okx", currency="GBP" if uk else "USD", profile=a.profile)
+        rcfg = dataclasses.replace(cfg, ledger_path=os.path.join(out, "unused.jsonl"))
         ShadowTrader(scfg, rcfg, schemas, engine, fx, engine_name="jev" if use_jev else "practice",
                      brain=make_brain(), calibrator=Calibrator.load("runtime/calibration.json")).run()
         return

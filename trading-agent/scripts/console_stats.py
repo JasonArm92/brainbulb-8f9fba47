@@ -38,12 +38,17 @@ CACHE = os.path.join(TAPES, ".stats-cache.json")
 TARGET_DAYS = 30
 GAP_MIN = 10            # minutes without a book that count as a gap
 STALE_MIN = 15          # newest book older than this -> critical
-LABEL = "com.jason.okx-recorder"
-SHADOW_LABEL = "com.jason.shadow-trader"
-SHADOW_SUMMARY = os.path.join(ROOT, "runtime", "shadow", "summary.json")
+# UK set-up (default): Coinbase GBP spot tapes and the uk-spot practice trader.
+# CONSOLE_VENUE=okx reports on the older OKX research recorder instead.
+VENUE = os.environ.get("CONSOLE_VENUE", "coinbase")
+PREFIX = "cb" if VENUE == "coinbase" else "okx"
+LABEL = "com.jason.cb-recorder" if VENUE == "coinbase" else "com.jason.okx-recorder"
+SHADOW_LABEL = "com.jason.uk-trader" if VENUE == "coinbase" else "com.jason.shadow-trader"
+SHADOW_SUMMARY = os.path.join(ROOT, "runtime", "uk-spot" if VENUE == "coinbase" else "shadow", "summary.json")
 FX_URL = "https://api.coinbase.com/v2/exchange-rates?currency=USD"
 FX_CACHE = os.path.join(TAPES, ".fx.json")
-UNLOCKS = {"SUI": "2026-10-01", "ENA": "2026-10-02", "HYPE": "2026-10-06"}
+OKX_UNLOCKS = {"SUI": "2026-10-01", "ENA": "2026-10-02", "HYPE": "2026-10-06"}
+UNLOCKS = OKX_UNLOCKS if VENUE == "okx" else {}
 
 _TS = re.compile(r'"ts":\s*([0-9.]+)')
 _SYM = re.compile(r'"sym":\s*"([A-Z0-9-]+)"')
@@ -125,7 +130,7 @@ def scan_file(path: str) -> dict:
 
 
 def day_of(path: str) -> str:
-    m = re.search(r"okx-(\d{8})\.jsonl", os.path.basename(path))
+    m = re.search(r"(?:okx|cb)-(\d{8})\.jsonl", os.path.basename(path))
     return m.group(1) if m else ""
 
 
@@ -170,7 +175,7 @@ def system_state() -> dict:
             "on_ac": on_ac, "disk_free_gb": round(du.free / 1e9, 1),
             "disk_used_pct": round(100 * (du.total - du.free) / du.total, 1),
             "tape_bytes": sum(os.path.getsize(os.path.join(TAPES, f)) for f in os.listdir(TAPES)
-                              if f.startswith("okx-")) if os.path.isdir(TAPES) else 0}
+                              if f.startswith(PREFIX + "-")) if os.path.isdir(TAPES) else 0}
 
 
 def fx_rate(now: float) -> dict | None:
@@ -201,6 +206,28 @@ def fx_rate(now: float) -> dict | None:
 OKX_CANDLES = "https://www.okx.com/api/v5/market/candles?instId={inst}&bar=1H&limit=48"
 COINS = {"BTC": "BTC-USDT-SWAP", "ETH": "ETH-USDT-SWAP", "SOL": "SOL-USDT-SWAP", "HYPE": "HYPE-USDT-SWAP",
          "AAVE": "AAVE-USDT-SWAP", "ENA": "ENA-USDT-SWAP", "SUI": "SUI-USDT-SWAP"}
+
+
+CB_CANDLES = "https://api.exchange.coinbase.com/products/{coin}-GBP/candles?granularity=3600"
+CB_COINS = ["BTC", "ETH", "SOL", "AAVE"]
+
+
+def _coin(sym: str) -> str:
+    return sym.replace("-PERP", "").replace("-GBP", "")
+
+
+def cb_hourly(coin: str, now: float) -> list | None:
+    """48 hourly GBP closes from Coinbase's public candles, oldest first.
+    Rows are [time, low, high, open, close, volume], newest first."""
+    try:
+        req = urllib.request.Request(CB_CANDLES.format(coin=coin), headers={"User-Agent": "trading-agent-console/1.0"})
+        with urllib.request.urlopen(req, timeout=6) as r:
+            d = json.loads(r.read())
+        if not isinstance(d, list) or not d:
+            return None
+        return sorted([float(c[0]), float(c[4])] for c in d if c[0] >= now - 48 * 3600)
+    except Exception:
+        return None
 
 
 def okx_hourly(coin: str) -> list | None:
@@ -241,7 +268,7 @@ def shadow_state(now: float) -> dict | None:
 def collect(now: float | None = None) -> dict:
     now = now or time.time()
     files = sorted(os.path.join(TAPES, f) for f in os.listdir(TAPES)
-                   if re.match(r"okx-\d{8}\.jsonl(\.gz)?$", f)) if os.path.isdir(TAPES) else []
+                   if re.match(PREFIX + r"-\d{8}\.jsonl(\.gz)?$", f)) if os.path.isdir(TAPES) else []
     try:
         cache = json.load(open(CACHE))
     except (OSError, ValueError):
@@ -257,7 +284,7 @@ def collect(now: float | None = None) -> dict:
             continue
         scans[day] = scan_file(p)
         if day != today:
-            cache = {k: v for k, v in cache.items() if not k.startswith(f"okx-{day}")}
+            cache = {k: v for k, v in cache.items() if not k.startswith(f"{PREFIX}-{day}")}
             cache[key] = scans[day]
     try:
         with open(CACHE, "w") as f:
@@ -279,13 +306,18 @@ def collect(now: float | None = None) -> dict:
     spark: dict[str, list] = {}
     for d in sorted(scans):
         for k, pts in scans[d].get("spark", {}).items():
-            spark.setdefault(k.replace("-PERP", ""), []).extend(pts)
+            spark.setdefault(_coin(k), []).extend(pts)
     spark = {k: [p for p in v if p[0] >= now - 48 * 3600] for k, v in spark.items()}
     spark_src = "tape"
     if os.environ.get("CONSOLE_OFFLINE") != "1":
-        fetched = {c: okx_hourly(c) for c in COINS}
+        if VENUE == "coinbase":
+            fetched = {c: cb_hourly(c, now) for c in CB_COINS}
+            src = "coinbase_1h_gbp"
+        else:
+            fetched = {c: okx_hourly(c) for c in COINS}
+            src = "okx_1h"
         if all(fetched.values()):
-            spark, spark_src = fetched, "okx_1h"
+            spark, spark_src = fetched, src
     tot = {k: sum(s[k] for s in scans.values()) for k in ("malformed", "crossed", "out_of_order", "recorder_gaps")}
     sysst = system_state()
 
@@ -333,13 +365,14 @@ def collect(now: float | None = None) -> dict:
     return {
         "updated_utc": datetime.fromtimestamp(now, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "updated_ts": now,
+        "venue": VENUE, "currency": "GBP" if VENUE == "coinbase" else "USD",
         "rec_start": rec_start, "rec_last": rec_last,
         "covered_hours": round(covered_h, 2),
         "target_hours": TARGET_DAYS * 24,
         "books_per_coin": books,
         "book_interval_s": round((rec_last - rec_start) / max(1, max(books.values(), default=1)), 2) if rec_start else None,
         "tape": tot,
-        "newest": {k.replace("-PERP", ""): v for k, v in sorted(newest.items())},
+        "newest": {_coin(k): v for k, v in sorted(newest.items())},
         "system": sysst,
         "fx": fx_rate(now),
         "alerts": alerts,
