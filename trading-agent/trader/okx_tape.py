@@ -6,10 +6,13 @@ account data. This is a data recorder for the replay rung, not a venue adapter.
 
 Limits of REST polling, stated plainly:
   * the book is sampled every `poll_s`, so faster book changes are missed;
-  * each trades call returns the newest 100 trades; if more printed since the
-    last poll, the recorder writes a `gap` line (detected via tradeId), so the
-    replay report can show how much flow was lost. A websocket recorder removes
-    both limits and is the upgrade path.
+  * each trades call returns the newest 500 trades (the endpoint maximum); if
+    more printed since the last poll, the recorder writes a `gap` line
+    (detected via tradeId), so the replay report can show how much flow was
+    lost. A websocket recorder removes both limits and is the upgrade path.
+
+All book and trade requests in one poll run in parallel (14 requests for 7
+symbols), well inside OKX's public limits (books 40/2s, trades 100/2s per IP).
 
 Sizes are converted from contracts to base units with the instrument's ctVal.
 """
@@ -18,6 +21,7 @@ from __future__ import annotations
 
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
@@ -55,7 +59,11 @@ def trade_lines(resp: dict, sym: str, ct_val: float, last_id: int | None) -> tup
                "detail": f"{missed} trade ids not captured"}
     lines = [{"t": "trade", "ts": int(r["ts"]) / 1000, "sym": sym, "px": float(r["px"]),
               "qty": float(r["sz"]) * ct_val, "side": r["side"], "id": r["tradeId"]} for r in new]
-    return lines, (int(rows[-1]["tradeId"]) if rows else last_id), gap
+    # Never move backwards: a stale (cached) response must not rewind the cursor,
+    # or the next fresh response would re-emit trades already written.
+    newest = int(rows[-1]["tradeId"]) if rows else None
+    cursor = newest if last_id is None else max(last_id, newest if newest is not None else last_id)
+    return lines, cursor, gap
 
 
 def funding_lines(resp: dict, sym: str, seen: set, interval_h: float = 8.0) -> list[dict]:
@@ -86,6 +94,7 @@ class Recorder:
     get: object = _get           # injectable for tests
     ct_val: dict[str, float] = field(default_factory=dict)
     _last_trade: dict[str, int | None] = field(default_factory=dict)
+    _last_book_ts: dict[str, float] = field(default_factory=dict)
     _funding_seen: dict[str, set] = field(default_factory=dict)
     _last_funding_poll: float = 0.0
 
@@ -94,18 +103,35 @@ class Recorder:
             spec = _data(self.get("/api/v5/public/instruments", instType="SWAP", instId=inst))[0]
             self.ct_val[sym] = float(spec["ctVal"])
 
+    def _fetch(self, path: str, **params):
+        try:
+            return self.get(path, **params), None
+        except Exception as e:  # network or venue error: recorded as a gap, never fatal
+            return None, e
+
     def poll_once(self, now: float) -> list[dict]:
         lines: list[dict] = []
-        for sym, inst in self.symbols.items():
+        with ThreadPoolExecutor(max_workers=2 * len(self.symbols)) as pool:
+            futs = {sym: (pool.submit(self._fetch, "/api/v5/market/books", instId=inst, sz=5),
+                          pool.submit(self._fetch, "/api/v5/market/trades", instId=inst, limit=500))
+                    for sym, inst in self.symbols.items()}
+        for sym, (fb, ft) in futs.items():
             cv = self.ct_val[sym]
             try:
-                lines.append(book_line(self.get("/api/v5/market/books", instId=inst, sz=5), sym, cv))
-                tl, self._last_trade[sym], gap = trade_lines(
-                    self.get("/api/v5/market/trades", instId=inst, limit=100), sym, cv, self._last_trade.get(sym))
+                (book, be), (trades, te) = fb.result(), ft.result()
+                if be:
+                    raise be
+                bl = book_line(book, sym, cv)
+                if bl["ts"] > self._last_book_ts.get(sym, 0.0):   # skip stale/cached snapshots
+                    self._last_book_ts[sym] = bl["ts"]
+                    lines.append(bl)
+                if te:
+                    raise te
+                tl, self._last_trade[sym], gap = trade_lines(trades, sym, cv, self._last_trade.get(sym))
                 if gap:
                     lines.append(gap)
                 lines.extend(tl)
-            except Exception as e:  # network or venue error: record the hole, keep going
+            except Exception as e:  # record the hole, keep going
                 lines.append({"t": "gap", "ts": now, "sym": sym, "what": "poll", "detail": repr(e)[:200]})
         if now - self._last_funding_poll >= self.funding_every_s:
             self._last_funding_poll = now

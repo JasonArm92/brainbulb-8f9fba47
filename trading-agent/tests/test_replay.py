@@ -221,3 +221,34 @@ def test_recorder_touches_only_public_read_endpoints():
     paths = set(re.findall(r'"(/api/v5/[^"]+)"', src))
     assert paths and all(p.startswith(("/api/v5/public/", "/api/v5/market/")) for p in paths), paths
     assert "method=" not in src and "POST" not in src and "api_key" not in src.lower()
+
+
+def test_stale_trades_response_cannot_rewind_cursor():
+    fresh = {"code": "0", "data": [{"tradeId": str(i), "px": "1", "sz": "1", "side": "buy", "ts": str(1000 + i)}
+                                   for i in range(10, 21)]}
+    stale = {"code": "0", "data": [{"tradeId": str(i), "px": "1", "sz": "1", "side": "buy", "ts": str(1000 + i)}
+                                   for i in range(5, 13)]}
+    _, cur, _ = trade_lines(fresh, "X", 1.0, None)
+    lines, cur2, gap = trade_lines(stale, "X", 1.0, cur)
+    assert cur == cur2 == 20 and lines == [] and gap is None
+    again, _, _ = trade_lines(fresh, "X", 1.0, cur2)
+    assert again == []                                              # no duplicates after a stale reply
+
+
+def test_recorder_skips_stale_book_snapshot():
+    books = [RAW["books"], json.loads(json.dumps(RAW["books"]))]
+    books[1]["data"][0]["ts"] = str(int(books[0]["data"][0]["ts"]) - 5000)   # older, cached copy
+    it = iter(books)
+
+    def get(path, **p):
+        if path.endswith("instruments"):
+            return RAW["instrument"]
+        if path.endswith("books"):
+            return next(it)
+        return {"code": "0", "data": []}
+
+    rec = Recorder("unused", symbols={"BTC-PERP": "BTC-USDT-SWAP"}, get=get, funding_every_s=1e12)
+    rec.load_specs()
+    first = [l for l in rec.poll_once(1.0) if l["t"] == "book"]
+    second = [l for l in rec.poll_once(2.0) if l["t"] == "book"]
+    assert len(first) == 1 and second == []
