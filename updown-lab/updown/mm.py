@@ -1,7 +1,7 @@
 """Hedged market-making for one 5-minute window, plus the risk guardrails.
 
 The idea: keep buying YES and NO below fair value. One YES plus one NO always pays exactly
-$1 at resolution, whatever happens. If the pair costs less than $1 the difference is profit
+£1 at resolution, whatever happens. If the pair costs less than £1 the difference is profit
 ("paired cost" below 1). Fills rarely arrive evenly, so inventory tilts to one side; the hedge
 manager first skews quotes to attract the missing side, and if that is not enough (too big a
 tilt, or too little time left) it crosses the spread and buys the missing side, paying
@@ -65,7 +65,7 @@ class Inventory:
         return self.yes_cost + self.no_cost
 
     @property
-    def unpaired_usd(self) -> float:
+    def unpaired_gbp(self) -> float:
         heavy = "YES" if self.imbalance > 0 else "NO"
         a = self.avg(heavy) or 0.0
         return abs(self.imbalance) * a
@@ -76,7 +76,7 @@ class Inventory:
     def as_dict(self) -> dict:
         return {"yes_qty": self.yes_qty, "yes_cost": self.yes_cost, "no_qty": self.no_qty, "no_cost": self.no_cost,
                 "avg_yes": self.avg("YES"), "avg_no": self.avg("NO"), "pair_cost": self.pair_cost,
-                "pairs": self.pairs, "imbalance": self.imbalance, "unpaired_usd": self.unpaired_usd,
+                "pairs": self.pairs, "imbalance": self.imbalance, "unpaired_gbp": self.unpaired_gbp,
                 "hedge_bleed": self.hedge_bleed, "fees": self.fees, "cost": self.cost,
                 "maker_fills": self.maker_fills, "taker_fills": self.taker_fills}
 
@@ -96,21 +96,21 @@ class Quote:
 
 @dataclass
 class RiskState:
-    bankroll_usd: float
-    peak_usd: float
+    bankroll_gbp: float
+    peak_gbp: float
     halted_until: float = 0.0
     halt_reason: str = ""
     killed: bool = False
-    recent: list = field(default_factory=list)      # (ts, bleed_usd)
+    recent: list = field(default_factory=list)      # (ts, bleed_gbp)
 
     def breaker(self, now: float, cfg: RiskConfig) -> str | None:
         """Trip the circuit breaker if bleed or drawdown in the rolling window is too big."""
         self.recent = [(t, b) for t, b in self.recent if t >= now - cfg.breaker_window_s]
         bleed = sum(b for _, b in self.recent)
-        dd = 1 - self.bankroll_usd / self.peak_usd if self.peak_usd > 0 else 0.0
+        dd = 1 - self.bankroll_gbp / self.peak_gbp if self.peak_gbp > 0 else 0.0
         why = None
-        if bleed > cfg.breaker_bleed_usd:
-            why = f"hedge bleed ${bleed:.2f} in the last hour is over ${cfg.breaker_bleed_usd:.0f}"
+        if bleed > cfg.breaker_bleed_gbp:
+            why = f"hedge bleed £{bleed:.2f} in the last hour is over £{cfg.breaker_bleed_gbp:.0f}"
         elif dd > cfg.breaker_drawdown_frac:
             why = f"drawdown {dd:.1%} from peak is over {cfg.breaker_drawdown_frac:.0%}"
         if why and now >= self.halted_until:
@@ -145,11 +145,11 @@ def make_quote(p_up: float, inv: Inventory, time_left: float, mm: MMConfig, risk
     ys = ns = mm.quote_size
     reasons = []
     # exposure caps: stop adding to the heavy side once unpaired exposure hits the cap
-    if I > 0 and inv.unpaired_usd >= risk.max_unpaired_usd:
+    if I > 0 and inv.unpaired_gbp >= risk.max_unpaired_gbp:
         ys, _ = 0, reasons.append("YES paused: unpaired cap")
-    if I < 0 and inv.unpaired_usd >= risk.max_unpaired_usd:
+    if I < 0 and inv.unpaired_gbp >= risk.max_unpaired_gbp:
         ns, _ = 0, reasons.append("NO paused: unpaired cap")
-    room = risk.max_window_cost_usd - inv.cost
+    room = risk.max_window_cost_gbp - inv.cost
     if yb and yb > 0:
         ys = max(0.0, min(ys, room / yb))
     if nb and nb > 0:
@@ -187,7 +187,7 @@ def hedge(p_up: float, inv: Inventory, time_left: float, book: Book, mm: MMConfi
     fee_per = price * mm.taker_fee_rate
     pair = (inv.avg(heavy) or 0) + price + fee_per
     if pair > mm.max_cross_pair_cost:
-        return f"hedge skipped: pairing now would cost {pair:.3f} per $1 (limit {mm.max_cross_pair_cost:.2f}); holding {need:.0f} unpaired {heavy}"
+        return f"hedge skipped: pairing now would cost {pair*100:.1f}p per £1 (limit {mm.max_cross_pair_cost*100:.1f}p); holding {need:.0f} unpaired {heavy}"
     fair_missing = (1 - p_up) if missing == "NO" else p_up
     qty = math.floor(need * 100 + 1e-9) / 100          # round down: a hedge never flips the tilt
     bleed = qty * (price + fee_per - fair_missing)

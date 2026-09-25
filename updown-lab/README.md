@@ -37,18 +37,18 @@ every morning.
 
 ## The strategy
 
-Bid for both YES and NO below fair value. One YES plus one NO always pays $1, so a pair bought for
-less than $1 is locked-in profit ("paired cost"). Fills arrive unevenly, so the hedge manager:
+Bid for both YES and NO below fair value. One YES plus one NO always pays £1 (the simulated market is priced in pounds), so a pair bought for
+less than £1 is locked-in profit ("paired cost"). Fills arrive unevenly, so the hedge manager:
 1. skews quotes towards the missing side;
 2. crosses the spread to buy the missing side when the tilt passes 60 shares, or in the last 45 s,
-   if the pair would still cost ≤ $1.02 (the extra is "hedge bleed");
+   if the pair would still cost ≤ £1.02 (the extra is "hedge bleed");
 3. otherwise holds the unpaired residual through resolution.
 
 Guardrails (`mm.py`, checked before every quote and hedge):
-- never quote a side if the pair would cost more than 98.5¢;
-- $120 of quote spend per window (risk-reducing hedges are exempt);
-- $60 of unpaired exposure per window, $90 in aggregate;
-- circuit breaker at $25 of hedge bleed or a 5% drawdown in a rolling hour (30-minute pause, hedging still allowed);
+- never quote a side if the pair would cost more than 98.5p;
+- £90 of quote spend per window (risk-reducing hedges are exempt);
+- £45 of unpaired exposure per window, £70 in aggregate;
+- circuit breaker at £20 of hedge bleed or a 5% drawdown in a rolling hour (30-minute pause, hedging still allowed);
 - kill switch from the phone or a `runtime/KILL` file (stops everything).
 
 ## Run it

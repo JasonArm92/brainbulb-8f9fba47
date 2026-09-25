@@ -280,7 +280,7 @@ html.still *{animation:none!important;transition:none!important}
     <h2 style="margin:16px 0 8px"><em>◆</em>Net exposure <small>· this 5m window</small></h2>
     <div class="expo">
       <div class="chart xs"><canvas id="cExpo"></canvas></div>
-      <div class="side"><div><span>Model UP</span><b class="num" id="xModel">—</b></div><div><span>Crowd UP</span><b class="num" id="xCrowd" style="color:var(--acc)">—</b></div><div><span>Pairs &lt; $1</span><b class="num gold" id="xUnder">—</b></div></div>
+      <div class="side"><div><span>Model UP</span><b class="num" id="xModel">—</b></div><div><span>Crowd UP</span><b class="num" id="xCrowd" style="color:var(--acc)">—</b></div><div><span>Pairs &lt; £1</span><b class="num gold" id="xUnder">—</b></div></div>
     </div>
   </section>
 
@@ -298,7 +298,7 @@ html.still *{animation:none!important;transition:none!important}
 
   <section class="glass s4 m2" aria-label="BTC spot">
     <h2><em>◆</em>BTC spot <small>· 10 s candles, last 10 min</small><span class="tag" id="srcs">—</span></h2>
-    <div class="spothead"><span>BTC/USD · reference</span><b class="num" id="spotBig">—</b><span class="num" id="spotChg">—</span></div>
+    <div class="spothead"><span>BTC/GBP · reference</span><b class="num" id="spotBig">—</b><span class="num" id="spotChg">—</span></div>
     <div class="chart"><canvas id="cCandles"></canvas></div>
     <div class="ladders">
       <div class="lad"><div class="lh"><span class="up">YES book</span><span class="mute" id="lyTag">filled</span></div><div id="ladY"></div></div>
@@ -326,7 +326,7 @@ html.still *{animation:none!important;transition:none!important}
     <div class="chart"><canvas id="cHelix"></canvas></div>
     <div class="stats4">
       <div class="tile nbox c-w"><span>Paired this window</span><b class="num" id="sPaired">—</b></div>
-      <div class="tile nbox c-g"><span>Pairs under $1</span><b class="num" id="sUnder">—</b></div>
+      <div class="tile nbox c-g"><span>Pairs under £1</span><b class="num" id="sUnder">—</b></div>
       <div class="tile nbox c-r"><span>Avg pair cost</span><b class="num" id="sApc">—</b></div>
       <div class="tile nbox c-b"><span>T to resolution</span><b class="num" id="sTl">—</b></div>
     </div>
@@ -339,13 +339,13 @@ html.still *{animation:none!important;transition:none!important}
       <div class="chart"><canvas id="cPc"></canvas></div>
       <div class="pcside">
         <div class="tile"><span>This window</span><b class="num" id="pcNow" style="color:var(--acc)">—</b></div>
-        <div class="tile"><span>Break-even</span><b class="num gold">100¢</b></div>
+        <div class="tile"><span>Break-even</span><b class="num gold">100p</b></div>
         <div class="tile"><span>Locked profit</span><b class="num" id="lock">—</b></div>
         <div class="tile"><span>Unpaired</span><b class="num" id="unp">—</b></div>
         <div class="tile"><span>Window bleed</span><b class="num" id="wb">—</b></div>
       </div>
     </div>
-    <div class="key"><span class="up"><i></i>Pair cost under $1</span><span class="down"><i></i>Over $1</span><span class="gold"><i></i>$1 payout</span><span class="faint"><i class="d"></i>Quote cap</span><span class="mute">▮ Final pair cost, recent windows</span></div>
+    <div class="key"><span class="up"><i></i>Pair cost under £1</span><span class="down"><i></i>Over £1</span><span class="gold"><i></i>£1 payout</span><span class="faint"><i class="d"></i>Quote cap</span><span class="mute">▮ Final pair cost, recent windows</span></div>
   </section>
 
   <!-- row 4 -->
@@ -366,11 +366,11 @@ html.still *{animation:none!important;transition:none!important}
   <section class="glass s8 m2" aria-label="Quotes">
     <h2><em>◆</em>Quotes vs the crowd <small id="qreason"></small></h2>
     <div class="ladder">
-      <div class="lrow"><div class="lt"><span><b class="up">YES</b> <span class="mute">pays $1 if UP</span></span><span id="lyes">—</span></div><div class="scale" id="syes"><div class="band"></div><div class="mk fair"></div><div class="mk ours"></div></div></div>
-      <div class="lrow"><div class="lt"><span><b class="down">NO</b> <span class="mute">pays $1 if DOWN</span></span><span id="lno">—</span></div><div class="scale" id="sno"><div class="band"></div><div class="mk fair"></div><div class="mk ours"></div></div></div>
+      <div class="lrow"><div class="lt"><span><b class="up">YES</b> <span class="mute">pays £1 if UP</span></span><span id="lyes">—</span></div><div class="scale" id="syes"><div class="band"></div><div class="mk fair"></div><div class="mk ours"></div></div></div>
+      <div class="lrow"><div class="lt"><span><b class="down">NO</b> <span class="mute">pays £1 if DOWN</span></span><span id="lno">—</span></div><div class="scale" id="sno"><div class="band"></div><div class="mk fair"></div><div class="mk ours"></div></div></div>
     </div>
     <div class="key"><span style="color:#fff"><i></i>Fair value (model)</span><span style="color:var(--acc)"><i></i>Our bid</span><span class="mute">▮ Crowd bid–ask (simulated)</span></div>
-    <p class="note">Cents per $1 share. We only bid, on both sides, below fair value. The sellers are simulated: some random, some see the price 2 s ahead of us and only sell when we overpay.</p>
+    <p class="note">Pence per £1 share. We only bid, on both sides, below fair value. The sellers are simulated: some random, some see the price 2 s ahead of us and only sell when we overpay.</p>
   </section>
 
   <!-- row 5 -->
@@ -404,7 +404,7 @@ html.still *{animation:none!important;transition:none!important}
   <section class="glass s12" aria-label="What is real">
     <h2><em>◆</em>What's real here</h2>
     <div class="truth">
-      <div class="tile"><b class="up">Real</b><p>Live BTC/USD: the median of Coinbase, Kraken and Bitstamp, every second. It stands in for the Chainlink feed Polymarket settles on, which isn't public. Window outcomes, the model, its backtest and the GBP rate are real too.</p></div>
+      <div class="tile"><b class="up">Real</b><p>Live BTC price: the median of Coinbase, Kraken and Bitstamp every second, shown in pounds at the live exchange rate. It stands in for the Chainlink feed Polymarket settles on, which isn't public. Window outcomes, the model, its backtest and the GBP rate are real too.</p></div>
       <div class="tile"><b class="warn">Simulated</b><p>The market: the crowd's prices and the traders who sell to us. Profit here depends on those assumptions. It shows how well the hedging manages risk, not what a real market would pay.</p></div>
       <div class="tile"><b>Not possible from the UK</b><p>Real trading. Polymarket and Kalshi block UK residents, and the FCA bans binary options for retail. There is no live-trading code in this project.</p></div>
     </div>
@@ -420,8 +420,9 @@ let RM=false;try{RM=localStorage.getItem("ul_motion")==="off"}catch(_){}document
 let S=null,FX=.74,T=0;const pulse=(sp=4,ph=0)=>RM?0:.5+.5*Math.sin(T*sp+ph);
 const gbp=(v,d=2)=>v==null||isNaN(v)?"—":(v<0?"−":"")+"£"+Math.abs(v).toLocaleString("en-GB",{minimumFractionDigits:d,maximumFractionDigits:d});
 const sgbp=(v,d=2)=>v==null||isNaN(v)?"—":(v>0?"+":"")+gbp(v,d);
-const usd=(v,d=2)=>v==null?"—":"$"+v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
-const cents=v=>v==null?"—":(v*100).toFixed(1).replace(/\.0$/,"")+"¢";
+/* BTC comes from USD exchanges; it is always shown in GBP at the live rate */
+const btc=(v,d=2)=>v==null?"—":"£"+(v*FX).toLocaleString("en-GB",{minimumFractionDigits:d,maximumFractionDigits:d});
+const cents=v=>v==null?"—":(v*100).toFixed(1).replace(/\.0$/,"")+"p";
 const pct=(v,d=1)=>v==null||isNaN(v)?"—":(v*100).toFixed(d)+"%";
 const sgn=(v,d=1)=>(v>0?"+":v<0?"−":"")+Math.abs(v).toFixed(d);
 const FL=new Map();function flash(el,v){const p=FL.get(el);FL.set(el,v);if(p==null||v==null||Math.abs(v-p)<1e-12||RM)return;el.classList.remove("fu","fd");void el.offsetWidth;el.classList.add(v>p?"fu":"fd")}
@@ -467,10 +468,10 @@ const FEED=marquee($("feed"),48,.09),FACTS=marquee($("facts"),42,.08);
 /* hold a finger on (or hover over) a ticker to pause it */
 TK.forEach(o=>{const t=o.el.closest(".ticker");["pointerenter","pointerdown"].forEach(ev=>t.addEventListener(ev,()=>o.hold=true));["pointerleave","pointerup","pointercancel"].forEach(ev=>t.addEventListener(ev,()=>o.hold=false))});
 setMarquee(FACTS,["A window resolves <b class='up'>UP</b> if BTC closes at or above the opening reference, anything else is <b class='down'>DOWN</b>",
-  "1 YES + 1 NO = <b class='gold'>$1</b> at resolution, so a pair bought for under $1 is locked-in profit",
+  "1 YES + 1 NO = <b class='gold'>£1</b> at resolution, so a pair bought for under £1 is locked-in profit",
   "We only bid, on both sides, below fair value","When fills arrive unevenly we skew quotes, then cross the spread to buy the missing side",
   "The extra paid to hedge is <b class='down'>hedge bleed</b>","Model: P(UP) = Φ( ln(S/S0) ÷ σ√t )",
-  "Backtested on 8,632 real 5-minute windows: Brier 0.1625 vs 0.25 for a coin flip","Circuit breaker: $25 of bleed or a 5% drop in an hour pauses quoting for 30 minutes",
+  "Backtested on 8,632 real 5-minute windows: Brier 0.1625 vs 0.25 for a coin flip","Circuit breaker: £20 of bleed or a 5% drop in an hour pauses quoting for 30 minutes",
   "The market and the sellers are <b class='gold'>simulated</b>, only BTC prices are real","Paper only: there is no code here that can place a real order"]);
 
 /* ---------- HUD ---------- */
@@ -493,7 +494,7 @@ function drawSankey(){const[x,w,h]=ctx("cSankey");grid(x,w,h);const fl=S.fills||
   if(tot<1){empty(x,w,h,"No fills yet this window");return}
   const pairs=Math.min(Y,N),m={l:w<420?84:104,r:w<420?82:92,t:10,b:10},gap=6,H=h-m.t-m.b;
   const L=[["YES sellers",src.ym,C.up,"Y"],["YES hedge",src.yh,C.gold,"Y"],["NO sellers",src.nm,C.down,"N"],["NO hedge",src.nh,C.gold,"N"]].filter(a=>a[1]>0.01);
-  const R=[["Paired → $1",2*pairs,C.acc],["Unpaired "+(Y>N?"YES":"NO"),Math.abs(Y-N),Y>N?C.up:C.down]].filter(a=>a[1]>0.01);
+  const R=[["Paired → £1",2*pairs,C.acc],["Unpaired "+(Y>N?"YES":"NO"),Math.abs(Y-N),Y>N?C.up:C.down]].filter(a=>a[1]>0.01);
   const kL=(H-gap*(L.length-1))/tot,kR=(H-gap*(R.length-1))/tot;
   let yy=m.t;const Ln=L.map(a=>{const o={a,y:yy,h:a[1]*kL,used:0};yy+=o.h+gap;return o});yy=m.t;const Rn=R.map(a=>{const o={a,y:yy,h:a[1]*kR,used:0};yy+=o.h+gap;return o});
   const pShare={Y:Y?pairs/Y:0,N:N?pairs/N:0},x0=m.l+6,x1=w-m.r-6;let bi=0;
@@ -511,7 +512,7 @@ function drawSankey(){const[x,w,h]=ctx("cSankey");grid(x,w,h);const fl=S.fills||
 /* ---------- hedge bleed: cumulative lines + per-window bars ---------- */
 function drawBleed(){const ws=(S.recent_windows||[]).filter(r=>r.outcome==="UP"||r.outcome==="DOWN").slice(0,40).reverse();const[x,w,h]=ctx("cBleed");grid(x,w,h);
   if(!ws.length){empty(x,w,h,"Waiting for the first resolved window");$("blTag").textContent="—";return}
-  let a=0,b=0,c=0;const P=[],K=[],B=[],bars=[];ws.forEach(r=>{const fx=r.gbp_per_usd||FX;const p=(r.pnl_usd||0)*fx,bl=(r.hedge_bleed||0)*fx,lk=(r.pairs||0)*(1-(r.pair_cost||1))*fx;a+=p;b+=lk;c-=bl;P.push(a);K.push(b);B.push(c);bars.push(p)});
+  let a=0,b=0,c=0;const P=[],K=[],B=[],bars=[];ws.forEach(r=>{const fx=1;const p=(r.pnl_gbp||0)*fx,bl=(r.hedge_bleed||0)*fx,lk=(r.pairs||0)*(1-(r.pair_cost||1))*fx;a+=p;b+=lk;c-=bl;P.push(a);K.push(b);B.push(c);bars.push(p)});
   $("blTag").textContent=`BLEED ${gbp(-c)}`;
   const top=h*.68,m={l:6,r:62,t:10,b:4},lo=Math.min(0,...B,...P),hi=Math.max(.5,...K,...P),X=i=>m.l+(ws.length<2?.5:i/(ws.length-1))*(w-m.l-m.r),Yv=v=>m.t+(hi-v)/(hi-lo||1)*(top-m.t);
   x.strokeStyle="rgba(255,255,255,.12)";x.setLineDash([2,3]);x.beginPath();x.moveTo(m.l,Math.round(Yv(0))+.5);x.lineTo(w-m.r,Math.round(Yv(0))+.5);x.stroke();x.setLineDash([]);
@@ -526,18 +527,18 @@ function drawBleed(){const ws=(S.recent_windows||[]).filter(r=>r.outcome==="UP"|
 /* ---------- BTC candles from the 1 s reference ---------- */
 let SP=null;
 function drawCandles(){const d=S.spot_hist||[];const[x,w,h]=ctx("cCandles");grid(x,w,h);if(d.length<12){empty(x,w,h,"Collecting prices…");return}
-  const now=S.ts,t0=Math.floor((now-600)/10)*10,cs=[];d.forEach(([t,p])=>{if(t<t0)return;const i=Math.floor((t-t0)/10);const c=cs[i]||(cs[i]={t:t0+i*10,o:p,h:p,l:p,c:p});c.h=Math.max(c.h,p);c.l=Math.min(c.l,p);c.c=p});
+  const now=S.ts,t0=Math.floor((now-600)/10)*10,cs=[];d.forEach(([t,p0])=>{if(t<t0)return;const p=p0*FX;const i=Math.floor((t-t0)/10);const c=cs[i]||(cs[i]={t:t0+i*10,o:p,h:p,l:p,c:p});c.h=Math.max(c.h,p);c.l=Math.min(c.l,p);c.c=p});
   const cc=cs.filter(Boolean).map(c=>({...c}));if(cc.length<2){empty(x,w,h,"Collecting prices…");return}
   {const L=cc.at(-1),tg=L.c;if(SP==null||Math.abs(tg-SP)>(L.h-L.l+50))SP=tg;SP+=(tg-SP)*(RM?1:.08);L.c=SP;L.h=Math.max(L.h,SP);L.l=Math.min(L.l,SP)}
-  const op=S.window.open_ref;let lo=Math.min(...cc.map(c=>c.l)),hi=Math.max(...cc.map(c=>c.h));if(op){lo=Math.min(lo,op);hi=Math.max(hi,op)}const pad=(hi-lo)*.1||4;lo-=pad;hi+=pad;
+  const op=S.window.open_ref?S.window.open_ref*FX:null;let lo=Math.min(...cc.map(c=>c.l)),hi=Math.max(...cc.map(c=>c.h));if(op){lo=Math.min(lo,op);hi=Math.max(hi,op)}const pad=(hi-lo)*.1||4;lo-=pad;hi+=pad;
   const m={l:6,r:64,t:10,b:18},n=61,cw=(w-m.l-m.r)/n,X=t=>m.l+((t-t0)/10+.5)*cw,Y=v=>m.t+(hi-v)/(hi-lo)*(h-m.t-m.b);
-  axisY(x,w,h,lo,hi,m,v=>"$"+Math.round(v).toLocaleString("en-US"));
+  axisY(x,w,h,lo,hi,m,v=>"£"+Math.round(v).toLocaleString("en-GB"));
   x.setLineDash([3,4]);x.strokeStyle="rgba(255,255,255,.12)";x.fillStyle="#6b7285";x.textAlign="center";for(let b=Math.ceil(t0/300)*300;b<=now;b+=300){const xx=Math.round(X(b)-cw/2)+.5;x.beginPath();x.moveTo(xx,m.t);x.lineTo(xx,h-m.b);x.stroke();x.fillText(new Date(b*1000).toISOString().slice(11,16),xx,h-7)}
   if(op){x.strokeStyle=`rgba(${C.acc},.8)`;x.beginPath();x.moveTo(m.l,Math.round(Y(op))+.5);x.lineTo(w-m.r,Math.round(Y(op))+.5);x.stroke()}x.setLineDash([]);
   const bw=Math.max(1.5,cw*.58);cc.forEach(c=>{const up=c.c>=c.o,col=up?C.up:C.down,xx=X(c.t);x.strokeStyle=`rgba(${col},.9)`;x.lineWidth=1;x.beginPath();x.moveTo(Math.round(xx)+.5,Y(c.h));x.lineTo(Math.round(xx)+.5,Y(c.l));x.stroke();
     x.fillStyle=`rgba(${col},${up?.85:.9})`;x.fillRect(xx-bw/2,Math.min(Y(c.o),Y(c.c)),bw,Math.max(1,Math.abs(Y(c.c)-Y(c.o))))});
   const last=cc.at(-1).c,ly=Y(last);x.fillStyle=`rgba(${C.gold},.95)`;x.fillStyle=`rgba(${C.gold},${.15+.2*pulse(3)})`;x.fillRect(w-m.r-1,ly-11,m.r+2,22);x.fillStyle=`rgba(${C.gold},.95)`;x.fillRect(w-m.r+2,ly-8,m.r-4,16);glowDot(x,X(cc.at(-1).t),ly,2+1.5*pulse(3),C.gold);
-  x.fillStyle="#1a1206";x.font=`600 10px ${MONO}`;x.textAlign="center";x.fillText("$"+last.toLocaleString("en-US",{maximumFractionDigits:0}),w-m.r/2,ly);
+  x.fillStyle="#1a1206";x.font=`600 10px ${MONO}`;x.textAlign="center";x.fillText("£"+last.toLocaleString("en-GB",{maximumFractionDigits:0}),w-m.r/2,ly);
   x.strokeStyle=`rgba(${C.gold},.45)`;x.setLineDash([1,3]);x.beginPath();x.moveTo(m.l,Math.round(ly)+.5);x.lineTo(w-m.r,Math.round(ly)+.5);x.stroke();x.setLineDash([])}
 
 /* ---------- price ladders: crowd book, our bid, fair, and what we filled at each price ---------- */
@@ -548,7 +549,7 @@ function ladder(el,tag,side,bid,ask,fair,ours,oursSize){const fl=(S.fills||[]).f
   const mx=Math.max(1,...Object.values(by));let html="";
   for(let p=top;p>=bot;p--){const q=by[p]||0,k=p>=a?"ask":p<=b?"bid":"gap",tags=[];if(p===a)tags.push("crowd ask");if(p===b)tags.push("crowd bid");if(p===o)tags.push(`ours ×${Math.round(oursSize)}`);if(p===fr)tags.push("fair");
     const pk=side+p,hit=LQ[pk]!=null&&q>LQ[pk]+.01;LQ[pk]=q;
-    html+=`<div class="lr ${k}${p===o?" ours":""}${p===fr?" fair":""}${hit?" hit":""}"><i style="width:${q/mx*62}%"></i><span>${p}¢</span><span class="t">${tags.join(" · ")||"&nbsp;"}</span><b>${q?Math.round(q):""}</b></div>`}
+    html+=`<div class="lr ${k}${p===o?" ours":""}${p===fr?" fair":""}${hit?" hit":""}"><i style="width:${q/mx*62}%"></i><span>${p}p</span><span class="t">${tags.join(" · ")||"&nbsp;"}</span><b>${q?Math.round(q):""}</b></div>`}
   el.innerHTML=html;tag.textContent=fl.length?`${Math.round(fl.reduce((s,f)=>s+f.qty,0))} filled`:"none filled"}
 
 /* ---------- model shell: 3D particle sphere + input/output wiring ---------- */
@@ -558,7 +559,7 @@ const SPK=RINGS.filter((p,i)=>i%7===3);
 let rot=0,sparks=[],lastFillCount=0,lastWin=null,shellVisible=true;
 const IN=[["spot","Spot vs open",C.gold],["tl","Time left",C.ink],["mom","Momentum",C.acc],["acc","Acceleration",C.gold],["vol","Volatility",C.up],["src","Price sources",C.down]];
 const OUT=[["pup","P(UP)",C.acc],["yes","YES bid",C.up],["no","NO bid",C.down],["lot","Lot size",C.gold],["pc","Pair cost",C.gold],["unp","Unpaired",C.ink]];
-const BUSL=["ln(S/S0)","σ EWMA","√t","z = Δ ÷ σ√t","mom × 0","Φ(z)"],BUSR=["fair","− 2¢ edge","skew","cap 98.5¢","risk check","route"];
+const BUSL=["ln(S/S0)","σ EWMA","√t","z = Δ ÷ σ√t","mom × 0","Φ(z)"],BUSR=["fair","− 2p edge","skew","cap 98.5p","risk check","route"];
 function mkNodes(el,list){list.forEach(([k,l,c])=>{const d=document.createElement("div");d.className="node";d.id="n_"+k;d.style.setProperty("--c",c);d.innerHTML=`<i class="orb"></i><div><span>${l}</span><b class="num">—</b></div>`;el.appendChild(d)})}
 mkNodes($("nIn"),IN);mkNodes($("nOut"),OUT);
 function setNode(k,v,c,off){const n=$("n_"+k);n.querySelector("b").textContent=v;if(c)n.style.setProperty("--c",c);n.classList.toggle("off",!!off)}
@@ -605,7 +606,7 @@ function drawShell(tms){if(!S||!shellVisible)return;const cv=$("cShell"),sh=$("s
   sparks=sparks.filter(s=>t-s.t0<1.6);sparks.forEach(s=>{const q=proj(s.v[0],s.v[1],s.v[2],1.04+(t-s.t0)*.25),a=1-(t-s.t0)/1.6;glowDot(x,q[0],q[1],2.6*a+1,s.c,a)});
   /* centre read-out */
   x.textAlign="center";x.fillStyle="rgba(238,241,247,.95)";x.font=`700 ${Math.max(16,R*.26)}px ${MONO}`;x.save();x.shadowColor=`rgba(${pc},.8)`;x.shadowBlur=16;x.fillText(f?(p*100).toFixed(1)+"%":"—",cx,Math.min(cy+R*1.42,core.bottom-r.top-34));x.restore();
-  x.fillStyle="#8a91a3";x.font=`9.5px ${MONO}`;x.fillText(f?`P(UP) · z ${sgn(f.z,2)} · edge ${sgn(edge*100,1)}¢`:"waiting for the window to open",cx,Math.min(cy+R*1.42,core.bottom-r.top-34)+Math.max(18,R*.2))}
+  x.fillStyle="#8a91a3";x.font=`9.5px ${MONO}`;x.fillText(f?`P(UP) · z ${sgn(f.z,2)} · edge ${sgn(edge*100,1)}p`:"waiting for the window to open",cx,Math.min(cy+R*1.42,core.bottom-r.top-34)+Math.max(18,R*.2))}
 function feedSparks(){const fl=S.fills||[];if(S.window.start!==lastWin){lastWin=S.window.start;lastFillCount=fl.length;return}
   const t=performance.now()/1000;fl.slice(lastFillCount).forEach(f=>{for(let k=0;k<4;k++){const q=SPH[(Math.random()*SPH.length)|0];sparks.push({v:q,t0:t+k*.08,c:f.kind==="hedge"?C.gold:f.side==="YES"?C.up:C.down})}});lastFillCount=fl.length}
 function shellNodes(){const f=S.fair,q=S.quote,inv=S.inventory,ref=S.reference;
@@ -639,10 +640,10 @@ function drawPc(){const d=(S.win_hist||[]).filter(p=>p.pc!=null);const[x,w,h]=ct
   const hist=(S.recent_windows||[]).filter(r=>r.pairs>0&&r.pair_cost!=null&&(r.outcome==="UP"||r.outcome==="DOWN"));
   let lo=.86,hi=1.06;[...d.map(p=>p.pc),...hist.map(r=>r.pair_cost)].forEach(v=>{lo=Math.min(lo,v-.01);hi=Math.max(hi,v+.01)});
   const split=w*.6,m={l:34,r:8,t:10,b:18},X=t=>m.l+t/300*(split-m.l-6),Y=v=>m.t+(hi-v)/(hi-lo)*(h-m.t-m.b);
-  x.fillStyle="#6b7285";x.textAlign="right";for(let v=Math.ceil(lo*50)/50;v<=hi+1e-9;v+=.02){const y=Math.round(Y(v))+.5;x.strokeStyle="rgba(255,255,255,.05)";x.beginPath();x.moveTo(m.l,y);x.lineTo(w-m.r,y);x.stroke();x.fillText(Math.round(v*100)+"¢",m.l-5,y)}
+  x.fillStyle="#6b7285";x.textAlign="right";for(let v=Math.ceil(lo*50)/50;v<=hi+1e-9;v+=.02){const y=Math.round(Y(v))+.5;x.strokeStyle="rgba(255,255,255,.05)";x.beginPath();x.moveTo(m.l,y);x.lineTo(w-m.r,y);x.stroke();x.fillText(Math.round(v*100)+"p",m.l-5,y)}
   x.textAlign="center";[0,100,200,300].forEach(s=>x.fillText(s===0?"open":s===300?"close":`${s}s`,Math.min(split-20,Math.max(m.l+12,X(s))),h-7));
   x.beginPath();x.moveTo(m.l,Math.round(Y(1))+.5);x.lineTo(w-m.r,Math.round(Y(1))+.5);x.strokeStyle=`rgba(${C.gold},.2)`;x.lineWidth=5;x.stroke();x.strokeStyle=`rgb(${C.gold})`;x.lineWidth=1.4;x.stroke();
-  x.fillStyle=`rgb(${C.gold})`;x.textAlign="left";x.font=`600 9.5px ${MONO}`;x.fillText("$1.00 PAYOUT",m.l+4,Y(1)-8);
+  x.fillStyle=`rgb(${C.gold})`;x.textAlign="left";x.font=`600 9.5px ${MONO}`;x.fillText("£1.00 PAYOUT",m.l+4,Y(1)-8);
   x.setLineDash([3,4]);x.strokeStyle="rgba(255,255,255,.25)";x.beginPath();x.moveTo(m.l,Math.round(Y(cap))+.5);x.lineTo(split-6,Math.round(Y(cap))+.5);x.stroke();x.setLineDash([]);
   x.strokeStyle="rgba(255,255,255,.1)";x.beginPath();x.moveTo(Math.round(split)+.5,m.t);x.lineTo(Math.round(split)+.5,h-m.b);x.stroke();
   if(d.length>1){x.lineWidth=1.8;for(let i=1;i<d.length;i++){const a=d[i-1],b=d[i];x.strokeStyle=`rgb(${b.pc<1?C.up:C.down})`;x.beginPath();x.moveTo(X(a.t),Y(a.pc));x.lineTo(X(b.t),Y(a.pc));x.lineTo(X(b.t),Y(b.pc));x.stroke()}
@@ -651,7 +652,7 @@ function drawPc(){const d=(S.win_hist||[]).filter(p=>p.pc!=null);const[x,w,h]=ct
   const bins={};hist.forEach(r=>{const k=Math.round(r.pair_cost*100);bins[k]=(bins[k]||0)+1});const bmax=Math.max(1,...Object.values(bins)),bh=Math.max(2,(Y(lo)-Y(lo+.01))*.72);
   Object.entries(bins).forEach(([k,n])=>{const v=k/100,y=Y(v),ww=n/bmax*(w-split-m.r-10);x.fillStyle=v<1?`rgba(${C.gold},.85)`:`rgba(${C.down},.85)`;x.fillRect(split+6,y-bh/2,ww,bh)});
   x.fillStyle="#6b7285";x.textAlign="left";x.font=`9px ${MONO}`;x.fillText(hist.length?(w<520?`FINAL · ${hist.length}`:`FINAL PAIR COST · ${hist.length} WINDOWS`):(w<520?"NO PAIRS YET":"NO RESOLVED PAIRS YET"),split+6,m.t+2);
-  const under=hist.length?hist.filter(r=>r.pair_cost<1).length/hist.length:null;$("pcTag").textContent=under==null?"—":`${pct(under,0)} UNDER $1`;return under}
+  const under=hist.length?hist.filter(r=>r.pair_cost<1).length/hist.length:null;$("pcTag").textContent=under==null?"—":`${pct(under,0)} UNDER £1`;return under}
 
 /* ---------- reliability ---------- */
 function drawRel(){const svg=$("rel"),bt=S.backtest,live=S.calibration_live||{};const m={l:34,r:10,t:10,b:30},W=300,H=220,X=v=>m.l+v*(W-m.l-m.r),Y=v=>m.t+(1-v)*(H-m.t-m.b);
@@ -662,7 +663,7 @@ function drawRel(){const svg=$("rel"),bt=S.backtest,live=S.calibration_live||{};
   if(bt&&bt.best&&bt.best.reliability)dots(bt.best.reliability,"#8fa8ff",8);if(live.reliability)dots(live.reliability,"#34d399",6);
   svg.innerHTML=s;
   if(bt&&bt.best){$("bskill").textContent=`${(bt.best.skill_vs_coinflip*100).toFixed(0)}% vs coin flip`;
-    $("bnote").innerHTML=`<span style="color:#8fa8ff">●</span> Backtest: ${bt.windows.toLocaleString("en-GB")} real 5-minute windows from Coinbase BTC-USD (Brier ${bt.best.brier.toFixed(3)}; a coin flip scores 0.250, lower is better). <span class="up">●</span> Live checkpoints from this lab. On the dashed line = honest probabilities.`}
+    $("bnote").innerHTML=`<span style="color:#8fa8ff">●</span> Backtest: ${bt.windows.toLocaleString("en-GB")} real 5-minute windows of Coinbase bitcoin prices (Brier ${bt.best.brier.toFixed(3)}; a coin flip scores 0.250, lower is better). <span class="up">●</span> Live checkpoints from this lab. On the dashed line = honest probabilities.`}
   $("lcal").textContent=live.n?`${live.n} · ${live.brier.toFixed(3)}`:"collecting…"}
 
 function scale(el,bid,ask,fair,ours){const b=el.querySelector(".band"),f=el.querySelector(".fair"),o=el.querySelector(".ours");b.style.left=bid*100+"%";b.style.width=Math.max(.5,(ask-bid)*100)+"%";f.style.left=`calc(${fair*100}% - 1px)`;o.hidden=ours==null;if(ours!=null)o.style.left=ours*100+"%"}
@@ -670,35 +671,35 @@ function scale(el,bid,ask,fair,ours){const b=el.querySelector(".band"),f=el.quer
 /* ---------- live feed items ---------- */
 function feedItems(){const it=[],fl=(S.fills||[]).slice(-16).reverse();
   fl.forEach(f=>it.push({k:`f${f.ts}${f.side}${f.qty}`,h:`${hm(f.ts)} · ${f.kind==="hedge"?"<b class='gold'>hedge</b> bought":"bought"} <b>${Math.round(f.qty)}</b> <b class='${f.side==="YES"?"up":"down"}'>${f.side==="YES"?"UP":"DOWN"}</b> @ ${cents(f.price)} · ${esc(f.kind==="hedge"?f.why:(f.informed?"informed seller":"noise seller"))}`}));
-  (S.recent_windows||[]).slice(0,5).forEach(r=>{if(r.outcome!=="UP"&&r.outcome!=="DOWN")return;const p=(r.pnl_usd||0)*(r.gbp_per_usd||FX);it.push({k:"w"+r.start,h:`${esc(r.slug||"")} resolved <b class='${r.outcome==="UP"?"up":"down"}'>${r.outcome}</b> · ${r.pairs?Math.floor(r.pairs)+" pairs @ "+cents(r.pair_cost):"no pairs"} · <b class='${p>=0?"up":"down"}'>${sgbp(p)}</b>`})});
+  (S.recent_windows||[]).slice(0,5).forEach(r=>{if(r.outcome!=="UP"&&r.outcome!=="DOWN")return;const p=r.pnl_gbp||0;it.push({k:"w"+r.start,h:`${esc(r.slug||"")} resolved <b class='${r.outcome==="UP"?"up":"down"}'>${r.outcome}</b> · ${r.pairs?Math.floor(r.pairs)+" pairs @ "+cents(r.pair_cost):"no pairs"} · <b class='${p>=0?"up":"down"}'>${sgbp(p)}</b>`})});
   (S.events||[]).slice(0,4).forEach(e=>it.push({k:"e"+e.ts+e.detail,h:`${hm(e.ts)} · ${esc(e.detail)}`}));
-  const w=S.window;if(w.open_ref)it.push({k:"o"+w.start,h:`${esc(w.slug)} opened · reference <b>${usd(w.open_ref)}</b> · UP if it closes at or above`});
+  const w=S.window;if(w.open_ref)it.push({k:"o"+w.start,h:`${esc(w.slug)} opened · reference <b>${btc(w.open_ref)}</b> · UP if it closes at or above`});
   return it.length?it:[{k:"wait",h:"Waiting for the first fills of this window…"}]}
 
 /* ---------- render ---------- */
 function render(){if(!S)return;FX=S.fx_gbp_per_usd||FX;const a=S.account,t=S.totals,w=S.window,f=S.fair,inv=S.inventory,q=S.quote,b=S.book,rk=S.risk,ref=S.reference;
   const crowd=b?(b.yes_bid+b.yes_ask)/2:null;
   /* HUD */
-  roll($("hBtc"),ref.price,v=>usd(v,0));flash($("hBtc"),ref.price);flash($("hModel"),f?f.p_up:null);flash($("hCrowd"),crowd);$("hModel").textContent=f?f.p_up.toFixed(3):"—";$("hCrowd").textContent=crowd!=null?crowd.toFixed(3):"—";
-  const he=$("hEdge");he.textContent=f&&crowd!=null?`${sgn((f.p_up-crowd)*100,2)}¢`:"—";cls(he,f&&crowd!=null?f.p_up-crowd:0);
+  roll($("hBtc"),ref.price,v=>btc(v,0));flash($("hBtc"),ref.price);flash($("hModel"),f?f.p_up:null);flash($("hCrowd"),crowd);$("hModel").textContent=f?f.p_up.toFixed(3):"—";$("hCrowd").textContent=crowd!=null?crowd.toFixed(3):"—";
+  const he=$("hEdge");he.textContent=f&&crowd!=null?`${sgn((f.p_up-crowd)*100,2)}p`:"—";cls(he,f&&crowd!=null?f.p_up-crowd:0);
   /* wallet */
   const pb=$("pnlBig");roll(pb,a.pnl_gbp,v=>sgbp(v));flash($("nf"),t.fills);flash($("bank"),a.bankroll_gbp);pb.className="pnl num "+(a.pnl_gbp>=0?"up":"down");
-  $("psub").textContent=`started ${gbp(a.start_gbp,0)} · avg pair ${t.avg_pair_cost==null?"—":cents(t.avg_pair_cost)} · fees ${gbp((t.fees_usd||0)*FX)}`;
+  $("psub").textContent=`started ${gbp(a.start_gbp,0)} · avg pair ${t.avg_pair_cost==null?"—":cents(t.avg_pair_cost)} · fees ${gbp(t.fees_gbp||0)}`;
   roll($("bank"),a.bankroll_gbp,v=>gbp(v));roll($("unreal"),a.unrealised_gbp,v=>sgbp(v));cls($("unreal"),a.unrealised_gbp);
-  $("wr").textContent=t.win_rate==null?"—":pct(t.win_rate,1);$("nw").textContent=`${t.traded_windows}/${t.windows}`;roll($("nf"),t.fills,v=>Math.round(v).toLocaleString("en-GB"));roll($("tb"),t.hedge_bleed_usd*FX,v=>gbp(v));
-  const L=rk.limits,rs=Math.min(10,inv.unpaired_usd/L.max_unpaired_usd*10);$("rv").textContent=`${rs.toFixed(1)}/10`;const rt=$("rt");rt.className="rt "+(rs<3?"lo":rs<7?"md":"hi");rt.textContent=rs<3?"LOW":rs<7?"WATCH":"HIGH";
+  $("wr").textContent=t.win_rate==null?"—":pct(t.win_rate,1);$("nw").textContent=`${t.traded_windows}/${t.windows}`;roll($("nf"),t.fills,v=>Math.round(v).toLocaleString("en-GB"));roll($("tb"),t.hedge_bleed_gbp,v=>gbp(v));
+  const L=rk.limits,rs=Math.min(10,inv.unpaired_gbp/L.max_unpaired_gbp*10);$("rv").textContent=`${rs.toFixed(1)}/10`;const rt=$("rt");rt.className="rt "+(rs<3?"lo":rs<7?"md":"hi");rt.textContent=rs<3?"LOW":rs<7?"WATCH":"HIGH";
   $("xModel").textContent=f?pct(f.p_up):"—";$("xCrowd").textContent=crowd!=null?pct(crowd):"—";
   /* spot */
-  roll($("spotBig"),ref.price,v=>usd(v));flash($("spotBig"),ref.price);flash($("pup"),f?f.p_up:null);const sc=$("spotChg");if(f){sc.textContent=`${sgn((f.spot/f.open_ref-1)*100,3)}% vs open`;cls(sc,f.delta_bps)}else sc.textContent="—";
+  roll($("spotBig"),ref.price,v=>btc(v));flash($("spotBig"),ref.price);flash($("pup"),f?f.p_up:null);const sc=$("spotChg");if(f){sc.textContent=`${sgn((f.spot/f.open_ref-1)*100,3)}% vs open`;cls(sc,f.delta_bps)}else sc.textContent="—";
   $("srcs").textContent=ref.n?`${ref.n}/3 SOURCES`+(ref.ok?"":" · UNTRUSTED"):"NO SOURCES";$("srcs").className="tag "+(ref.ok?"live":"red");
   if(b){ladder($("ladY"),$("lyTag"),"YES",b.yes_bid,b.yes_ask,f?f.p_up:null,q.yes_bid,q.yes_size);ladder($("ladN"),$("lnTag"),"NO",b.no_bid,b.no_ask,f?1-f.p_up:null,q.no_bid,q.no_size);
-    $("spread").textContent=`Spread: ${Math.round((b.yes_ask-b.yes_bid)*100)}¢`}
+    $("spread").textContent=`Spread: ${Math.round((b.yes_ask-b.yes_bid)*100)}p`}
   const lf=(S.fills||[]).at(-1);$("lastFill").textContent=lf?`Last fill: ${lf.side} ${cents(lf.price)}`:"Last fill: —";
   $("both").textContent=inv.pairs>=1?"both sides held":"both sides —";
   /* window + quotes */
   $("slug").textContent="· "+(w.slug||"");const tl=w.time_left??0;$("tl").textContent=`${Math.floor(tl/60)}:${String(Math.floor(tl%60)).padStart(2,"0")}`;$("ring").style.setProperty("--p",((300-tl)/300*100).toFixed(1));
-  roll($("spot"),ref.price,v=>usd(v));$("open").textContent=w.open_ref?usd(w.open_ref):"—";
-  if(f){roll($("pup"),f.p_up*100,v=>v.toFixed(1)+"%");$("py").style.width=f.p_up*100+"%";$("pn").style.width=(1-f.p_up)*100+"%";const de=$("delta");de.textContent=`${sgn(f.delta_bps)} bps (${f.spot>=f.open_ref?"+":"−"}${usd(Math.abs(f.spot-f.open_ref))})`;cls(de,f.delta_bps);
+  roll($("spot"),ref.price,v=>btc(v));$("open").textContent=w.open_ref?btc(w.open_ref):"—";
+  if(f){roll($("pup"),f.p_up*100,v=>v.toFixed(1)+"%");$("py").style.width=f.p_up*100+"%";$("pn").style.width=(1-f.p_up)*100+"%";const de=$("delta");de.textContent=`${sgn(f.delta_bps)} bps (${f.spot>=f.open_ref?"+":"−"}${btc(Math.abs(f.spot-f.open_ref))})`;cls(de,f.delta_bps);
     document.documentElement.style.setProperty("--hue",Math.round(230+Math.max(-1,Math.min(1,f.delta_bps/15))*(f.delta_bps>=0?-80:130)))}
   else $("pup").textContent="—";
   $("winnote").textContent=w.observe_only?"Joined after this window opened, so it's being watched, not traded. Trading starts at the next window.":"Resolves UP if BTC closes at or above the open reference.";
@@ -708,25 +709,25 @@ function render(){if(!S)return;FX=S.fx_gbp_per_usd||FX;const a=S.account,t=S.tot
   $("qreason").textContent=q.reason?"· "+q.reason:"";
   /* helix + paired cost */
   const pcv=inv.pair_cost;$("sPaired").textContent=`${Math.floor(inv.pairs)} SH`;$("sApc").textContent=pcv==null?"—":cents(pcv);$("sTl").textContent=`${Math.round(tl)} S`;
-  $("pcNow").textContent=pcv==null?"—":cents(pcv);roll($("lock"),pcv==null?0:inv.pairs*(1-pcv)*FX,v=>sgbp(v));cls($("lock"),pcv==null?0:1-pcv);
-  $("unp").textContent=Math.abs(inv.imbalance)<.5?"0":`${Math.round(Math.abs(inv.imbalance))} ${inv.imbalance>0?"YES":"NO"}`;roll($("wb"),inv.hedge_bleed*FX,v=>gbp(v));
+  $("pcNow").textContent=pcv==null?"—":cents(pcv);roll($("lock"),pcv==null?0:inv.pairs*(1-pcv),v=>sgbp(v));cls($("lock"),pcv==null?0:1-pcv);
+  $("unp").textContent=Math.abs(inv.imbalance)<.5?"0":`${Math.round(Math.abs(inv.imbalance))} ${inv.imbalance>0?"YES":"NO"}`;roll($("wb"),inv.hedge_bleed,v=>gbp(v));
   $("hnote").textContent=S.hedge_note||"Skews quotes towards the missing side first; crosses the spread if the tilt passes 60 shares or in the last 45 seconds.";
   /* tables */
-  $("wins").innerHTML=(S.recent_windows||[]).slice(0,12).map(r=>{const fx=r.gbp_per_usd||FX,p=(r.pnl_usd||0)*fx,o=["UP","DOWN"].includes(r.outcome)?r.outcome:"other";
+  $("wins").innerHTML=(S.recent_windows||[]).slice(0,12).map(r=>{const fx=1,p=r.pnl_gbp||0,o=["UP","DOWN"].includes(r.outcome)?r.outcome:"other";
     const tm=new Date(r.start*1000).toISOString().slice(11,16);
     const det=r.pairs?`${Math.floor(r.pairs)} pairs @ ${cents(r.pair_cost)} · bleed ${gbp((r.hedge_bleed||0)*fx)}`:esc(r.note||"no fills");
     return `<div class="r"><span>${tm}</span><span class="o ${o}">${r.outcome==="WATCHED"?"WATCH":esc(r.outcome)}</span><span class="d">${det}</span><span class="p ${p>0?"up":p<0?"down":"mute"}">${sgbp(p)}</span></div>`}).join("")||'<div class="mute">No finished windows yet.</div>';
   const lim=(id,v,mx,txt)=>{$("g"+id).textContent=txt;$("b"+id).style.width=Math.min(100,mx?v/mx*100:0)+"%"};
-  lim("U",inv.unpaired_usd,L.max_unpaired_usd,`${gbp(inv.unpaired_usd*FX)} of ${gbp(L.max_unpaired_usd*FX,0)}`);
-  const spend=(inv.cost||0);lim("S",spend,L.max_window_cost_usd,`${gbp(spend*FX)} of ${gbp(L.max_window_cost_usd*FX,0)}`);
-  lim("B",rk.bleed_hour_usd,L.breaker_bleed_usd,`${gbp(rk.bleed_hour_usd*FX)} of ${gbp(L.breaker_bleed_usd*FX,0)}`);
+  lim("U",inv.unpaired_gbp,L.max_unpaired_gbp,`${gbp(inv.unpaired_gbp)} of ${gbp(L.max_unpaired_gbp,0)}`);
+  const spend=(inv.cost||0);lim("S",spend,L.max_window_cost_gbp,`${gbp(spend)} of ${gbp(L.max_window_cost_gbp,0)}`);
+  lim("B",rk.bleed_hour_gbp,L.breaker_bleed_gbp,`${gbp(rk.bleed_hour_gbp)} of ${gbp(L.breaker_bleed_gbp,0)}`);
   lim("D",rk.drawdown,L.breaker_drawdown_frac,`${pct(rk.drawdown)} of ${pct(L.breaker_drawdown_frac,0)}`);
   const st=$("rstat");st.classList.toggle("bad",rk.killed||rk.halted);
   $("rtxt").textContent=rk.killed?"Kill switch is ON: no quotes, no hedges.":rk.halted?`Circuit breaker: quoting paused until ${new Date(rk.halted_until*1000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})} (${rk.halt_reason}). Hedging still allowed.`:"All clear: quoting within limits.";
   $("clr").hidden=!rk.halted||rk.killed;
   const k=$("kill");k.classList.toggle("on",rk.killed);if(!k.dataset.arm)k.textContent=rk.killed?"Kill ON · tap to resume":"Kill switch";
   $("events").innerHTML=(S.events||[]).slice(0,6).map(e=>`<div class="ev"><span class="faint">${hm(e.ts)}</span> · ${esc(e.detail)}</div>`).join("");
-  $("foot").textContent=`Paper only · pretend money · £1 = $${(1/FX).toFixed(4)} · updated ${new Date(S.ts*1000).toLocaleTimeString("en-GB",{timeZone:"Europe/London"})} UK time · not financial advice`;
+  $("foot").textContent=`Paper only · pretend money · BTC shown in £ at the live rate · updated ${new Date(S.ts*1000).toLocaleTimeString("en-GB",{timeZone:"Europe/London"})} UK time · not financial advice`;
   setMarquee(FEED,feedItems());shellNodes();feedSparks();
   drawRel();if(RM)drawAll();const hs=(S.recent_windows||[]).filter(r=>r.pairs>0&&r.pair_cost!=null&&(r.outcome==="UP"||r.outcome==="DOWN")),under=hs.length?hs.filter(r=>r.pair_cost<1).length/hs.length:null;
   $("sUnder").textContent=under==null?"—":pct(under,1);$("xUnder").textContent=under==null?"—":pct(under,0)}

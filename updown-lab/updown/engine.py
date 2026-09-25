@@ -3,7 +3,7 @@
 Each tick: read the reference price -> roll the 5-minute window if needed -> fair P(UP) ->
 simulated crowd book -> our quotes (after guardrails) -> simulated takers fill us -> hedge if
 needed -> checkpoints for live calibration -> circuit breaker. At each window end: resolve
-UP/DOWN from the reference, pay out $1 per winning share, book P&L in USD and GBP."""
+UP/DOWN from the reference, pay out £1 per winning share; all money is in GBP."""
 
 from __future__ import annotations
 
@@ -32,14 +32,13 @@ class Engine:
         self.sim = SimMarket(cfg.sim, cfg.mm.tick, self.rng)
         self.vol = VolTracker(cfg.model)
         self.lock = threading.RLock()
-        fx = getattr(feed, "fx", 0.74) or 0.74
-        br = self.ledger.get("bankroll_usd")
+        br = self.ledger.get("bankroll_gbp")
         if br is None:
-            br = cfg.risk.start_gbp / fx
-            self.ledger.put("bankroll_usd", br)
-            self.ledger.put("start_usd", br)
+            br = cfg.risk.start_gbp
+            self.ledger.put("bankroll_gbp", br)
+            self.ledger.put("start_gbp", br)
             self.ledger.put("started_ts", clock())
-        self.risk = RiskState(bankroll_usd=br, peak_usd=self.ledger.get("peak_usd", br),
+        self.risk = RiskState(bankroll_gbp=br, peak_gbp=self.ledger.get("peak_gbp", br),
                               halted_until=self.ledger.get("halted_until", 0.0), halt_reason=self.ledger.get("halt_reason", ""),
                               killed=bool(self.ledger.get("killed", False)))
         self.window: Window | None = None
@@ -67,7 +66,7 @@ class Engine:
         if ow and ow["start"] != ws:
             # the engine was down when that window closed: we cannot know the true close, so void it at cost
             inv = self._inv_from_fills(ow["start"])
-            self.ledger.resolve(ow["start"], {"open_ref": ow.get("open_ref"), "outcome": "VOID", "pnl_usd": 0.0,
+            self.ledger.resolve(ow["start"], {"open_ref": ow.get("open_ref"), "outcome": "VOID", "pnl_gbp": 0.0,
                                               "gbp_per_usd": self._fx(), "note": "engine was offline at the close; voided at cost",
                                               **{k: v for k, v in inv.as_dict().items() if k in ("yes_qty", "yes_cost", "no_qty", "no_cost", "pairs", "hedge_bleed", "fees")},
                                               "maker_fills": inv.maker_fills, "taker_fills": inv.taker_fills})
@@ -103,9 +102,9 @@ class Engine:
         with self.lock:
             self.risk.halted_until = 0.0
             self.risk.recent.clear()
-            self.risk.peak_usd = self.risk.bankroll_usd
+            self.risk.peak_gbp = self.risk.bankroll_gbp
             self.ledger.put("halted_until", 0.0)
-            self.ledger.put("peak_usd", self.risk.peak_usd)
+            self.ledger.put("peak_gbp", self.risk.peak_gbp)
             self.ledger.event("breaker", "circuit breaker cleared from the phone (peak reset to current bankroll)")
 
     # ------------------------------------------------------------------ window roll
@@ -145,15 +144,15 @@ class Engine:
             payout = inv.payout(outcome)
             pnl = payout - inv.cost
         fx = self._fx()
-        self.risk.bankroll_usd += pnl
-        self.risk.peak_usd = max(self.risk.peak_usd, self.risk.bankroll_usd)
-        self.ledger.put("bankroll_usd", self.risk.bankroll_usd)
-        self.ledger.put("peak_usd", self.risk.peak_usd)
+        self.risk.bankroll_gbp += pnl
+        self.risk.peak_gbp = max(self.risk.peak_gbp, self.risk.bankroll_gbp)
+        self.ledger.put("bankroll_gbp", self.risk.bankroll_gbp)
+        self.ledger.put("peak_gbp", self.risk.peak_gbp)
         d = inv.as_dict()
         self.ledger.resolve(w.start, {"open_ref": w.open_ref, "close_ref": close, "outcome": outcome,
                                       "yes_qty": d["yes_qty"], "yes_cost": d["yes_cost"], "no_qty": d["no_qty"], "no_cost": d["no_cost"],
                                       "pairs": d["pairs"], "pair_cost": d["pair_cost"], "hedge_bleed": d["hedge_bleed"], "fees": d["fees"],
-                                      "payout": payout, "pnl_usd": pnl, "gbp_per_usd": fx, "maker_fills": inv.maker_fills,
+                                      "payout": payout, "pnl_gbp": pnl, "gbp_per_usd": fx, "maker_fills": inv.maker_fills,
                                       "taker_fills": inv.taker_fills, "note": note})
         if outcome in ("UP", "DOWN") and self.window.open_ref:
             # a checkpoint at resolution time helps the live calibration record every window
@@ -265,7 +264,7 @@ class Engine:
             now = self.clock()
             w = self.window
             fx = self._fx()
-            start_usd = self.ledger.get("start_usd", self.risk.bankroll_usd)
+            start = self.ledger.get("start_gbp", self.risk.bankroll_gbp)
             unreal = 0.0
             if self.fair is not None:
                 unreal = self.inv.yes_qty * self.fair.p_up + self.inv.no_qty * (1 - self.fair.p_up) - self.inv.cost
@@ -273,9 +272,8 @@ class Engine:
             tot = self.ledger.totals()
             return {
                 "ts": now, "mode": "paper", "market": "simulated", "fx_gbp_per_usd": fx,
-                "account": {"bankroll_usd": self.risk.bankroll_usd, "bankroll_gbp": self.risk.bankroll_usd * fx,
-                            "start_gbp": start_usd * fx, "pnl_gbp": (self.risk.bankroll_usd - start_usd) * fx,
-                            "unrealised_gbp": unreal * fx, "peak_gbp": self.risk.peak_usd * fx},
+                "account": {"bankroll_gbp": self.risk.bankroll_gbp, "start_gbp": start, "pnl_gbp": self.risk.bankroll_gbp - start,
+                            "unrealised_gbp": unreal, "peak_gbp": self.risk.peak_gbp},
                 "totals": tot,
                 "window": {"start": w.start if w else None, "slug": w.slug if w else None, "open_ref": w.open_ref if w else None,
                            "time_left": w.time_left(now) if w else None, "observe_only": self.observe_only},
@@ -285,10 +283,10 @@ class Engine:
                 "book": {"yes_bid": self.sim.book.yes_bid, "yes_ask": self.sim.book.yes_ask, "no_bid": self.sim.book.no_bid, "no_ask": self.sim.book.no_ask},
                 "quote": self.quote.as_dict(), "inventory": self.inv.as_dict(), "hedge_note": self.hedge_note,
                 "risk": {"killed": self.risk.killed, "halted": now < self.risk.halted_until, "halted_until": self.risk.halted_until,
-                         "halt_reason": self.risk.halt_reason, "bleed_hour_usd": sum(b for t, b in self.risk.recent if t >= now - self.cfg.risk.breaker_window_s),
-                         "drawdown": 1 - self.risk.bankroll_usd / self.risk.peak_usd if self.risk.peak_usd else 0.0,
-                         "limits": {"max_window_cost_usd": self.cfg.risk.max_window_cost_usd, "max_unpaired_usd": self.cfg.risk.max_unpaired_usd,
-                                    "breaker_bleed_usd": self.cfg.risk.breaker_bleed_usd, "breaker_drawdown_frac": self.cfg.risk.breaker_drawdown_frac}},
+                         "halt_reason": self.risk.halt_reason, "bleed_hour_gbp": sum(b for t, b in self.risk.recent if t >= now - self.cfg.risk.breaker_window_s),
+                         "drawdown": 1 - self.risk.bankroll_gbp / self.risk.peak_gbp if self.risk.peak_gbp else 0.0,
+                         "limits": {"max_window_cost_gbp": self.cfg.risk.max_window_cost_gbp, "max_unpaired_gbp": self.cfg.risk.max_unpaired_gbp,
+                                    "breaker_bleed_gbp": self.cfg.risk.breaker_bleed_gbp, "breaker_drawdown_frac": self.cfg.risk.breaker_drawdown_frac}},
                 "spot_hist": list(self.spot_hist)[-600:], "win_hist": self.win_hist[-300:],
                 "recent_windows": self.ledger.windows(40),
                 "fills": [{k: f[k] for k in ("ts", "side", "price", "qty", "kind", "informed", "why")}

@@ -57,12 +57,13 @@ class MMConfig:
 
 @dataclass(frozen=True)
 class RiskConfig:
+    # All money is in GBP: the simulated market pays £1 per winning share, so share prices are pence.
     start_gbp: float = 1000.0
-    max_window_cost_usd: float = 120.0      # spend on resting quotes per window (hedges that REDUCE risk are exempt)
-    max_unpaired_usd: float = 60.0          # directional (unpaired) exposure cap per window, at cost
-    max_aggregate_unpaired_usd: float = 90.0
+    max_window_cost_gbp: float = 90.0       # spend on resting quotes per window (hedges that REDUCE risk are exempt)
+    max_unpaired_gbp: float = 45.0          # directional (unpaired) exposure cap per window, at cost
+    max_aggregate_unpaired_gbp: float = 70.0
     breaker_window_s: float = 3600.0
-    breaker_bleed_usd: float = 25.0         # hedge bleed in the rolling hour that trips the breaker
+    breaker_bleed_gbp: float = 20.0         # hedge bleed in the rolling hour that trips the breaker
     breaker_drawdown_frac: float = 0.05     # fall from peak bankroll that trips it
     breaker_cooldown_s: float = 1800.0
     min_sources: int = 2                    # price sources needed to trust the reference

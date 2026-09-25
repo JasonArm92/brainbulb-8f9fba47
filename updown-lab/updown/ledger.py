@@ -13,7 +13,7 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS windows (
   start INTEGER PRIMARY KEY, open_ref REAL, close_ref REAL, outcome TEXT,
   yes_qty REAL, yes_cost REAL, no_qty REAL, no_cost REAL, pairs REAL, pair_cost REAL,
-  hedge_bleed REAL, fees REAL, payout REAL, pnl_usd REAL, gbp_per_usd REAL,
+  hedge_bleed REAL, fees REAL, payout REAL, pnl_gbp REAL, gbp_per_usd REAL,
   maker_fills INTEGER, taker_fills INTEGER, note TEXT, resolved_ts REAL);
 CREATE TABLE IF NOT EXISTS fills (
   id INTEGER PRIMARY KEY AUTOINCREMENT, window INTEGER, ts REAL, side TEXT, price REAL, qty REAL,
@@ -35,6 +35,30 @@ class Ledger:
         self.lock = threading.Lock()
         with self.lock:
             self.db.executescript(SCHEMA)
+            self._migrate_to_gbp()
+
+    def _migrate_to_gbp(self) -> None:
+        """Older ledgers kept money in USD. Convert every amount once, at the GBP rate recorded with each window."""
+        cols = [r[1] for r in self.db.execute("PRAGMA table_info(windows)")]
+        if "pnl_usd" not in cols:
+            return
+        self.db.execute("BEGIN")
+        self.db.execute("""UPDATE windows SET yes_cost=yes_cost*COALESCE(gbp_per_usd,0.74), no_cost=no_cost*COALESCE(gbp_per_usd,0.74),
+                           hedge_bleed=hedge_bleed*COALESCE(gbp_per_usd,0.74), fees=fees*COALESCE(gbp_per_usd,0.74),
+                           payout=payout*COALESCE(gbp_per_usd,0.74), pnl_usd=pnl_usd*COALESCE(gbp_per_usd,0.74)""")
+        self.db.execute("ALTER TABLE windows RENAME COLUMN pnl_usd TO pnl_gbp")
+        kv = {k: json.loads(v) for k, v in self.db.execute("SELECT k,v FROM kv")}
+        if "bankroll_usd" in kv:
+            start = 1000.0
+            pnl = self.db.execute("SELECT COALESCE(SUM(pnl_gbp),0) FROM windows").fetchone()[0]
+            fx = self.db.execute("SELECT gbp_per_usd FROM windows WHERE gbp_per_usd IS NOT NULL ORDER BY start DESC LIMIT 1").fetchone()
+            fx = fx[0] if fx else 0.74
+            bank = start + pnl
+            peak = max(bank, kv.get("peak_usd", 0) * fx)
+            for k, v in (("start_gbp", start), ("bankroll_gbp", bank), ("peak_gbp", peak)):
+                self.db.execute("INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v", (k, json.dumps(v)))
+            self.db.execute("DELETE FROM kv WHERE k IN ('bankroll_usd','peak_usd','start_usd')")
+        self.db.execute("COMMIT")
 
     def _x(self, sql, args=()):
         with self.lock:
@@ -73,7 +97,7 @@ class Ledger:
     # ---- windows -------------------------------------------------------------------
     def resolve(self, start: int, row: dict) -> None:
         cols = ["open_ref", "close_ref", "outcome", "yes_qty", "yes_cost", "no_qty", "no_cost", "pairs", "pair_cost",
-                "hedge_bleed", "fees", "payout", "pnl_usd", "gbp_per_usd", "maker_fills", "taker_fills", "note"]
+                "hedge_bleed", "fees", "payout", "pnl_gbp", "gbp_per_usd", "maker_fills", "taker_fills", "note"]
         self._x(f"INSERT OR REPLACE INTO windows(start,{','.join(cols)},resolved_ts) VALUES(?,{','.join('?' * len(cols))},?)",
                 (start, *[row.get(c) for c in cols], time.time()))
         if row.get("outcome") in ("UP", "DOWN"):
@@ -85,16 +109,16 @@ class Ledger:
         return [dict(zip(cols, r)) for r in cur.fetchall()]
 
     def totals(self) -> dict:
-        r = self._x("""SELECT COUNT(*), COALESCE(SUM(pnl_usd),0), COALESCE(SUM(CASE WHEN pnl_usd>0 THEN 1 ELSE 0 END),0),
+        r = self._x("""SELECT COUNT(*), COALESCE(SUM(pnl_gbp),0), COALESCE(SUM(CASE WHEN pnl_gbp>0 THEN 1 ELSE 0 END),0),
                        COALESCE(SUM(CASE WHEN yes_qty+no_qty>0 THEN 1 ELSE 0 END),0),
                        COALESCE(SUM(maker_fills+taker_fills),0), COALESCE(SUM(hedge_bleed),0), COALESCE(SUM(pairs),0),
                        COALESCE(SUM(pair_cost*pairs),0), COALESCE(SUM(fees),0),
-                       COALESCE(SUM(pnl_usd*gbp_per_usd),0)
+                       COALESCE(SUM(pnl_gbp),0)
                        FROM windows WHERE outcome IN ('UP','DOWN')""").fetchone()
         n, pnl, wins, traded, fills, bleed, pairs, paircost_w, fees, pnl_gbp = r
-        return {"windows": n, "traded_windows": traded, "pnl_usd": pnl, "pnl_gbp": pnl_gbp, "wins": wins,
-                "win_rate": wins / traded if traded else None, "fills": fills, "hedge_bleed_usd": bleed,
-                "pairs": pairs, "avg_pair_cost": paircost_w / pairs if pairs else None, "fees_usd": fees}
+        return {"windows": n, "traded_windows": traded, "pnl_gbp": pnl_gbp, "wins": wins,
+                "win_rate": wins / traded if traded else None, "fills": fills, "hedge_bleed_gbp": bleed,
+                "pairs": pairs, "avg_pair_cost": paircost_w / pairs if pairs else None, "fees_gbp": fees}
 
     def calibration(self) -> dict:
         rows = self._x("SELECT at_s,p_up,outcome_up FROM checkpoints WHERE outcome_up IS NOT NULL").fetchall()

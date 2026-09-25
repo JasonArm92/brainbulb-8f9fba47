@@ -22,7 +22,7 @@ def test_fair_value_shape():
 
 
 def rs(**kw):
-    return RiskState(bankroll_usd=1300, peak_usd=1300, **kw)
+    return RiskState(bankroll_gbp=1300, peak_gbp=1300, **kw)
 
 
 def test_quotes_both_sides_below_fair():
@@ -72,5 +72,5 @@ def test_circuit_breaker():
     r.recent = [(100, 14.0), (200, 12.0)]
     why = r.breaker(300, RiskConfig())
     assert why and "bleed" in why and r.halted(301) and not r.halted(300 + 1801)
-    r2 = RiskState(bankroll_usd=900, peak_usd=1000)
+    r2 = RiskState(bankroll_gbp=900, peak_gbp=1000)
     assert "drawdown" in r2.breaker(0, RiskConfig())

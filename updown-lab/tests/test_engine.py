@@ -27,16 +27,16 @@ def run(e, clock, seconds, step=0.5):
 def test_three_hours_of_windows(tmp_path):
     clock = Clock(T0 - 1)
     e, cfg = make(tmp_path, clock)
-    start = e.risk.bankroll_usd
+    start = e.risk.bankroll_gbp
     run(e, clock, 3 * 3600)
     wins = [w for w in e.ledger.windows(100) if w["outcome"] in ("UP", "DOWN")]
     assert len(wins) >= 34
     tot = e.ledger.totals()
-    assert abs(e.risk.bankroll_usd - (start + tot["pnl_usd"])) < 1e-6         # books balance
+    assert abs(e.risk.bankroll_gbp - (start + tot["pnl_gbp"])) < 1e-6         # books balance
     assert tot["pairs"] > 0 and tot["avg_pair_cost"] < 1.0                   # paired below $1
     for w in wins:                                                          # quotes respect the spend cap;
         fl = e.ledger.fills(w["start"])                                      # only risk-reducing hedges go past it
-        assert sum(f["price"] * f["qty"] for f in fl if f["kind"] == "maker") <= cfg.risk.max_window_cost_usd + 1e-6
+        assert sum(f["price"] * f["qty"] for f in fl if f["kind"] == "maker") <= cfg.risk.max_window_cost_gbp + 1e-6
         yes = no = 0.0
         for f in fl:
             if f["kind"] == "hedge":
@@ -67,11 +67,11 @@ def test_restart_after_missed_close_voids_at_cost(tmp_path):
     clock = Clock(T0 - 1)
     e, cfg = make(tmp_path, clock)
     run(e, clock, 150)
-    br = e.risk.bankroll_usd
+    br = e.risk.bankroll_gbp
     clock.t += 600                                                           # offline over a close
     e2 = Engine(cfg, e.feed, clock=clock)
     w = [x for x in e2.ledger.windows(5) if x["start"] == int(T0)][0]
-    assert w["outcome"] == "VOID" and w["pnl_usd"] == 0 and e2.risk.bankroll_usd == br
+    assert w["outcome"] == "VOID" and w["pnl_gbp"] == 0 and e2.risk.bankroll_gbp == br
 
 
 def test_kill_switch_file_and_phone(tmp_path):
@@ -89,7 +89,7 @@ def test_kill_switch_file_and_phone(tmp_path):
 
 def test_breaker_halts_quoting(tmp_path):
     clock = Clock(T0 - 1)
-    e, cfg = make(tmp_path, clock, breaker_bleed_usd=0.01)                   # trips on the first real hedge
+    e, cfg = make(tmp_path, clock, breaker_bleed_gbp=0.01)                   # trips on the first real hedge
     run(e, clock, 1800)
     assert any(ev["kind"] == "breaker" for ev in e.ledger.events(50))
     assert e.snapshot()["risk"]["halted"]
@@ -100,3 +100,28 @@ def test_untrusted_reference_stops_quotes(tmp_path):
     e, _ = make(tmp_path, clock, feed=WalkFeed(Clock(0) if False else clock, sources=1))
     run(e, clock, 20)
     assert e.quote.yes_bid is None and "not trusted" in e.quote.reason
+
+
+def test_old_usd_ledger_is_converted_to_gbp_once(tmp_path):
+    """Ledgers written before the switch to GBP kept money in USD; they convert once, at each window's recorded rate."""
+    import json, sqlite3
+    from updown.ledger import Ledger
+    db = tmp_path / "old.sqlite"
+    c = sqlite3.connect(db)
+    c.executescript("""CREATE TABLE windows (start INTEGER PRIMARY KEY, open_ref REAL, close_ref REAL, outcome TEXT,
+      yes_qty REAL, yes_cost REAL, no_qty REAL, no_cost REAL, pairs REAL, pair_cost REAL,
+      hedge_bleed REAL, fees REAL, payout REAL, pnl_usd REAL, gbp_per_usd REAL,
+      maker_fills INTEGER, taker_fills INTEGER, note TEXT, resolved_ts REAL);
+      CREATE TABLE kv (k TEXT PRIMARY KEY, v TEXT);""")
+    c.execute("INSERT INTO windows(start,outcome,yes_cost,no_cost,hedge_bleed,fees,payout,pnl_usd,gbp_per_usd,pairs,pair_cost) "
+              "VALUES(300,'UP',40,50,2,1,100,10,0.8,100,0.9)")
+    for k, v in (("bankroll_usd", 1360.0), ("start_usd", 1350.0), ("peak_usd", 1360.0)):
+        c.execute("INSERT INTO kv VALUES(?,?)", (k, json.dumps(v)))
+    c.commit(); c.close()
+    led = Ledger(str(db))
+    w = led.windows(1)[0]
+    assert abs(w["pnl_gbp"] - 8.0) < 1e-9 and abs(w["hedge_bleed"] - 1.6) < 1e-9 and w["pair_cost"] == 0.9
+    assert led.get("start_gbp") == 1000.0 and abs(led.get("bankroll_gbp") - 1008.0) < 1e-9 and led.get("bankroll_usd") is None
+    assert abs(led.totals()["pnl_gbp"] - 8.0) < 1e-9
+    Ledger(str(db))                                   # opening again changes nothing
+    assert abs(Ledger(str(db)).windows(1)[0]["pnl_gbp"] - 8.0) < 1e-9
