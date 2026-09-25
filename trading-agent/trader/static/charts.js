@@ -224,17 +224,17 @@
   function build() {
     const box = $("chMain"), cv = $("cCanvas");
     document.querySelector(".chartwrap").classList.toggle("tall", !bookMode() && (S.inds.has("rsi") || S.inds.has("macd")));
-    if (bookMode()) { destroyChart(); box.hidden = true; cv.hidden = false; drawBook(); $("cLegend").innerHTML = ""; return; }
+    if (bookMode()) { destroyChart(); box.hidden = true; cv.hidden = false; drawBook(); $("cLegend").innerHTML = ""; $("cLevels").innerHTML = ""; return; }
     box.hidden = false; cv.hidden = true;
     destroyChart();
     const k = S.candles; if (!k.length) return;
     const tfs = S.tf;
     const chart = LW.createChart(box, {
-      autoSize: true, layout: { background: { type: "solid", color: "transparent" }, textColor: MUTE, fontSize: 11, panes: { separatorColor: "rgba(255,255,255,.1)" } },
+      autoSize: true, layout: { background: { type: "solid", color: "transparent" }, textColor: MUTE, fontSize: 11, attributionLogo: false, panes: { separatorColor: "rgba(255,255,255,.1)" } },
       grid: { vertLines: { color: GRID }, horzLines: { color: GRID } },
       rightPriceScale: { borderColor: "rgba(255,255,255,.12)" }, timeScale: { borderColor: "rgba(255,255,255,.12)", timeVisible: tfs < 86400, secondsVisible: false },
       crosshair: { mode: 0 },
-      localization: { locale: "en-GB", priceFormatter: p => px(p), timeFormatter: t => ukTime(t, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) },
+      localization: { locale: "en-GB", timeFormatter: t => ukTime(t, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) },
     });
     chart.timeScale().applyOptions({ tickMarkFormatter: (t, type) => type >= 3 ? ukTime(t, { hour: "2-digit", minute: "2-digit" }) : ukTime(t, { day: "numeric", month: "short" }) });
     S.chart = chart;
@@ -257,7 +257,7 @@
     if (S.inds.has("vwap")) line(vwap(k, S.tf), "#22d3ee", 2, 0, { lineStyle: 1 });
     if (S.inds.has("vol")) { const v = chart.addSeries(LW.HistogramSeries, { priceScaleId: "vol", priceFormat: { type: "volume" }, lastValueVisible: false, priceLineVisible: false }); v.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } }); v.setData(k.map(b => ({ time: b.t, value: b.v, color: b.c >= b.o ? "rgba(52,211,153,.35)" : "rgba(251,113,133,.35)" }))); }
     let pane = 1;
-    if (S.inds.has("rsi")) { const s = line(rsi(c), ACC2, 1.5, pane, { priceFormat: { type: "price", precision: 0, minMove: 1 }, lastValueVisible: true }); s.createPriceLine({ price: 70, color: "rgba(251,113,133,.6)", lineStyle: 2, lineWidth: 1, title: "70" }); s.createPriceLine({ price: 30, color: "rgba(52,211,153,.6)", lineStyle: 2, lineWidth: 1, title: "30" }); pane++; }
+    if (S.inds.has("rsi")) { const s = line(rsi(c), ACC2, 1.5, pane, { priceFormat: { type: "price", precision: 0, minMove: 1 }, lastValueVisible: true }); s.createPriceLine({ price: 70, color: "rgba(251,113,133,.6)", lineStyle: 2, lineWidth: 1, axisLabelVisible: false }); s.createPriceLine({ price: 30, color: "rgba(52,211,153,.6)", lineStyle: 2, lineWidth: 1, axisLabelVisible: false }); pane++; }
     if (S.inds.has("macd")) { const M = macd(c), mf = { type: "price", precision: k[k.length - 1].c < 10 ? 4 : 2, minMove: 0.0001 };
       const h = chart.addSeries(LW.HistogramSeries, { priceFormat: mf, lastValueVisible: false, priceLineVisible: false }, pane);
       h.setData(M.map((x, i) => x.hist == null ? { time: k[i].t } : { time: k[i].t, value: x.hist, color: x.hist >= 0 ? "rgba(52,211,153,.55)" : "rgba(251,113,133,.55)" }));
@@ -265,16 +265,27 @@
     const panes = chart.panes(); if (panes.length > 1) { panes[0].setStretchFactor(3); for (let i = 1; i < panes.length; i++) panes[i].setStretchFactor(1); }
     // analysis overlays
     const an = S.an;
-    if (an && S.inds.has("sr")) { an.lv.sup.forEach(l => main.createPriceLine({ price: l.p, color: "rgba(52,211,153,.75)", lineStyle: 2, lineWidth: 1, axisLabelVisible: true, title: `support ×${l.n}` })); an.lv.res.forEach(l => main.createPriceLine({ price: l.p, color: "rgba(251,113,133,.75)", lineStyle: 2, lineWidth: 1, axisLabelVisible: true, title: `resistance ×${l.n}` })); }
     const mk = [];
     if (an && S.inds.has("pat")) {
       // label only the few most recent meaningful patterns; older ones are small dots (tap them to read)
       const ents = Object.entries(an.pats).filter(([i, id]) => +i >= k.length - 120 && !(id === "inside" || id === "doji"));
-      ents.forEach(([i, id], j) => { const p = patById(id), b = k[+i]; mk.push({ time: b.t, position: p.tone === "bear" ? "aboveBar" : "belowBar", shape: "circle", color: p.tone === "bull" ? UP : p.tone === "bear" ? DN : "#fbbf24", text: j >= ents.length - 3 ? p.name : "", size: 0.5 }); });
+      ents.forEach(([i, id], j) => { const p = patById(id), b = k[+i]; mk.push({ time: b.t, position: p.tone === "bear" ? "aboveBar" : "belowBar", shape: "circle", color: p.tone === "bull" ? UP : p.tone === "bear" ? DN : "#fbbf24", text: "", size: 0.5 }); });
     }
-    if (S.inds.has("trades")) S.fills.forEach(f => { const coin = (f.sym || "").split("-")[0]; if (coin !== S.coin || f.ts < k[0].t) return; const t = Math.floor(f.ts / S.tf) * S.tf; mk.push({ time: t, position: f.side === "buy" ? "belowBar" : "aboveBar", shape: f.side === "buy" ? "arrowUp" : "arrowDown", color: f.side === "buy" ? "#22c55e" : "#f43f5e", text: `${f.side === "buy" ? "Bot bought" : "Bot sold"} £${(f.qty * f.px).toFixed(0)}` }); });
+    if (S.inds.has("trades")) S.fills.forEach(f => { const coin = (f.sym || "").split("-")[0]; if (coin !== S.coin || f.ts < k[0].t) return; const t = Math.floor(f.ts / S.tf) * S.tf; mk.push({ time: t, position: f.side === "buy" ? "belowBar" : "aboveBar", shape: f.side === "buy" ? "arrowUp" : "arrowDown", color: f.side === "buy" ? "#22c55e" : "#f43f5e", text: "" }); });
     mk.sort((x, y) => x.time - y.time);
     S.markers = LW.createSeriesMarkers(main, mk);
+    const key = [];
+    if (an && S.inds.has("sr")) {
+      an.lv.sup.forEach(l => { main.createPriceLine({ price: l.p, color: "rgba(52,211,153,.8)", lineStyle: 2, lineWidth: 1, axisLabelVisible: false }); key.push(`<span class="up"><i></i>Support ${pxp(l.p)} (${l.n} touches)</span>`); });
+      an.lv.res.forEach(l => { main.createPriceLine({ price: l.p, color: "rgba(251,113,133,.8)", lineStyle: 2, lineWidth: 1, axisLabelVisible: false }); key.push(`<span class="down"><i></i>Resistance ${pxp(l.p)} (${l.n} touches)</span>`); });
+    }
+    const K = { ema: ['<span style="color:#fbbf24"><i></i>EMA 9</span>', '<span style="color:#60a5fa"><i></i>EMA 21</span>'], sma: ['<span style="color:#f472b6"><i></i>SMA 50</span>'], bb: ['<span style="color:#c084fc"><i></i>Bollinger</span>'], vwap: ['<span style="color:#22d3ee"><i></i>VWAP</span>'] };
+    Object.keys(K).forEach(k => { if (S.inds.has(k)) key.unshift(...K[k]); });
+    if (an && S.inds.has("pat") && Object.keys(an.pats).length) key.push(`<span style="color:#fbbf24">● Candle pattern (see Chart breakdown)</span>`);
+    if (S.inds.has("trades") && mk.some(m => m.shape !== "circle")) key.push(`<span class="up">▲ Bot bought</span><span class="down">▼ Bot sold</span>`);
+    if (S.inds.has("rsi")) key.push(`<span style="color:#c084fc"><i></i>RSI (lower panel; dashed lines at 70 and 30)</span>`);
+    $("cLevels").innerHTML = key.join("");
+
     chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, k.length - (window.innerWidth < 600 ? 70 : 140)), to: k.length + 3 });
     chart.subscribeCrosshairMove(p => legend(p && p.time));
     chart.subscribeClick(p => { if (!p || p.time == null) return; const i = k.findIndex(b => b.t === p.time); if (i >= 0) { $("cTap").innerHTML = explainCandle(k, i, atr(k), an ? an.pats : {}); $("cTap").hidden = false; } });
@@ -283,7 +294,7 @@
   function legend(t) {
     const k = S.candles; if (!k.length) return; const i = t == null ? k.length - 1 : k.findIndex(b => b.t === t); const b = k[i]; if (!b) return;
     const ch = (b.c / b.o - 1) * 100, tfName = (TFS.find(x => x[0] === S.tf) || [0, ""])[1];
-    $("cLegend").innerHTML = `<b>${S.coin}/GBP · ${tfName}</b> <span class="faint">${ukTime(b.t, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span><br>O ${pxp(b.o)} H ${pxp(b.h)} L ${pxp(b.l)} C ${pxp(b.c)} <span class="${ch >= 0 ? "up" : "down"}">${pc(ch)}</span>`;
+    $("cLegend").innerHTML = `<b>${S.coin}/GBP · ${tfName}</b><span class="faint">${ukTime(b.t, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span><span>O ${pxp(b.o)}</span><span>H ${pxp(b.h)}</span><span>L ${pxp(b.l)}</span><span>C ${pxp(b.c)}</span><b class="${ch >= 0 ? "up" : "down"}">${pc(ch)}</b>`;
   }
 
   // ------------------------------------------------------------------ order-book canvases
@@ -413,7 +424,9 @@
       <div class="crow"><span class="lbl">Chart</span><div class="seg scroll" id="cMode"></div></div>
       <div class="crow" id="cWinRow"><span class="lbl">Window</span><div class="seg" id="cWin"></div></div>
       <div class="crow" id="cIndRow"><span class="lbl">Show</span><div class="seg scroll" id="cInd"></div></div>
-      <div class="chartwrap"><div id="chMain"></div><canvas id="cCanvas" hidden></canvas><div id="cLegend" class="legend"></div></div>
+      <div id="cLegend" class="legend"></div>
+      <div class="chartwrap"><div id="chMain"></div><canvas id="cCanvas" hidden></canvas></div>
+      <div class="levels" id="cLevels"></div>
       <div class="note" id="cModeHelp"></div>
       <div class="tapinfo" id="cTap" hidden></div>
       <div class="tapinfo" id="cBookInfo"></div>

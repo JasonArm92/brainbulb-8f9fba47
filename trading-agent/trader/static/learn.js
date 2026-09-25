@@ -240,19 +240,19 @@
     const done = store.get("lessonsDone", {});
     root.innerHTML = `
       <section class="card span"><h2>Learn to read the charts</h2>
-        <p class="mute" style="margin-top:0">Short lessons using the live charts in this app. Tap <b>Try it</b> to open the chart set up for that lesson, then read the Chart breakdown under it. Tap any <a href="#" class="term" data-term="candle">underlined term</a> for a definition.</p>
+        <p class="mute">Short lessons using the live charts in this app. Tap <b>Try it</b> to open the chart set up for that lesson, then read the Chart breakdown under it. Tap any <a href="#" class="term" data-term="candle">underlined term</a> for a definition.</p>
         <div id="lProg" class="note"></div><div id="lList"></div></section>
       <section class="card"><h2>Break-even calculator</h2>
-        <p class="mute" style="margin-top:0">How often must a trade win just to not lose money? Change the numbers or load a bot's settings.</p>
+        <p class="mute">How often must a trade win just to not lose money? Change the numbers or load a bot's settings.</p>
         <div class="grid2"><div><label>Stop-loss % <b id="beSv"></b></label><input id="beS" type="range" min="0.3" max="6" step="0.1" value="2.5"></div>
         <div><label>Target ÷ stop <b id="beRv"></b></label><input id="beR" type="range" min="0.5" max="4" step="0.1" value="1.5"></div></div>
         <label>Round-trip costs % <b id="beCv"></b></label><input id="beC" type="range" min="0" max="2.5" step="0.05" value="1.25">
-        <div class="seg" style="margin-top:10px"><button class="chip" id="beCareful">Careful bot</button><button class="chip" id="beFast">Fast bot</button><button class="chip" id="beMaker">With limit orders</button></div>
+        <div class="seg" style="margin-top:14px"><button class="chip" id="beCareful">Careful bot</button><button class="chip" id="beFast">Fast bot</button><button class="chip" id="beMaker">With limit orders</button></div>
         <div id="beOut" class="tapinfo"></div></section>
-      <section class="card"><h2>Test yourself</h2><p class="mute" style="margin-top:0">Knowledge quizzes, chart challenges on real past charts and the trading simulator are in Training mode.</p>
+      <section class="card"><h2>Test yourself</h2><p class="mute">Knowledge quizzes, chart challenges on real past charts and the trading simulator are in Training mode.</p>
         <div class="lbtns"><button class="btn primary" data-go="quiz">Take a quiz</button><button class="btn" data-go="chal">Chart challenges</button><button class="btn" data-go="sim">Simulator</button></div></section>
       <section class="card span"><h2>Candle pattern library</h2>
-        <p class="mute" style="margin-top:0">The shaded candles are the pattern. The Charts tab marks these automatically when it spots them. No pattern works every time; context (trend, support/resistance, volume) matters more than the shape alone.</p>
+        <p class="mute">The shaded candles are the pattern. The Charts tab marks these automatically when it spots them. No pattern works every time; context (trend, support/resistance, volume) matters more than the shape alone.</p>
         <div class="pgrid" id="pGrid">${PATTERNS.map(p => patternCard(p)).join("")}</div></section>
       <section class="card span"><h2>Glossary</h2><input id="gSearch" type="search" placeholder="Search ${Object.keys(G).length} terms…" style="width:100%">
         <div id="gList" class="glist"></div></section>`;

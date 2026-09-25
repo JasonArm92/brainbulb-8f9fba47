@@ -163,11 +163,11 @@
   // ================================================================== shared chart
   function makeChart(el, { blind = false, tf = 3600, rsi = false } = {}) {
     const chart = LW.createChart(el, {
-      autoSize: true, layout: { background: { type: "solid", color: "transparent" }, textColor: MUTE, fontSize: 11, panes: { separatorColor: "rgba(255,255,255,.1)" } },
+      autoSize: true, layout: { background: { type: "solid", color: "transparent" }, textColor: MUTE, fontSize: 11, attributionLogo: false, panes: { separatorColor: "rgba(255,255,255,.1)" } },
       grid: { vertLines: { color: "rgba(255,255,255,.05)" }, horzLines: { color: "rgba(255,255,255,.05)" } },
       rightPriceScale: { borderColor: "rgba(255,255,255,.12)" }, timeScale: { borderColor: "rgba(255,255,255,.12)", timeVisible: tf < 86400, rightOffset: 6 },
       crosshair: { mode: 0 }, handleScroll: true, handleScale: true,
-      localization: { locale: "en-GB", priceFormatter: p => blind ? idx(p) : px(p), timeFormatter: t => blind ? "" : ukDate(t, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
+      localization: { locale: "en-GB", timeFormatter: t => blind ? "" : ukDate(t, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
     });
     if (blind) chart.timeScale().applyOptions({ tickMarkFormatter: () => "" });
     else chart.timeScale().applyOptions({ tickMarkFormatter: (t, type) => type >= 3 ? ukDate(t, { hour: "2-digit", minute: "2-digit" }) : ukDate(t, { day: "numeric", month: "short" }) });
@@ -178,7 +178,7 @@
     vol.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
     let r = null;
     if (rsi) { r = chart.addSeries(LW.LineSeries, { color: "#c084fc", lineWidth: 1.5, priceLineVisible: false, priceFormat: { type: "price", precision: 0, minMove: 1 } }, 1);
-      r.createPriceLine({ price: 70, color: "rgba(251,113,133,.6)", lineStyle: 2, title: "70" }); r.createPriceLine({ price: 30, color: "rgba(52,211,153,.6)", lineStyle: 2, title: "30" }); chart.panes()[0].setStretchFactor(3); }
+      r.createPriceLine({ price: 70, color: "rgba(251,113,133,.6)", lineStyle: 2, axisLabelVisible: false }); r.createPriceLine({ price: 30, color: "rgba(52,211,153,.6)", lineStyle: 2, axisLabelVisible: false }); chart.panes()[0].setStretchFactor(3); }
     const markers = LW.createSeriesMarkers(main, []);
     const api = {
       chart, main, markers, lines: [],
@@ -208,13 +208,13 @@
     root.innerHTML = `
     <section class="card span train-hero"><h2>Trading simulator</h2>
       <p style="margin-top:0">Trade a real stretch of past Coinbase prices with a pretend <b>£1,000</b>, one candle at a time. You only see the past; the future is revealed as you play. Fees are Coinbase's 0.6% each way, and you can only buy and sell coins you hold (UK rules). At the end you get a report card and coaching on your habits.</p>
-      <div class="grid2">
+      <div class="grid2" style="margin-top:6px">
         <div><label>Coin</label><div class="seg" id="sCoin">${["random", ...COINS].map(c => `<button class="chip${c === "random" ? " on" : ""}" data-v="${c}">${c === "random" ? "Mystery" : c}</button>`).join("")}</div></div>
         <div><label>Candle size</label><div class="seg" id="sTf">${Object.entries(TFS).map(([g, n]) => `<button class="chip${+g === 3600 ? " on" : ""}" data-v="${g}">${n}</button>`).join("")}</div></div>
       </div>
       <div class="set"><div class="sl"><span>Blind mode (hide the date and coin until the end)</span><button class="switch" role="switch" aria-checked="true" id="sBlind"></button></div><div class="sh">Stops you recognising a famous crash or rally and trading on memory.</div></div>
       <div class="set"><div class="sl"><span>Coach hints while you play</span><button class="switch" role="switch" aria-checked="true" id="sCoach"></button></div><div class="sh">Shows a live one-line read of the chart (trend, RSI, patterns) under the price.</div></div>
-      <button class="btn primary big" id="sGo">Start a run</button>
+      <div class="lbtns"><button class="btn primary big" id="sGo">Start a run</button></div>
       ${pr ? `<p class="note">Last run: ${esc(pr.coin)} ${esc(TFS[pr.tf])}, you ${pc(pr.ret)} vs holding ${pc(pr.hold)}, score ${pr.score}/100.</p>` : ""}
     </section>
     <section class="card span"><h2>How it works</h2><ol class="howto">
@@ -240,6 +240,7 @@
     <section class="card span sim">
       <div class="simtop"><div><b>${SIM.blind ? "Mystery coin" : esc(coin) + "/GBP"}</b> <span class="mute">· ${TFS[tf]} candles${SIM.blind ? " · prices shown as an index (start = 100)" : " · " + ukDate(k[0].t, { day: "numeric", month: "short", year: "numeric" })}</span></div><div class="mute" id="sProg"></div></div>
       <div class="chartwrap simchart"><div id="sChart" style="position:absolute;inset:0"></div></div>
+      <div class="levels" id="sKey"></div>
       <div class="coach" id="sCoachLine" ${SIM.coach ? "" : "hidden"}></div>
       <div class="simbar">
         <div class="seg"><button class="btn" id="sPlay">▶ Play</button><button class="btn" id="sStep">Step ›</button>
@@ -295,13 +296,15 @@
     const s = SIM.s; if (!s || !SIM.ch) return;
     const v = value(s), played = s.i - s.histN + 1, total = s.k.length - s.histN, first = s.k[s.histN - 1].c, hold = ((1 - s.fee) ** 2 * price(s) / first - 1) * 100;
     $("sProg").textContent = `Candle ${played} of ${total}`;
-    $("sAcct").innerHTML = `<div class="stat"><span>Account</span><b class="${v >= s.start ? "up" : "down"}">${gbp(v)}</b></div><div class="stat"><span>Cash</span><b>${gbp(s.cash)}</b></div>
-      <div class="stat"><span>In coin</span><b>${gbp(s.qty * price(s))}</b></div><div class="stat"><span>You vs holding</span><b>${pc((v / s.start - 1) * 100)} / ${pc(hold)}</b></div><div class="stat"><span>Fees</span><b>${gbp(s.fees)}</b></div>`;
+    $("sAcct").innerHTML = `<div class="stat"><span>Account</span><b>${gbp(v)}</b></div><div class="stat"><span>Cash</span><b>${gbp(s.cash)}</b></div>
+      <div class="stat"><span>In coin</span><b>${gbp(s.qty * price(s))}</b></div><div class="stat"><span>Your return</span><b class="${v >= s.start ? "up" : "down"}">${pc((v / s.start - 1) * 100)}</b></div><div class="stat"><span>If you'd just held</span><b>${pc(hold)}</b></div><div class="stat"><span>Fees</span><b>${gbp(s.fees)}</b></div>`;
     SIM.ch.clearLines();
     const ae = avgEntry(s), sp = stopPx(s), tp = targetPx(s);
-    if (ae) SIM.ch.line(ae, "rgba(255,255,255,.6)", "your avg buy");
-    if (sp) SIM.ch.line(sp, DN, "stop"); if (tp) SIM.ch.line(tp, UP, "target");
-    SIM.ch.markers.setMarkers(s.trades.map(t => ({ time: s.k[t.i].t, position: t.side === "buy" ? "belowBar" : "aboveBar", shape: t.side === "buy" ? "arrowUp" : "arrowDown", color: t.side === "buy" ? "#22c55e" : "#f43f5e", text: t.reason === "stop" ? "stop" : t.reason === "target" ? "target" : t.side })));
+    if (ae) SIM.ch.line(ae, "rgba(255,255,255,.65)", "");
+    if (sp) SIM.ch.line(sp, DN, ""); if (tp) SIM.ch.line(tp, UP, "");
+    $("sKey").innerHTML = (ae ? `<span style="color:#e5e7eb"><i></i>Your average buy ${SIM.px(ae)}</span>${sp ? `<span class="down"><i></i>Stop ${SIM.px(sp)}</span>` : ""}${tp ? `<span class="up"><i></i>Target ${SIM.px(tp)}</span>` : ""}` : "")
+      + (s.trades.length ? `<span class="up">▲ Your buys</span><span class="down">▼ Your sells</span>` : "");
+    SIM.ch.markers.setMarkers(s.trades.map(t => ({ time: s.k[t.i].t, position: t.side === "buy" ? "belowBar" : "aboveBar", shape: t.side === "buy" ? "arrowUp" : "arrowDown", color: t.side === "buy" ? "#22c55e" : "#f43f5e", text: "" })));
     if (SIM.coach && $("sCoachLine")) { const an = C.analyse(s.k.slice(0, s.i + 1), SIM.meta.tf); $("sCoachLine").innerHTML = "Coach: " + an.headline.replace(/^\w+ on the/, SIM.blind ? "The" : "$&"); }
   }
   function simFinish(root) {
@@ -408,6 +411,7 @@
     if (CH.ch) CH.ch.remove();
     CH.ch = makeChart(root.querySelector("#cChartBox"), { blind: !!CH.view.scale, tf, rsi: !!q.rsi });
     CH.ch.set(k.slice(0, q.cut + 1)); CH.ch.fit(q.type === "pattern" ? 50 : 110);
+    root.querySelector("#cKey").innerHTML = "";
     root.querySelector("#cQ").innerHTML = `<div class="qmeta">${TFS[tf]} candles · ${esc(QB.TOPICS[q.topic])}</div><p class="qtext">${esc(q.q)}</p>
       <div class="qopts col">${q.o.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div><div class="qfb"></div>`;
     root.querySelectorAll("#cQ .opt").forEach(b => b.onclick = () => chalAnswer(root, +b.dataset.i));
@@ -419,10 +423,12 @@
     answered(q.topic, ok, null); addXP(ok ? (q.type === "next" ? 10 : 15) : 2, ok ? "chart challenge" : "for trying");
     if (P.chal.c >= 20) badge("chart_eye");
     const lc = t => t === "support" || t === "target" ? UP : DN;
-    if (q.line) CH.ch.line(q.line.p, lc(q.line.t), q.line.t);
-    if (q.line2) CH.ch.line(q.line2.p, lc(q.line2.t), q.line2.t);
-    if (q.mark) CH.ch.markers.setMarkers([{ time: k[q.mark.i].t, position: "aboveBar", shape: "arrowDown", color: "#fbbf24", text: q.mark.text }]);
-    if (q.reveal) { let j = q.cut; const t = setInterval(() => { j++; CH.ch.set(k.slice(0, j + 1)); CH.ch.fit(110); if (j >= q.reveal) clearInterval(t); }, 120); CH.ch.line(k[q.cut].c, "rgba(255,255,255,.6)", "you were here"); }
+    if (q.line) CH.ch.line(q.line.p, lc(q.line.t), "");
+    if (q.line2) CH.ch.line(q.line2.p, lc(q.line2.t), "");
+    const cap = t => t[0].toUpperCase() + t.slice(1), keyTxt = [q.line, q.line2].filter(Boolean).map(l => `<span class="${lc(l.t) === UP ? "up" : "down"}"><i></i>${cap(l.t)} ${CH.view.scale ? idx(l.p) : px(l.p)}</span>`);
+    if (q.mark) { CH.ch.markers.setMarkers([{ time: k[q.mark.i].t, position: "aboveBar", shape: "arrowDown", color: "#fbbf24", text: "" }]); keyTxt.push(`<span style="color:#fbbf24">▼ ${esc(q.mark.text)}</span>`); }
+    if (q.reveal) { let j = q.cut; const t = setInterval(() => { j++; CH.ch.set(k.slice(0, j + 1)); CH.ch.fit(110); if (j >= q.reveal) clearInterval(t); }, 120); CH.ch.line(k[q.cut].c, "rgba(255,255,255,.65)", ""); keyTxt.push(`<span style="color:#e5e7eb"><i></i>Price when the question was asked</span>`); }
+    root.querySelector("#cKey").innerHTML = keyTxt.join("");
     root.querySelector("#cQ .qfb").innerHTML = `<div class="tapinfo">${ok ? "<b class='up'>Correct.</b> " : "<b class='down'>Not this time.</b> "}${q.x} ${q.g ? T(q.g, "Learn the term") : ""}
       <div class="faint" style="margin-top:6px">This was ${esc(CH.w.coin)}/GBP around ${ukDate(k[q.cut].t, { day: "numeric", month: "short", year: "numeric" })}.</div></div>
       <button class="btn primary" id="cNext">Next challenge</button>`;
@@ -433,7 +439,7 @@
     root.innerHTML = `<section class="card span train-hero"><h2>Chart challenges</h2>
       <p style="margin-top:0">Multiple-choice questions on real past Coinbase charts. The coin and date are hidden until you answer, and prices are shown as an index (the last candle = 100), so you have to read the chart, not remember it. Questions cover trends, candle patterns, RSI, support and resistance, reward-to-risk, fees, and what happened next.</p>
       <div class="note" id="cScore"></div></section>
-      <section class="card span"><div class="chartwrap chalchart"><div id="cChartBox" style="position:absolute;inset:0"></div></div><div id="cQ"></div></section>`;
+      <section class="card span"><div class="chartwrap chalchart" style="margin-top:0"><div id="cChartBox" style="position:absolute;inset:0"></div></div><div class="levels" id="cKey"></div><div id="cQ"></div></section>`;
     chalNext(root);
   }
 
@@ -460,7 +466,7 @@
       <label>Topic</label><div class="seg" id="qTopic"><button class="chip${QUIZ.topic === "smart" ? " on" : ""}" data-v="smart">Smart mix</button>${nWrong ? `<button class="chip${QUIZ.topic === "mistakes" ? " on" : ""}" data-v="mistakes">My mistakes (${nWrong})</button>` : ""}${Object.entries(QB.TOPICS).map(([k, v]) => `<button class="chip${QUIZ.topic === k ? " on" : ""}" data-v="${k}">${esc(v)}</button>`).join("")}</div>
       <label>Level</label><div class="seg" id="qLevel">${[[0, "All"], [1, "Beginner"], [2, "Intermediate"], [3, "Advanced"]].map(([v, n]) => `<button class="chip${QUIZ.level === v ? " on" : ""}" data-v="${v}">${n}</button>`).join("")}</div>
       <label>Length</label><div class="seg" id="qLen">${[5, 10, 20].map(v => `<button class="chip${QUIZ.len === v ? " on" : ""}" data-v="${v}">${v} questions</button>`).join("")}</div>
-      <button class="btn primary big" id="qGo" style="margin-top:14px">Start quiz</button></section>`;
+      <div class="lbtns"><button class="btn primary big" id="qGo">Start quiz</button></div></section>`;
     const seg = (id, key, num) => root.querySelectorAll(`#${id} .chip`).forEach(b => b.onclick = () => { QUIZ[key] = num ? +b.dataset.v : b.dataset.v; root.querySelectorAll(`#${id} .chip`).forEach(x => x.classList.toggle("on", x === b)); });
     seg("qTopic", "topic"); seg("qLevel", "level", 1); seg("qLen", "len", 1);
     root.querySelector("#qGo").onclick = () => { QUIZ.list = pickQuestions(QUIZ.topic, QUIZ.level, QUIZ.len); if (!QUIZ.list.length) { toast("No questions match that choice."); return; } QUIZ.i = 0; QUIZ.right = 0; QUIZ.res = []; quizShow(root); };
