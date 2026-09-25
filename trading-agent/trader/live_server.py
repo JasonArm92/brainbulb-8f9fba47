@@ -19,6 +19,7 @@ Safety:
 
 from __future__ import annotations
 
+import hashlib
 import hmac
 import json
 import os
@@ -118,6 +119,7 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: st
     """accounts: name -> output folder holding live.json / summary.json / state.json.
     The first one is shown by default; ?a=<name> picks another."""
     names = list(accounts)
+    ui_version = hashlib.sha1(page).hexdigest()[:12].encode()     # the page reloads itself when this changes
 
     class H(BaseHTTPRequestHandler):
         server_version = "trader-live/1.0"
@@ -228,6 +230,8 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: st
             summary_path = os.path.join(accounts[acct], "summary.json")
             if u.path == "/":
                 return self._send(200, page, "text/html; charset=utf-8", cookie)
+            if u.path == "/ui":
+                return self._send(200, ui_version, "text/plain")
             if u.path == "/accounts":
                 return self._send(200, json.dumps(names).encode(), "application/json", cookie)
             if u.path.startswith("/static/"):

@@ -214,3 +214,18 @@ def test_training_progress_sync(srv, tmp_path):
         post(f"{base}/progress", {"blob": "x" * 500_000}, cookie=ck)
     assert e.value.code == 413
     assert json.load(open(tmp_path / "training" / "progress.json"))["xp"] == 120
+
+
+def test_ui_version_changes_with_the_page(tmp_path):
+    tok = live_server.load_token(str(tmp_path / "tok"))
+    a = live_server.make_handler({"careful": str(tmp_path)}, tok, b"<html>one</html>")
+    b = live_server.make_handler({"careful": str(tmp_path)}, tok, b"<html>two</html>")
+    import threading
+    from http.server import ThreadingHTTPServer
+    vs = []
+    for h in (a, b):
+        srv = ThreadingHTTPServer(("127.0.0.1", 0), h)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        vs.append(urllib.request.urlopen(f"http://127.0.0.1:{srv.server_port}/ui?k={tok}").read())
+        srv.shutdown()
+    assert len(vs[0]) == 12 and vs[0] != vs[1]
