@@ -458,12 +458,14 @@ function setMarquee(o,items){const list=items.map(i=>typeof i==="string"?{k:i,h:
 let lastT=performance.now();
 function tickMarquees(t){const dt=Math.min(.1,(t-lastT)/1000);lastT=t;if(RM)return;
   TK.forEach(o=>{if(!o.pool.length)return;const rw=o.el.parentElement.clientWidth;if(!rw)return;
-    o.off+=Math.max(o.speed,Math.min(300,rw*o.k))*dt*(o.fresh.length>3?1.5:1);
+    if(o.hold)return;o.off+=Math.max(o.speed,Math.min(130,rw*o.k))*dt*(o.fresh.length>4?1.25:1);
     while(o.nodes.length&&o.nodes[0].w<=o.off){o.off-=o.nodes[0].w;o.nodes.shift().e.remove()}
     let tot=0;o.nodes.forEach(n=>tot+=n.w);let guard=0;
     while(tot-o.off<rw+120&&guard++<30){const f=o.fresh.shift(),it=f||o.pool[o.idx++%o.pool.length],e=document.createElement("span");e.innerHTML=it.h;if(f)e.className="new";o.el.appendChild(e);const w=e.getBoundingClientRect().width||1;o.nodes.push({e,w});tot+=w}
     o.el.style.transform=`translate3d(${-o.off.toFixed(2)}px,0,0)`})}
-const FEED=marquee($("feed"),95,.22),FACTS=marquee($("facts"),80,.17);
+const FEED=marquee($("feed"),48,.09),FACTS=marquee($("facts"),42,.08);
+/* hold a finger on (or hover over) a ticker to pause it */
+TK.forEach(o=>{const t=o.el.closest(".ticker");["pointerenter","pointerdown"].forEach(ev=>t.addEventListener(ev,()=>o.hold=true));["pointerleave","pointerup","pointercancel"].forEach(ev=>t.addEventListener(ev,()=>o.hold=false))});
 setMarquee(FACTS,["A window resolves <b class='up'>UP</b> if BTC closes at or above the opening reference, anything else is <b class='down'>DOWN</b>",
   "1 YES + 1 NO = <b class='gold'>$1</b> at resolution, so a pair bought for under $1 is locked-in profit",
   "We only bid, on both sides, below fair value","When fills arrive unevenly we skew quotes, then cross the spread to buy the missing side",
