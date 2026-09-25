@@ -34,20 +34,30 @@ from . import uk_tax
 COIN_OK = set(settings_mod.COINS)
 GRANULARITY = {60, 300, 900, 3600, 21600, 86400}
 CB_CANDLES = "https://api.exchange.coinbase.com/products/{coin}-GBP/candles?granularity={g}"
+EARLIEST = 1609459200                 # 2021-01-01: oldest history the training simulator asks for
 STATIC = {"lwc.js": "application/javascript", "LICENSE-lightweight-charts.txt": "text/plain",
-          "learn.js": "application/javascript", "charts.js": "application/javascript"}
+          "learn.js": "application/javascript", "charts.js": "application/javascript",
+          "sim.js": "application/javascript", "quizbank.js": "application/javascript"}
+PROGRESS_MAX = 400_000
 _cache: dict = {}
 
 
-def fetch_candles(coin: str, g: int, now: float | None = None, opener=None) -> list:
+def fetch_candles(coin: str, g: int, now: float | None = None, opener=None, end: int | None = None) -> list:
     """Coinbase public candles, oldest first, as [t, open, high, low, close, volume].
-    Cached for a few seconds so several phones do not hammer the API."""
+    `end` (unix seconds) asks for the 300 candles before that moment, for training replays.
+    Cached so several phones do not hammer the API (history for an hour, live for seconds)."""
     now = now or time.time()
-    key = (coin, g)
+    key = (coin, g, end)
     hit = _cache.get(key)
-    if hit and now - hit[0] < (5 if g == 60 else 20):
+    if hit and now - hit[0] < (3600 if end else 5 if g == 60 else 20):
         return hit[1]
-    req = urllib.request.Request(CB_CANDLES.format(coin=coin, g=g), headers={"User-Agent": "trader-live/1.0"})
+    url = CB_CANDLES.format(coin=coin, g=g)
+    if end:
+        fmt = lambda t: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t))
+        url += f"&start={fmt(end - 300 * g)}&end={fmt(end)}"
+    if len(_cache) > 400:
+        _cache.clear()
+    req = urllib.request.Request(url, headers={"User-Agent": "trader-live/1.0"})
     with (opener or urllib.request.urlopen)(req, timeout=8) as r:
         rows = json.loads(r.read())
     out = sorted([int(c[0]), float(c[3]), float(c[2]), float(c[1]), float(c[4]), float(c[5])] for c in rows)
@@ -104,7 +114,7 @@ def load_token(path: str) -> str:
 
 
 def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: str = "tapes",
-                 tape_prefix: str = "cb", opener=None):
+                 tape_prefix: str = "cb", opener=None, progress_path: str = "runtime/training/progress.json"):
     """accounts: name -> output folder holding live.json / summary.json / state.json.
     The first one is shown by default; ?a=<name> picks another."""
     names = list(accounts)
@@ -164,8 +174,23 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: st
             acct = (q.get("a") or [names[0]])[0]
             if acct not in accounts:
                 return self._send(404, b"unknown account", "text/plain")
+            n = int(self.headers.get("Content-Length") or 0)
+            if u.path == "/progress":           # training progress: an opaque JSON blob, size-capped
+                if n > PROGRESS_MAX:
+                    return self._send(413, b"too big", "text/plain")
+                raw = self.rfile.read(n)
+                try:
+                    if not isinstance(json.loads(raw), dict):
+                        raise ValueError
+                except ValueError:
+                    return self._send(400, b"bad json", "text/plain")
+                os.makedirs(os.path.dirname(progress_path), exist_ok=True)
+                tmp = progress_path + ".tmp"
+                with open(tmp, "wb") as f:
+                    f.write(raw)
+                os.replace(tmp, progress_path)
+                return self._send(200, b'{"ok":true}', "application/json")
             try:
-                n = int(self.headers.get("Content-Length") or 0)
                 body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
                 if not isinstance(body, dict):
                     raise ValueError
@@ -224,8 +249,16 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: st
                     g = 0
                 if coin not in COIN_OK or g not in GRANULARITY:
                     return self._send(400, b"bad coin or granularity", "text/plain")
+                end = None
+                if q.get("end"):
+                    try:
+                        end = int(float(q["end"][0])) // g * g
+                    except ValueError:
+                        return self._send(400, b"bad end", "text/plain")
+                    if not EARLIEST + 300 * g <= end <= time.time():
+                        return self._send(400, b"end out of range", "text/plain")
                 try:
-                    rows = fetch_candles(coin, g, opener=opener)
+                    rows = fetch_candles(coin, g, opener=opener, end=end)
                 except Exception:
                     return self._send(502, b'{"error":"Coinbase candles unavailable"}', "application/json")
                 return self._send(200, json.dumps(rows).encode(), "application/json")
@@ -240,6 +273,12 @@ def make_handler(accounts: dict[str, str], token: str, page: bytes, tape_dir: st
                 step = max(2.0, mins * 60 / 120)
                 return self._send(200, json.dumps(read_depth(tape_dir, tape_prefix, coin, mins, step_s=step)).encode(),
                                   "application/json")
+            if u.path == "/progress":
+                try:
+                    with open(progress_path, "rb") as f:
+                        return self._send(200, f.read(), "application/json")
+                except OSError:
+                    return self._send(200, b"{}", "application/json")
             if u.path == "/fills":
                 try:
                     with open(os.path.join(accounts[acct], "state.json")) as f:

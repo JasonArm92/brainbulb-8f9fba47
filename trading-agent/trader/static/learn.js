@@ -249,8 +249,8 @@
         <label>Round-trip costs % <b id="beCv"></b></label><input id="beC" type="range" min="0" max="2.5" step="0.05" value="1.25">
         <div class="seg" style="margin-top:10px"><button class="chip" id="beCareful">Careful bot</button><button class="chip" id="beFast">Fast bot</button><button class="chip" id="beMaker">With limit orders</button></div>
         <div id="beOut" class="tapinfo"></div></section>
-      <section class="card"><h2>Quiz</h2><div class="seg"><button class="chip on" data-q="pat">Spot the pattern</button><button class="chip" data-q="term">Terms</button></div>
-        <div id="qBox"></div><div class="note" id="qScore"></div></section>
+      <section class="card"><h2>Test yourself</h2><p class="mute" style="margin-top:0">Knowledge quizzes, chart challenges on real past charts and the trading simulator are in Training mode.</p>
+        <div class="lbtns"><button class="btn primary" data-go="quiz">Take a quiz</button><button class="btn" data-go="chal">Chart challenges</button><button class="btn" data-go="sim">Simulator</button></div></section>
       <section class="card span"><h2>Candle pattern library</h2>
         <p class="mute" style="margin-top:0">The shaded candles are the pattern. The Charts tab marks these automatically when it spots them. No pattern works every time; context (trend, support/resistance, volume) matters more than the shape alone.</p>
         <div class="pgrid" id="pGrid">${PATTERNS.map(p => patternCard(p)).join("")}</div></section>
@@ -279,7 +279,9 @@
     const gl = root.querySelector("#gList"), draw = q => { q = (q || "").toLowerCase(); gl.innerHTML = Object.entries(G).filter(([id, t]) => !q || (t[0] + " " + t[1]).toLowerCase().includes(q)).sort((a, b) => a[1][0].localeCompare(b[1][0]))
       .map(([id, t]) => `<div class="gitem" id="g-${id}"><b>${esc(t[0])}</b><div>${esc(t[1])}</div><div class="faint">${esc(t[2])}</div></div>`).join("") || `<div class="empty">No match.</div>`; };
     root.querySelector("#gSearch").addEventListener("input", e => draw(e.target.value)); draw("");
-    // quiz
+    root.querySelectorAll("[data-go]").forEach(b => b.onclick = () => app.showTab && app.showTab(b.dataset.go));
+    // (the pattern / term quiz moved to Training > Quiz)
+    if (!root.querySelector("#qBox")) return;
     let mode = "pat";
     const score = store.get("quizScore", { right: 0, total: 0 });
     const showScore = () => root.querySelector("#qScore").textContent = score.total ? `Score so far: ${score.right} of ${score.total} (${Math.round(score.right / score.total * 100)}%)` : "";

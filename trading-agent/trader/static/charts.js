@@ -172,7 +172,7 @@
         body: recent.map(x => `<b>${esc(x.p.name)}</b> ${n - x.i === 0 ? "on the current (unfinished) candle" : `${n - x.i} candle${n - x.i === 1 ? "" : "s"} ago`}: ${esc(x.p.means)}`).join("<br>")
           + `<div class="how">${esc(top.p.tip)} <a href="#" class="patlink" data-pat="${top.p.id}">See the ${esc(top.p.name)} in the pattern library</a>.</div>` });
     }
-    out.score = score;
+    out.score = score; out.trend = trend; out.rsi = r; out.atrPct = aPct; out.atr = a;
     out.tone = score >= 1.5 ? "bull" : score <= -1.5 ? "bear" : "neutral";
     const mood = score >= 2.5 ? "strongly bullish" : score >= 1.5 ? "leaning bullish" : score <= -2.5 ? "strongly bearish" : score <= -1.5 ? "leaning bearish" : "mixed";
     out.headline = `${S.coin} on the ${tfName} chart looks <b>${mood}</b>: ${trend === "up" ? "up-trend" : trend === "down" ? "down-trend" : "no clear trend"}, RSI ${r != null ? r.toFixed(0) : "—"}, ${recent.length ? "recent " + recent[recent.length - 1].p.name.toLowerCase() : "no fresh candle pattern"}.`;

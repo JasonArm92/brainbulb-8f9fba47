@@ -14,6 +14,9 @@ import pytest
 from trader import live_server
 
 
+srv_calls: list = []
+
+
 @pytest.fixture
 def srv(tmp_path):
     (tmp_path / "fast").mkdir()
@@ -54,8 +57,10 @@ def srv(tmp_path):
 
     live_server._cache.clear()
     h = ThreadingHTTPServer(("127.0.0.1", 0), live_server.make_handler(
-        {"careful": str(tmp_path), "fast": str(tmp_path / "fast")}, tok, page, str(tapes), "cb", opener))
-    h.calls = calls
+        {"careful": str(tmp_path), "fast": str(tmp_path / "fast")}, tok, page, str(tapes), "cb", opener,
+        str(tmp_path / "training" / "progress.json")))
+    srv_calls.clear()
+    srv_calls.extend([calls])
     h.daemon_threads = True
     threading.Thread(target=h.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{h.server_port}", tok, live
@@ -179,3 +184,33 @@ def test_candles_depth_static(srv):
     assert b"LightweightCharts" in js[:5000] or len(js) > 100000
     with pytest.raises(urllib.error.HTTPError):
         get(f"{base}/static/../live_server.py", cookie=ck)
+
+
+def test_history_candles_for_training(srv):
+    base, tok, _ = srv
+    ck = f"tl={tok}"
+    live_server._cache.clear()
+    end = 1735689600 + 3600 * 5 + 17                      # 2025-01-01 05:00:17 -> floored to the hour
+    json.load(get(f"{base}/candles?coin=ETH&g=3600&end={end}", cookie=ck))
+    url = srv_calls[0][-1]
+    assert "ETH-GBP" in url and "granularity=3600" in url
+    assert "end=2025-01-01T05:00:00Z" in url and "start=2024-12-19T17:00:00Z" in url   # 300 hours earlier
+    for bad in ("end=100", f"end={int(time.time()) + 86400}", "end=abc"):
+        with pytest.raises(urllib.error.HTTPError) as e:
+            get(f"{base}/candles?coin=ETH&g=3600&{bad}", cookie=ck)
+        assert e.value.code == 400
+
+
+def test_training_progress_sync(srv, tmp_path):
+    base, tok, _ = srv
+    ck = f"tl={tok}"
+    assert json.load(get(f"{base}/progress", cookie=ck)) == {}
+    assert json.load(post(f"{base}/progress", {"xp": 120, "updated": 5}, cookie=ck))["ok"]
+    assert json.load(get(f"{base}/progress", cookie=ck))["xp"] == 120
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(f"{base}/progress", {"xp": 1}, cookie=ck, header=False)
+    assert e.value.code == 403
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(f"{base}/progress", {"blob": "x" * 500_000}, cookie=ck)
+    assert e.value.code == 413
+    assert json.load(open(tmp_path / "training" / "progress.json"))["xp"] == 120

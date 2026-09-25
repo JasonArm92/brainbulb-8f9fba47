@@ -40,11 +40,61 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 [hidden]{display:none!important}
 .tabroot{display:contents}
 body:not([data-tab=live]) .t-live{display:none!important}
-body:not([data-tab=charts]) #tab-charts,body:not([data-tab=learn]) #tab-learn,body:not([data-tab=settings]) #tab-settings{display:none}
+.tabroot:not(.on){display:none!important}
 .tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));z-index:20;display:flex;gap:4px;padding:5px;border-radius:999px;
   background:rgba(20,23,38,.72);border:1px solid var(--edge);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%);box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.15)}
 .tabbar button{all:unset;cursor:pointer;padding:9px 15px;border-radius:999px;font-size:13px;font-weight:600;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px}
 .tabbar button svg{width:20px;height:20px}
+.tabbar .modesw{display:none}
+@media (max-width:520px){.tabbar{gap:2px;padding:4px}.tabbar button{padding:8px 9px;min-width:0;font-size:11px}}
+@media (min-width:980px){
+  body{padding-left:128px;padding-bottom:28px}
+  .tabbar{left:18px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;border-radius:26px;padding:8px;gap:6px;width:84px}
+  .tabbar button{padding:10px 4px;border-radius:18px;font-size:12px;min-width:0}
+  .tabbar .modesw{display:flex;flex-direction:column;gap:4px;padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--edge)}
+  .tabbar .modesw button{padding:7px 4px;font-size:11px;border-radius:12px}
+  #modeTop{display:none}
+  .savebar{bottom:14px}
+}
+.modesw{display:inline-flex;gap:3px;padding:3px;border-radius:999px;background:var(--glass);border:1px solid var(--edge)}
+.modesw button{all:unset;cursor:pointer;padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:700;color:var(--mute)}
+.modesw button[aria-pressed=true]{color:#0b0d14;background:linear-gradient(135deg,var(--acc),var(--acc2))}
+body[data-mode=training]{--acc:#2dd4bf;--acc2:#a3e635}
+body[data-mode=training] .aur{background:radial-gradient(40% 35% at 20% 15%,#0f766e 0,transparent 70%),radial-gradient(35% 30% at 85% 25%,#4d7c0f 0,transparent 70%),radial-gradient(40% 35% at 60% 90%,#1e40af 0,transparent 70%)}
+body[data-mode=training] .tabbar button[aria-current=true]{background:linear-gradient(135deg,rgba(45,212,191,.45),rgba(163,230,53,.3))}
+.trainpill{display:none}body[data-mode=training] .trainpill{display:inline-flex;color:#99f6e4;border-color:rgba(45,212,191,.5)}
+body[data-mode=training] .livepills,body[data-mode=training] #killbanner{display:none!important}
+/* training UI */
+.train-hero p{color:#dbe0ee}
+.btn.big{padding:12px 20px;font-size:15px;margin-top:8px}
+.howto{margin:0;padding-left:20px;color:#dbe0ee;font-size:14px}.howto li{margin:6px 0}
+.simtop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.simbar{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin:10px 0}
+.simbar .seg{flex:0 1 auto;flex-wrap:nowrap}.simbar .btn{white-space:nowrap;margin-top:0}
+.btn.buy{background:rgba(52,211,153,.18);border-color:rgba(52,211,153,.5)}.btn.sell{background:rgba(251,113,133,.16);border-color:rgba(251,113,133,.45)}
+select{background:var(--glass);border:1px solid var(--edge);color:var(--ink);border-radius:12px;padding:8px 10px;font:inherit;font-size:13px}
+.coach{font-size:13px;color:#cfe;padding:8px 12px;border-radius:12px;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.25)}
+.simchart{height:min(52vh,480px);min-height:300px}.chalchart{height:min(48vh,440px);min-height:280px}
+.report{border-color:rgba(45,212,191,.45)}
+.scorebig{font-size:56px;font-weight:800;letter-spacing:-.03em;line-height:1}.scorebig small{font-size:22px;color:var(--mute);font-weight:600}
+.habit{padding:10px 12px;border-radius:12px;margin:8px 0;font-size:14px;background:var(--glass)}.habit.bad{box-shadow:inset 3px 0 0 var(--warn)}.habit.good{box-shadow:inset 3px 0 0 var(--up)}
+.qmeta{font-size:12px;color:var(--mute);margin:10px 0 2px}.qtext{font-size:17px;font-weight:600;margin:4px 0 12px}
+.qopts.col{flex-direction:column;align-items:stretch}
+.opt{all:unset;cursor:pointer;display:block;padding:13px 14px;border-radius:14px;background:var(--glass);border:1px solid var(--edge);font-size:15px;transition:background .2s,border-color .2s}
+.opt:hover:not(:disabled){border-color:var(--acc)}.opt:disabled{cursor:default}
+.opt.right{background:rgba(52,211,153,.2);border-color:var(--up)}.opt.wrong{background:rgba(251,113,133,.18);border-color:var(--down)}
+.qbar{height:6px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden}.qbar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
+.mastery .mrow{display:grid;grid-template-columns:minmax(110px,1fr) 2fr 44px auto;gap:10px;align-items:center;font-size:13px;margin:8px 0}
+.mastery .bar,.lvl .bar{margin:0}.mastery .bar i,.lvl .bar i{background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.chip.sm{padding:4px 10px;font-size:12px}
+.lvl{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.lvlbadge{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:26px;font-weight:800;color:#0b0d14;background:linear-gradient(135deg,var(--acc),var(--acc2));flex:none}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.bdg{padding:10px;border-radius:14px;background:var(--glass);font-size:12px;color:var(--mute);opacity:.55;display:flex;flex-direction:column;gap:2px}
+.bdg.got{opacity:1;border:1px solid rgba(45,212,191,.45)}.bdg b{color:var(--ink);font-size:13px}.bdg .bi{font-size:20px;color:var(--acc)}
+#tToast{position:fixed;left:50%;transform:translateX(-50%);top:calc(14px + env(safe-area-inset-top));z-index:50;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.toast{padding:8px 14px;border-radius:999px;background:rgba(20,23,38,.92);border:1px solid var(--edge);font-size:13px;font-weight:600;transition:opacity .4s,transform .4s;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.toast.big{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0b0d14;font-size:14px}.toast.out{opacity:0;transform:translateY(-8px)}
 .tabbar button[aria-current=true]{color:#fff;background:linear-gradient(135deg,rgba(139,157,255,.45),rgba(192,132,252,.35))}
 .seg.scroll{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch}.seg.scroll::-webkit-scrollbar{display:none}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
@@ -154,10 +204,12 @@ footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
 
   <div class="span top">
     <div class="brand">Live Trader <span class="mute" style="font-weight:500">· practice money</span></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <span class="pill"><span id="dot" class="dot"></span><span id="conn">Connecting…</span></span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <div class="modesw" id="modeTop" role="group" aria-label="Mode"><button data-mode="live" aria-pressed="true">Live</button><button data-mode="training" aria-pressed="false">Training</button></div>
+      <span class="pill trainpill">Training mode · past data, pretend money</span>
+      <span class="livepills" style="display:contents"><span class="pill"><span id="dot" class="dot"></span><span id="conn">Connecting…</span></span>
       <span class="pill" id="prof">UK spot · Coinbase</span>
-      <span class="pill paused" id="pausePill" hidden>Paused</span>
+      <span class="pill paused" id="pausePill" hidden>Paused</span></span>
     </div>
   </div>
 
@@ -255,16 +307,15 @@ footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
   <div id="tab-charts" class="tabroot"></div>
   <div id="tab-learn" class="tabroot"></div>
   <div id="tab-settings" class="tabroot"></div>
+  <div id="tab-sim" class="tabroot"></div>
+  <div id="tab-chal" class="tabroot"></div>
+  <div id="tab-quiz" class="tabroot"></div>
+  <div id="tab-prog" class="tabroot"></div>
 
   <footer class="span">Practice account with live Coinbase prices and pretend money. Not financial advice. Crypto can lose value fast. <span id="upd"></span></footer>
 </div>
 
-<nav class="tabbar" aria-label="Sections">
-  <button data-tab="live" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Live</button>
-  <button data-tab="charts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4v16M6 8h-2v6h2M12 3v18M12 6h-2v9h2M18 6v14M18 10h-2v5h2"/></svg>Charts</button>
-  <button data-tab="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7l10-4 10 4-10 4z"/><path d="M6 9v5c3 2 9 2 12 0V9"/></svg>Learn</button>
-  <button data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Settings</button>
-</nav>
+<nav class="tabbar" aria-label="Sections" id="nav"></nav>
 
 <dialog class="sheet" id="termSheet"><div class="card"><h2 id="termT" style="text-transform:none;letter-spacing:0;font-size:18px;color:#fff"></h2><p id="termD"></p><p class="faint" id="termE"></p>
   <div style="display:flex;gap:8px"><button class="btn" id="termMore">See in glossary</button><button class="btn primary" id="termClose">Close</button></div></div></dialog>
@@ -272,6 +323,8 @@ footer{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
 <script src="static/lwc.js"></script>
 <script src="static/learn.js"></script>
 <script src="static/charts.js"></script>
+<script src="static/quizbank.js"></script>
+<script src="static/sim.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const fmt=(v,d)=>{if(v==null||isNaN(v))return"—";const a=Math.abs(v);const dp=d!=null?d:(a>=100000?0:2);return(v<0?"-":"")+"£"+a.toLocaleString("en-GB",{minimumFractionDigits:dp,maximumFractionDigits:dp})};
@@ -454,11 +507,30 @@ function renderThink(d){
 document.addEventListener("click",e=>{const a=e.target.closest(".coinlink");if(!a)return;e.preventDefault();CHARTS.S.coin=a.dataset.coin;CHARTS.open({});showTab("charts")});
 
 // ---------------------------------------------------------------- tabs
-let TAB="live";
-function showTab(t){TAB=t;document.body.dataset.tab=t;document.querySelectorAll(".tabbar button").forEach(b=>b.setAttribute("aria-current",String(b.dataset.tab===t)));
+const IC={
+  live:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',charts:'<path d="M6 4v16M6 8h-2v6h2M12 3v18M12 6h-2v9h2M18 6v14M18 10h-2v5h2"/>',
+  settings:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+  sim:'<path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/>',chal:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 14l3-3 2 2 5-5"/><path d="M9 21h6"/>',
+  quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5v.01"/>',
+  learn:'<path d="M2 7l10-4 10 4-10 4z"/><path d="M6 9v5c3 2 9 2 12 0V9"/>',prog:'<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>'};
+const NAV={live:[["live","Live"],["charts","Charts"],["settings","Settings"]],training:[["sim","Simulator"],["chal","Challenges"],["quiz","Quiz"],["learn","Lessons"],["prog","Progress"]]};
+const modeOf=t=>NAV.training.some(x=>x[0]===t)?"training":"live";
+let TAB="live",MODE="live",LAST={live:"live",training:"sim"};
+function renderNav(){
+  const sw=`<div class="modesw" role="group" aria-label="Mode"><button data-mode="live" aria-pressed="${MODE==="live"}">Live</button><button data-mode="training" aria-pressed="${MODE==="training"}">Training</button></div>`;
+  $("nav").innerHTML=sw+NAV[MODE].map(([id,n])=>`<button data-tab="${id}" aria-current="${id===TAB}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${IC[id]}</svg>${n}</button>`).join("");
+  $("nav").querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+  document.querySelectorAll("[data-mode]").forEach(b=>{b.setAttribute("aria-pressed",String(b.dataset.mode===MODE));b.onclick=()=>showTab(LAST[b.dataset.mode])});
+}
+function showTab(t){
+  const prev=TAB;TAB=t;MODE=modeOf(t);LAST[MODE]=t;document.body.dataset.tab=t;document.body.dataset.mode=MODE;
+  document.querySelectorAll(".tabroot").forEach(r=>r.classList.toggle("on",r.id==="tab-"+t));
   try{localStorage.setItem("tab",t)}catch(_){}
-  CHARTS.setActive(t==="charts");if(t==="settings")loadSettings();scrollTo({top:0,behavior:"instant"in window?"instant":"auto"})}
-document.querySelectorAll(".tabbar button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+  renderNav();
+  if(prev!==t&&window.TRAIN)TRAIN.hide(prev);
+  CHARTS.setActive(t==="charts");if(t==="settings")loadSettings();if(window.TRAIN&&TRAIN_READY)TRAIN.show(t);
+  scrollTo({top:0,behavior:"instant"in window?"instant":"auto"})}
+let TRAIN_READY=false;
 
 // ---------------------------------------------------------------- glossary sheet
 document.addEventListener("click",e=>{const a=e.target.closest("a.term");if(!a)return;e.preventDefault();const t=LEARN.G[a.dataset.term];if(!t)return;
@@ -521,11 +593,12 @@ function drawSettings(){
 }
 
 // ---------------------------------------------------------------- app glue
-window.APP={acct:()=>ACC,live:()=>L,openChart:o=>{CHARTS.open(o||{});showTab("charts")},showPattern:id=>{showTab("learn");setTimeout(()=>LEARN.showPattern($("tab-learn"),id),50)}};
+window.APP={showTab:t=>showTab(t),acct:()=>ACC,live:()=>L,openChart:o=>{CHARTS.open(o||{});showTab("charts")},showPattern:id=>{showTab("learn");setTimeout(()=>LEARN.showPattern($("tab-learn"),id),50)}};
 CHARTS.init($("tab-charts"));
 LEARN.render($("tab-learn"),APP);
 let t0="live";try{t0=localStorage.getItem("tab")||"live"}catch(_){}
-showTab(["live","charts","learn","settings"].includes(t0)?t0:"live");
+showTab([...NAV.live,...NAV.training].some(x=>x[0]===t0)?t0:"live");
+TRAIN.init(APP).then(()=>{TRAIN_READY=true;TRAIN.show(TAB)});
 </script>
 </body>
 </html>
