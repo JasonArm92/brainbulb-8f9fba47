@@ -240,7 +240,8 @@ class Engine:
                 if self.fair is not None:
                     self.win_hist.append({"t": round(now - w.start, 1), "p": round(self.fair.p_up, 4), "crowd": round(self.sim.book.mid, 4),
                                           "yb": self.quote.yes_bid, "nb": self.quote.no_bid, "yes": round(self.inv.yes_qty, 2),
-                                          "no": round(self.inv.no_qty, 2), "bleed": round(self.inv.hedge_bleed, 4)})
+                                          "no": round(self.inv.no_qty, 2), "bleed": round(self.inv.hedge_bleed, 4),
+                                          "pc": round(self.inv.pair_cost, 4) if self.inv.pair_cost is not None else None})
 
     def run(self, every_s: float = 0.5) -> None:
         while not self._stop.is_set():
@@ -289,7 +290,9 @@ class Engine:
                          "limits": {"max_window_cost_usd": self.cfg.risk.max_window_cost_usd, "max_unpaired_usd": self.cfg.risk.max_unpaired_usd,
                                     "breaker_bleed_usd": self.cfg.risk.breaker_bleed_usd, "breaker_drawdown_frac": self.cfg.risk.breaker_drawdown_frac}},
                 "spot_hist": list(self.spot_hist)[-600:], "win_hist": self.win_hist[-300:],
-                "recent_windows": self.ledger.windows(40), "events": self.ledger.events(12),
+                "recent_windows": self.ledger.windows(40),
+                "fills": [{k: f[k] for k in ("ts", "side", "price", "qty", "kind", "informed", "why")}
+                          for f in (self.ledger.fills(w.start)[-160:] if w else [])], "events": self.ledger.events(12),
                 "calibration_live": self.ledger.calibration(), "backtest": self.ledger.get("backtest"),
                 "config": {"half_spread": self.cfg.mm.half_spread, "max_pair_cost": self.cfg.mm.max_pair_cost,
                            "taker_fee_rate": self.cfg.mm.taker_fee_rate, "quote_size": self.cfg.mm.quote_size,
