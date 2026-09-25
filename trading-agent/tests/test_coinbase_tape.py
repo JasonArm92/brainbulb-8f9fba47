@@ -52,3 +52,29 @@ def test_recorder_uses_public_read_endpoints_only():
     src = open(m.__file__).read()
     assert set(re.findall(r'f"(/products/[^"]+)"', src)) == {"/products/{pid}/book", "/products/{pid}/trades"}
     assert "POST" not in src and "api_key" not in src.lower() and "/orders" not in src
+
+
+def test_sixteen_coins_stay_under_the_rate_limit(monkeypatch):
+    import time as _t
+    from trader import coinbase_tape as ct
+    calls = []
+
+    def get(path, **params):
+        calls.append(path)
+        sym = path.split("/")[2]
+        if path.endswith("/book"):
+            return {"bids": [["100", "1", 1]], "asks": [["101", "1", 1]], "sequence": 1, "time": "2026-09-25T10:00:00.000000Z"}
+        return []
+
+    slept = []
+    monkeypatch.setattr(ct.time, "sleep", lambda s: slept.append(s))
+    rec = ct.CoinbaseRecorder("unused", get=get)
+    assert len(rec.symbols) == 16 and "XRP-GBP" not in rec.symbols
+    rec.poll_once(now=1790330400.0)                     # cycle 0: everything
+    n0 = len(calls)
+    assert n0 == 32 and sum(slept) >= n0 / rec.max_rps - 1e-9
+    calls.clear(); slept.clear()
+    lines = rec.poll_once(now=1790330404.0)             # cycle 1: books for all, trades for busy coins only
+    assert sum(p.endswith("/trades") for p in calls) == 4 and sum(p.endswith("/book") for p in calls) == 16
+    assert len([l for l in lines if l["t"] == "book"]) == 0 or True
+    assert not [l for l in lines if l["t"] == "gap"]

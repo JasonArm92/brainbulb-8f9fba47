@@ -7,12 +7,12 @@
   const T = (id, text) => LEARN.termLink(id, text);
   const $ = id => document.getElementById(id);
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const px = v => v == null || !isFinite(v) ? "—" : v >= 1000 ? "£" + v.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : v >= 1 ? "£" + v.toFixed(2) : "£" + v.toFixed(4);
+  const px = v => v == null || !isFinite(v) ? "—" : v >= 1000 ? "£" + v.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : v >= 1 ? "£" + v.toFixed(2) : v >= 0.01 ? "£" + v.toFixed(4) : "£" + (+v.toPrecision(4)).toFixed(Math.min(12, 3 - Math.floor(Math.log10(Math.abs(v) || 1e-12))));
   const pxp = v => v >= 1000 ? "£" + v.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : px(v);
   const pc = (v, d = 2) => v == null || !isFinite(v) ? "—" : (v > 0 ? "+" : "") + v.toFixed(d) + "%";
   const ukTime = (t, o) => new Date(t * 1000).toLocaleString("en-GB", { timeZone: "Europe/London", ...o });
   const UP = "#34d399", DN = "#fb7185", ACC = "#8b9dff", ACC2 = "#c084fc", MUTE = "#9aa3b8", GRID = "rgba(255,255,255,.06)";
-  const COINS = ["BTC", "ETH", "SOL", "AAVE"];
+  const COINS = ["BTC", "ETH", "SOL", "LINK", "ADA", "DOT", "LTC", "DOGE", "AAVE", "ALGO", "ATOM", "SHIB", "BCH", "UNI", "FIL", "ETC"];
   const TFS = [[60, "1m"], [300, "5m"], [900, "15m"], [3600, "1h"], [21600, "6h"], [86400, "1d"]];
   const MODES = [["candles", "Candles"], ["heikin", "Heikin-Ashi"], ["bars", "OHLC bars"], ["line", "Line"], ["area", "Area"],
     ["baseline", "Baseline"], ["depth", "Depth now"], ["heatmap", "Book heatmap"], ["d3", "3D depth"]];
@@ -238,7 +238,7 @@
     });
     chart.timeScale().applyOptions({ tickMarkFormatter: (t, type) => type >= 3 ? ukTime(t, { hour: "2-digit", minute: "2-digit" }) : ukTime(t, { day: "numeric", month: "short" }) });
     S.chart = chart;
-    const pf = { type: "custom", formatter: p => px(p), minMove: k[k.length - 1].c < 10 ? 0.0001 : 0.01 };
+    const pf = { type: "custom", formatter: p => px(p), minMove: Math.pow(10, Math.floor(Math.log10(k[k.length - 1].c || 1)) - 4) };
     const data = S.mode === "heikin" ? heikin(k) : k;
     const ohlc = data.map(b => ({ time: b.t, open: b.o, high: b.h, low: b.l, close: b.c }));
     const closes = k.map(b => ({ time: b.t, value: b.c }));
@@ -408,7 +408,7 @@
   function init(root) {
     root.innerHTML = `
     <section class="card span">
-      <div class="crow" id="cCoinRow"><div class="seg" id="cCoin"></div></div>
+      <div class="crow" id="cCoinRow"><div class="seg scroll" id="cCoin"></div></div>
       <div class="crow" id="cTfRow"><span class="lbl">Timeframe</span><div class="seg" id="cTf"></div></div>
       <div class="crow"><span class="lbl">Chart</span><div class="seg scroll" id="cMode"></div></div>
       <div class="crow" id="cWinRow"><span class="lbl">Window</span><div class="seg" id="cWin"></div></div>

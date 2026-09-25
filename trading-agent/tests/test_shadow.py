@@ -183,7 +183,7 @@ def test_cli_shadow_command_wires_up(monkeypatch, tmp_path):
     monkeypatch.setattr(sys, "argv", ["trader", "shadow", "--tape-dir", str(tmp_path), "--out", str(tmp_path / "o")])
     cli.main()
     assert seen["ran"] and seen["engine_name"] == "practice"
-    assert sorted(seen["schemas"]) == ["AAVE-GBP", "BTC-GBP", "ETH-GBP", "SOL-GBP"]
+    assert len(seen["schemas"]) == 16 and {"BTC-GBP", "SHIB-GBP", "ETC-GBP"} <= set(seen["schemas"])
     s, c = seen["scfg"], seen["cfg"]
     assert (s.start_gbp, s.tape_prefix, s.currency) == (1000.0, "cb", "GBP")
     assert c.gate.require_edge_after_costs and c.min_stop_bps == 250.0

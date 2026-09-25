@@ -24,7 +24,10 @@ import time
 
 from .config import AgentConfig, GateConfig, RiskLimits, UK_FAST_GATE, UK_SMALL_ACCOUNT
 
-COINS = ["BTC", "ETH", "SOL", "AAVE"]
+from .coinbase_tape import UK_COINS
+
+COINS = list(UK_COINS)                      # every top-100 coin with a tradeable Coinbase GBP pair
+DEFAULT_OFF = {"UNI", "FIL", "ETC"}         # thin GBP markets (spreads ~0.75%): off until switched on
 DECISION_CHOICES = [10, 15, 30, 60]
 
 # Profile base values. The CLI and the settings clamp both read these.
@@ -41,7 +44,8 @@ SPEC: dict[str, tuple] = {
     "paused": ("Pause new bets", "Stops the bot opening new bets. Stop-losses and profit targets on open bets "
                "keep working.", "bool", None, None, None),
     "coins": ("Coins it may buy", "Switch a coin off to stop new bets on it. Any open bet on it is still "
-              "managed until it closes.", "coins", COINS, None, None),
+              "managed until it closes. UNI, FIL and ETC start off: their GBP markets are thin, so the gap "
+              "between buy and sell prices is around 0.75%, on top of fees.", "coins", COINS, None, None),
     "min_confidence": ("Confidence needed", "How sure the AI must be about the direction before a bet. Higher "
                        "means fewer, pickier trades.", "num", 0.60, 0.95, 0.01),
     "min_setup": ("Set-up quality needed", "The AI scores each chart set-up 0 to 3. The bot only bets at or above "
@@ -72,7 +76,7 @@ def defaults(profile: str) -> dict:
     p = PROFILES[profile]
     g, r = p["gate"], p["risk"]
     return {
-        "decision_every_s": 60, "paused": False, "coins": list(COINS),
+        "decision_every_s": 60, "paused": False, "coins": [c for c in COINS if c not in DEFAULT_OFF],
         "min_confidence": g.min_direction_confidence, "min_setup": g.min_setup_quality,
         "require_edge": g.require_edge_after_costs, "risk_per_bet_pct": g.fixed_risk_frac * 100,
         "stop_pct": p["min_stop_bps"] / 100, "reward_risk": p["reward_risk"],

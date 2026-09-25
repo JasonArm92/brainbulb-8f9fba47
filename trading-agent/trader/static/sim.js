@@ -9,7 +9,7 @@
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const T = (id, text) => L.termLink(id, text);
   const gbp = (v, d = 2) => (v < 0 ? "−" : "") + "£" + Math.abs(v).toLocaleString("en-GB", { minimumFractionDigits: d, maximumFractionDigits: d });
-  const px = window.__pxReal = v => v >= 1000 ? "£" + v.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : v >= 1 ? "£" + v.toFixed(2) : "£" + v.toFixed(4);
+  const px = window.__pxReal = v => v >= 1000 ? "£" + v.toLocaleString("en-GB", { maximumFractionDigits: 0 }) : v >= 1 ? "£" + v.toFixed(2) : v >= 0.01 ? "£" + v.toFixed(4) : "£" + (+v.toPrecision(4)).toFixed(Math.min(12, 3 - Math.floor(Math.log10(Math.abs(v) || 1e-12))));
   let PXF = null;                                        // blind-mode price formatter (index, not pounds)
   const idx = v => v >= 1000 ? v.toFixed(0) : v.toFixed(2);
   /** Rescale a window so candle `at` closes at 100: hides the coin's real price level. Percentages are unchanged. */
@@ -19,7 +19,7 @@
   const rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
   const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
   const UP = "#34d399", DN = "#fb7185", MUTE = "#9aa3b8";
-  const COINS = ["BTC", "ETH", "SOL", "AAVE"];
+  const COINS = ["BTC", "ETH", "SOL", "LINK", "ADA", "DOT", "LTC", "DOGE", "AAVE", "ALGO", "ATOM", "SHIB", "BCH", "UNI", "FIL", "ETC"];
   const TFS = { 900: "15m", 3600: "1h", 21600: "6h", 86400: "1d" };
   const HIST_RANGE = { 900: 60 * 86400, 3600: 400 * 86400, 21600: 1200 * 86400, 86400: 1700 * 86400 };
   const FEE = 0.006;                     // Coinbase Advanced lowest-tier taker fee, per side
@@ -183,6 +183,8 @@
     const api = {
       chart, main, markers, lines: [],
       set(k) {
+        const lp = k.length ? k[k.length - 1].c : 1;
+        main.applyOptions({ priceFormat: { type: "custom", formatter: blind ? idx : px, minMove: Math.pow(10, Math.floor(Math.log10(lp || 1)) - 4) } });
         main.setData(k.map(b => ({ time: b.t, open: b.o, high: b.h, low: b.l, close: b.c })));
         const c = k.map(b => b.c), E9 = C.ema(c, 9), E21 = C.ema(c, 21);
         e9.setData(k.map((b, i) => E9[i] == null ? { time: b.t } : { time: b.t, value: E9[i] }));

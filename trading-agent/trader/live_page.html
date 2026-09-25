@@ -330,7 +330,7 @@ const $=id=>document.getElementById(id);
 const fmt=(v,d)=>{if(v==null||isNaN(v))return"—";const a=Math.abs(v);const dp=d!=null?d:(a>=100000?0:2);return(v<0?"-":"")+"£"+a.toLocaleString("en-GB",{minimumFractionDigits:dp,maximumFractionDigits:dp})};
 const sgn=(v,d)=>(v>0?"+":"")+fmt(v,d);
 const pct=(v,d=2)=>v==null||isNaN(v)?"—":(v>0?"+":"")+v.toFixed(d)+"%";
-const px=v=>v>=1000?"£"+v.toLocaleString("en-GB",{maximumFractionDigits:0}):v>=1?"£"+v.toFixed(2):"£"+v.toFixed(4);
+const px=v=>v>=1000?"£"+v.toLocaleString("en-GB",{maximumFractionDigits:0}):v>=1?"£"+v.toFixed(2):v>=0.01?"£"+v.toFixed(4):"£"+(+v.toPrecision(4)).toFixed(Math.min(12,3-Math.floor(Math.log10(Math.abs(v)||1e-12))));
 const cls=(el,v)=>{el.classList.toggle("up",v>0);el.classList.toggle("down",v<0)};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const tm=ts=>new Date(ts*1000).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"Europe/London"});

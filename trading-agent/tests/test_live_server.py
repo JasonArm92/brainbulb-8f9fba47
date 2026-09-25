@@ -177,7 +177,7 @@ def test_candles_depth_static(srv):
     assert rows == [[1000, 9.0, 11.0, 8.0, 10.0, 2.0], [1060, 10.0, 12.0, 9.0, 11.0, 5.5]]   # t,o,h,l,c,v
     json.load(get(f"{base}/candles?coin=BTC&g=60", cookie=ck))
     with pytest.raises(urllib.error.HTTPError):
-        get(f"{base}/candles?coin=DOGE&g=60", cookie=ck)
+        get(f"{base}/candles?coin=XRP&g=60", cookie=ck)
     dep = json.load(get(f"{base}/depth?coin=ETH&mins=5", cookie=ck))
     assert 50 <= len(dep) <= 62 and len(dep[0]["bids"]) == 10
     js = get(f"{base}/static/lwc.js", cookie=ck).read()

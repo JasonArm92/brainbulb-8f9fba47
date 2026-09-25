@@ -26,7 +26,11 @@ from datetime import datetime
 from .okx_tape import aggregate_trades
 
 BASE = "https://api.exchange.coinbase.com"
-DEFAULT_SYMBOLS = {"BTC-GBP": "BTC-GBP", "ETH-GBP": "ETH-GBP", "SOL-GBP": "SOL-GBP", "AAVE-GBP": "AAVE-GBP"}
+# Top-100 coins (CoinGecko, 2026-09-25) with a fully tradeable Coinbase GBP pair, busiest GBP market first.
+# XRP-GBP and ICP-GBP are delisted; stablecoins are left out.
+UK_COINS = ["BTC", "LINK", "ETH", "SOL", "ADA", "DOT", "UNI", "LTC", "DOGE", "FIL", "AAVE", "ALGO", "ATOM", "SHIB", "BCH", "ETC"]
+DEFAULT_SYMBOLS = {f"{c}-GBP": f"{c}-GBP" for c in UK_COINS}
+BUSY = {"BTC-GBP", "LINK-GBP", "ETH-GBP", "SOL-GBP"}        # trades fetched every cycle; others every 3rd
 
 
 def iso_ts(s: str) -> float:
@@ -72,6 +76,10 @@ class CoinbaseRecorder:
     symbols: dict[str, str] = field(default_factory=lambda: dict(DEFAULT_SYMBOLS))
     poll_s: float = 2.0
     aggregate: bool = True
+    max_rps: float = 6.0          # Coinbase public limit is ~10/s per IP; leave room for the live view
+    trade_every: int = 3          # quieter coins: fetch trades every Nth cycle
+    busy: set = field(default_factory=lambda: set(BUSY))
+    _cycle: int = 0
     get: object = _get
     _last_trade: dict[str, int | None] = field(default_factory=dict)
     _last_book_ts: dict[str, float] = field(default_factory=dict)
@@ -83,14 +91,27 @@ class CoinbaseRecorder:
             return None, e
 
     def poll_once(self, now: float) -> list[dict]:
+        """One cycle: every coin's book, and trades for busy coins (all coins every `trade_every` cycles).
+        Requests are spread out to stay under `max_rps`."""
         lines: list[dict] = []
-        with ThreadPoolExecutor(max_workers=2 * len(self.symbols)) as pool:
-            futs = {sym: (pool.submit(self._fetch, f"/products/{pid}/book", level=2),
-                          pool.submit(self._fetch, f"/products/{pid}/trades", limit=100))
-                    for sym, pid in self.symbols.items()}
+        all_trades = self._cycle % max(1, self.trade_every) == 0
+        self._cycle += 1
+        gap_s = 1.0 / self.max_rps if self.max_rps else 0.0
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futs = {}
+            for sym, pid in self.symbols.items():
+                fb = pool.submit(self._fetch, f"/products/{pid}/book", level=2)
+                if gap_s and len(self.symbols) > 4:
+                    time.sleep(gap_s)
+                ft = None
+                if all_trades or sym in self.busy or len(self.symbols) <= 4:
+                    ft = pool.submit(self._fetch, f"/products/{pid}/trades", limit=100)
+                    if gap_s and len(self.symbols) > 4:
+                        time.sleep(gap_s)
+                futs[sym] = (fb, ft)
         for sym, (fb, ft) in futs.items():
             try:
-                (book, be), (trades, te) = fb.result(), ft.result()
+                (book, be), (trades, te) = fb.result(), (ft.result() if ft else ([], None))
                 if be:
                     raise be
                 bl = book_line(book, sym, recv_ts=now)
@@ -99,6 +120,8 @@ class CoinbaseRecorder:
                     lines.append(bl)
                 if te:
                     raise te
+                if ft is None:
+                    continue
                 tl, self._last_trade[sym], gap = trade_lines(trades, sym, self._last_trade.get(sym))
                 if gap:
                     lines.append(gap)

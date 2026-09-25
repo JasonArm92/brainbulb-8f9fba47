@@ -1,47 +1,182 @@
 {
-  "as_of": "2026-09-24",
-  "venue": "Coinbase Advanced (FCA-registered), GBP spot pairs",
-  "rules": "UK retail: spot only. The FCA bans crypto derivatives for retail consumers, so there are no down-bets, no leverage and no funding payments. Coins limited to those with a GBP pair on Coinbase: BTC, ETH, SOL, AAVE.",
-  "finalists": [
-    {
-      "symbol": "BTC-GBP",
-      "name": "BTC",
-      "thesis_short": "ETF creations flipped 2026 flows positive; funding moderate, not euphoric. Trend-following on flow, not a valuation call. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
-      "invalidation_short": "ETF flows turn net negative for a week, or funding above 0.03%/8h with falling price, or daily close back below the September breakout.",
-      "allowed_directions": [
-        "long",
-        "neutral"
-      ]
-    },
-    {
-      "symbol": "ETH-GBP",
-      "name": "ETH",
-      "thesis_short": "Open interest at a four-month high with ETF flows mixed; a leverage-led move that can run or unwind. Trade both sides. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
-      "invalidation_short": "OI keeps rising while price stalls (crowded longs), or ETF outflows resume for a full week.",
-      "allowed_directions": [
-        "long",
-        "neutral"
-      ]
-    },
-    {
-      "symbol": "SOL-GBP",
-      "name": "SOL",
-      "thesis_short": "Twelve straight weeks of US spot ETF inflows and ~70% staked supply; Alpenglow finality upgrade is a speculative catalyst (still in testing, no confirmed mainnet date). UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
-      "invalidation_short": "ETF inflow streak breaks, or Alpenglow slips with no date, or network outage.",
-      "allowed_directions": [
-        "long",
-        "neutral"
-      ]
-    },
-    {
-      "symbol": "AAVE-GBP",
-      "name": "AAVE",
-      "thesis_short": "Aavenomics 3.0 (live since 2026-06-27) routes protocol revenue to open-market buybacks; revenue is organic interest spread, not emissions. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
-      "invalidation_short": "Borrow revenue keeps falling, buyback budget cut again, or a bad-debt event on a major market.",
-      "allowed_directions": [
-        "long",
-        "neutral"
-      ]
-    }
-  ]
+ "as_of": "2026-09-25",
+ "venue": "Coinbase Advanced (FCA-registered), GBP spot pairs",
+ "rules": "UK retail: spot only. The FCA bans crypto derivatives for retail consumers, so there are no down-bets, no leverage and no funding payments. Coins limited to those with a GBP pair on Coinbase: BTC, ETH, SOL, AAVE.",
+ "finalists": [
+  {
+   "symbol": "BTC-GBP",
+   "name": "BTC",
+   "thesis_short": "ETF creations flipped 2026 flows positive; funding moderate, not euphoric. Trend-following on flow, not a valuation call. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "ETF flows turn net negative for a week, or funding above 0.03%/8h with falling price, or daily close back below the September breakout.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ]
+  },
+  {
+   "symbol": "ETH-GBP",
+   "name": "ETH",
+   "thesis_short": "Open interest at a four-month high with ETF flows mixed; a leverage-led move that can run or unwind. Trade both sides. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "OI keeps rising while price stalls (crowded longs), or ETF outflows resume for a full week.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ]
+  },
+  {
+   "symbol": "SOL-GBP",
+   "name": "SOL",
+   "thesis_short": "Twelve straight weeks of US spot ETF inflows and ~70% staked supply; Alpenglow finality upgrade is a speculative catalyst (still in testing, no confirmed mainnet date). UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "ETF inflow streak breaks, or Alpenglow slips with no date, or network outage.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ]
+  },
+  {
+   "symbol": "AAVE-GBP",
+   "name": "AAVE",
+   "thesis_short": "Aavenomics 3.0 (live since 2026-06-27) routes protocol revenue to open-market buybacks; revenue is organic interest spread, not emissions. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Borrow revenue keeps falling, buyback budget cut again, or a bad-debt event on a major market.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ]
+  },
+  {
+   "symbol": "LINK-GBP",
+   "name": "LINK",
+   "thesis_short": "Chainlink (LINK): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "ADA-GBP",
+   "name": "ADA",
+   "thesis_short": "Cardano (ADA): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "DOT-GBP",
+   "name": "DOT",
+   "thesis_short": "Polkadot (DOT): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "UNI-GBP",
+   "name": "UNI",
+   "thesis_short": "Uniswap (UNI): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees. Thin GBP market (spread around 0.75%): demand an even clearer set-up.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "LTC-GBP",
+   "name": "LTC",
+   "thesis_short": "Litecoin (LTC): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "DOGE-GBP",
+   "name": "DOGE",
+   "thesis_short": "Dogecoin (DOGE): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "FIL-GBP",
+   "name": "FIL",
+   "thesis_short": "Filecoin (FIL): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees. Thin GBP market (spread around 0.75%): demand an even clearer set-up.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "ALGO-GBP",
+   "name": "ALGO",
+   "thesis_short": "Algorand (ALGO): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "ATOM-GBP",
+   "name": "ATOM",
+   "thesis_short": "Cosmos (ATOM): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "SHIB-GBP",
+   "name": "SHIB",
+   "thesis_short": "Shiba Inu (SHIB): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "BCH-GBP",
+   "name": "BCH",
+   "thesis_short": "Bitcoin Cash (BCH): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  },
+  {
+   "symbol": "ETC-GBP",
+   "name": "ETC",
+   "thesis_short": "Ethereum Classic (ETC): a top-100 coin with a Coinbase GBP market, added 2026-09-25 at the operator's request. No coin-specific research thesis: trade price action only (trend, order-book flow, volatility) and stay neutral unless the set-up is clear. UK spot: up-bets only, held for hours to days so each trade can clear about 1.2% of round-trip fees. Thin GBP market (spread around 0.75%): demand an even clearer set-up.",
+   "invalidation_short": "Spread wider than 1%, GBP volume collapsing, or the pair being delisted or limited by Coinbase.",
+   "allowed_directions": [
+    "long",
+    "neutral"
+   ],
+   "tier": "price-action"
+  }
+ ],
+ "notes": [
+  "2026-09-25: expanded to every top-100 coin (CoinGecko by market cap, stablecoins and wrapped tokens excluded) with a fully tradeable Coinbase GBP pair: 16 coins. XRP-GBP and ICP-GBP are delisted. New coins are tier 'price-action' (no researched thesis)."
+ ]
 }

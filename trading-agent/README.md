@@ -41,7 +41,10 @@ python3 -m trader replay tapes/okx-*                         # rung 1 on real da
 ## UK set-up (default)
 
 UK retail can't use crypto derivatives (FCA ban), so the default profile is **uk-spot**:
-Coinbase GBP spot (BTC, ETH, SOL, AAVE), up-bets only, no borrowing, paid in cash. It also
+Coinbase GBP spot on every top-100 coin with a tradeable GBP pair (16 as of 2026-09-25: BTC, ETH,
+SOL, LINK, ADA, DOT, LTC, DOGE, AAVE, ALGO, ATOM, SHIB, BCH, UNI, FIL, ETC; UNI/FIL/ETC start
+switched off for thin books; the 12 added coins are traded on price action with no researched
+thesis), up-bets only, no borrowing, paid in cash. It also
 uses the named `UK_SMALL_ACCOUNT` limits for a GBP 50 account: at most 2 coins, 30% per bet, 50%
 total in bets, the Coinbase minimum order, and a stop-loss of at least 2.5% on every bet. The 15%
 drawdown and 3% daily-loss stops are unchanged. `RiskLimits()` defaults are untouched. Costs are

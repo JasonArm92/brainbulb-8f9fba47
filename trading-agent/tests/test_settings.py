@@ -24,7 +24,7 @@ def test_limits_can_only_tighten():
 
 def test_knob_bounds_and_junk():
     s, notes = S.clean("uk-spot-fast", {"min_confidence": 0.2, "stop_pct": 99, "decision_every_s": 12,
-                                         "coins": ["BTC", "DOGE"], "bogus": 1, "reward_risk": "x"})
+                                         "coins": ["BTC", "XRP"], "bogus": 1, "reward_risk": "x"})
     assert s["min_confidence"] == 0.60 and s["stop_pct"] == 5.0 and s["decision_every_s"] in (10, 15)
     assert s["coins"] == ["BTC"] and "bogus" not in s and s["reward_risk"] == 1.2
     assert S.defaults("uk-spot-fast")["require_edge"] is False and S.defaults("uk-spot")["require_edge"] is True
@@ -71,3 +71,11 @@ def test_reset_archives_and_restarts_with_new_money(tmp_path):
     assert not os.path.exists(st2.reset_path) and os.path.exists(st2.settings_path)   # settings kept
     arch = os.listdir(tmp_path / "archive")
     assert len(arch) == 1 and "state.json" in os.listdir(tmp_path / "archive" / arch[0])
+
+
+def test_new_coins_default_on_except_thin_markets():
+    d = S.defaults("uk-spot")
+    assert len(S.COINS) == 16 and "SHIB" in d["coins"] and "LINK" in d["coins"]
+    assert not {"UNI", "FIL", "ETC"} & set(d["coins"])
+    s, _ = S.clean("uk-spot", {"coins": ["ETC", "BTC"]})
+    assert s["coins"] == ["BTC", "ETC"]                      # can be switched on; kept in list order
