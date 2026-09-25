@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import hmac
 import json
 import os
@@ -37,9 +38,16 @@ def load_token(path: str) -> str:
     return t
 
 
-def create_app(engine, token: str, page: bytes | None = None, push_every_s: float = 1.0) -> FastAPI:
+def create_app(engine, token: str, page: bytes | None = None, push_every_s: float = 0.5) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     page = page if page is not None else open(os.path.join(HERE, "static", "index.html"), "rb").read()
+    ui = hashlib.sha1(page).hexdigest()[:12]           # the page reloads itself when this changes
+    page = page.replace(b"__UI_VERSION__", ui.encode())
+
+    def snap() -> dict:
+        d = engine.snapshot()
+        d["ui"] = ui
+        return d
 
     def ok_cookie(c: str | None) -> bool:
         return bool(c) and hmac.compare_digest(c, token)
@@ -64,7 +72,7 @@ def create_app(engine, token: str, page: bytes | None = None, push_every_s: floa
     def state(request: Request):
         if not ok_cookie(request.cookies.get("ul")):
             return PlainTextResponse("forbidden", status_code=403)
-        return nocache(JSONResponse(engine.snapshot()))
+        return nocache(JSONResponse(snap()))
 
     def guard(request: Request):
         if not ok_cookie(request.cookies.get("ul")) or request.headers.get("x-lab") != "1":
@@ -97,7 +105,7 @@ def create_app(engine, token: str, page: bytes | None = None, push_every_s: floa
         await sock.accept()
         try:
             while True:
-                await sock.send_text(json.dumps(engine.snapshot()))
+                await sock.send_text(json.dumps(snap()))
                 await asyncio.sleep(push_every_s)
         except (WebSocketDisconnect, RuntimeError):
             return

@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Up/Down Lab</title>
+<meta name="ui-version" content="__UI_VERSION__">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -78,6 +79,7 @@ h2 .tag.red{color:#ffb3c0;border-color:rgba(251,113,133,.4);background:rgba(251,
 .c-w{--c:238,241,247}.c-g{--c:245,194,107}.c-r{--c:251,113,133}.c-b{--c:143,168,255}.c-u{--c:52,211,153}
 .pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:999px;border:1px solid var(--line-2);background:var(--glass-3);font:500 11.5px/1 var(--mono);color:var(--ink-2);white-space:nowrap}
 .pill i{width:7px;height:7px;border-radius:50%;background:var(--faint)}.pill.live i{background:var(--up);animation:pulse 2s infinite}.pill.bad i{background:var(--down)}
+.pill.mot{cursor:pointer;font:500 11.5px/1 var(--mono)}.pill.mot.off{color:var(--mute)}
 .pill.sim{border-color:rgba(245,194,107,.4);color:#f3dcae}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:0 13px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:var(--glass-3);font:600 12px/1 var(--mono);letter-spacing:.04em;white-space:nowrap;cursor:pointer}
@@ -226,7 +228,7 @@ h2 .tag.red{color:#ffb3c0;border-color:rgba(251,113,133,.4);background:rgba(251,
 .truth .tile p{margin:6px 0 0;font-size:13px;color:var(--ink-2);line-height:1.5}
 .truth .tile b{font-size:13px;white-space:normal;letter-spacing:.1em;text-transform:uppercase}
 footer{text-align:center;font:500 11px/16px var(--mono);letter-spacing:.04em;color:var(--faint);padding:4px 0}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+html.still *{animation:none!important;transition:none!important}
 </style>
 </head>
 <body>
@@ -251,6 +253,7 @@ footer{text-align:center;font:500 11px/16px var(--mono);letter-spacing:.04em;col
     <div class="hr">
       <div class="clock num" id="clock">--:--:--<small>UTC</small></div>
       <span class="break"></span>
+      <button class="pill mot" id="mot" type="button">Motion on</button>
       <span class="pill" id="conn"><i></i><span>Connecting…</span></span>
       <span class="pill sim" title="The market and the other traders are simulated. Only BTC prices are real.">Simulated · pretend money</span>
       <button class="btn kill" id="kill">Kill switch</button>
@@ -413,7 +416,7 @@ footer{text-align:center;font:500 11px/16px var(--mono);letter-spacing:.04em;col
 
 <script>
 const $=id=>document.getElementById(id);
-const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let RM=false;try{RM=localStorage.getItem("ul_motion")==="off"}catch(_){}document.documentElement.classList.toggle("still",RM);
 let S=null,FX=.74,T=0;const pulse=(sp=4,ph=0)=>RM?0:.5+.5*Math.sin(T*sp+ph);
 const gbp=(v,d=2)=>v==null||isNaN(v)?"—":(v<0?"−":"")+"£"+Math.abs(v).toLocaleString("en-GB",{minimumFractionDigits:d,maximumFractionDigits:d});
 const sgbp=(v,d=2)=>v==null||isNaN(v)?"—":(v>0?"+":"")+gbp(v,d);
@@ -448,19 +451,19 @@ function glowDot(x,px,py,r,c,a=1){if(a<=0.01)return;const s=r*4.2;x.globalAlpha=
 
 /* ---------- tickers: an endless belt. New items join at the right edge, spent ones drop off the left ---------- */
 const TK=[];
-function marquee(el,speed){const o={el,speed,off:0,pool:[],fresh:[],seen:new Set(),idx:0,nodes:[],init:false};TK.push(o);return o}
+function marquee(el,speed,k=.2){const o={el,speed,k,off:0,pool:[],fresh:[],seen:new Set(),idx:0,nodes:[],init:false};TK.push(o);return o}
 function setMarquee(o,items){const list=items.map(i=>typeof i==="string"?{k:i,h:i}:i);o.pool=list;
   if(o.seen.size>3000)o.seen=new Set(list.map(i=>i.k));const nw=list.filter(i=>!o.seen.has(i.k));nw.forEach(i=>o.seen.add(i.k));if(o.init)o.fresh.push(...nw);o.fresh=o.fresh.slice(-12);o.init=true;
   if(RM)o.el.innerHTML=list.map(i=>`<span>${i.h}</span>`).join("")}
 let lastT=performance.now();
 function tickMarquees(t){const dt=Math.min(.1,(t-lastT)/1000);lastT=t;if(RM)return;
   TK.forEach(o=>{if(!o.pool.length)return;const rw=o.el.parentElement.clientWidth;if(!rw)return;
-    o.off+=o.speed*dt*(o.fresh.length>3?1.7:1);
+    o.off+=Math.max(o.speed,Math.min(300,rw*o.k))*dt*(o.fresh.length>3?1.5:1);
     while(o.nodes.length&&o.nodes[0].w<=o.off){o.off-=o.nodes[0].w;o.nodes.shift().e.remove()}
     let tot=0;o.nodes.forEach(n=>tot+=n.w);let guard=0;
     while(tot-o.off<rw+120&&guard++<30){const f=o.fresh.shift(),it=f||o.pool[o.idx++%o.pool.length],e=document.createElement("span");e.innerHTML=it.h;if(f)e.className="new";o.el.appendChild(e);const w=e.getBoundingClientRect().width||1;o.nodes.push({e,w});tot+=w}
     o.el.style.transform=`translate3d(${-o.off.toFixed(2)}px,0,0)`})}
-const FEED=marquee($("feed"),38),FACTS=marquee($("facts"),30);
+const FEED=marquee($("feed"),95,.22),FACTS=marquee($("facts"),80,.17);
 setMarquee(FACTS,["A window resolves <b class='up'>UP</b> if BTC closes at or above the opening reference, anything else is <b class='down'>DOWN</b>",
   "1 YES + 1 NO = <b class='gold'>$1</b> at resolution, so a pair bought for under $1 is locked-in profit",
   "We only bid, on both sides, below fair value","When fills arrive unevenly we skew quotes, then cross the spread to buy the missing side",
@@ -498,7 +501,7 @@ function drawSankey(){const[x,w,h]=ctx("cSankey");grid(x,w,h);const fl=S.fills||
       const g=x.createLinearGradient(x0,0,x1,0);g.addColorStop(0,`rgba(${n.a[2]},.55)`);g.addColorStop(1,`rgba(${dst.a[2]},.5)`);
       const cx=(x0+x1)/2;x.beginPath();x.moveTo(x0,ys);x.bezierCurveTo(cx,ys,cx,yd,x1,yd);x.lineTo(x1,yd+hd);x.bezierCurveTo(cx,yd+hd,cx,ys+hs,x0,ys+hs);x.closePath();x.fillStyle=g;x.fill();
       x.strokeStyle=`rgba(${n.a[2]},.35)`;x.lineWidth=.8;x.stroke();
-      if(!RM){const np=Math.max(2,Math.min(12,Math.round(qq/10)));bi++;for(let k=0;k<np;k++){const u=((T*.2+k/np+bi*.37)%1),ln=.15+.7*((k*.618+bi*.3)%1),a=[x0,ys+hs*ln],b2=[x1,yd+hd*ln],q=bez(a,[cx,a[1]],[cx,b2[1]],b2,u);glowDot(x,q[0],q[1],1.5,n.a[2],Math.sin(u*Math.PI))}}})});
+      if(!RM){const np=Math.max(2,Math.min(12,Math.round(qq/10)));bi++;for(let k=0;k<np;k++){const u=((T*.45+k/np+bi*.37)%1),ln=.15+.7*((k*.618+bi*.3)%1),a=[x0,ys+hs*ln],b2=[x1,yd+hd*ln],q=bez(a,[cx,a[1]],[cx,b2[1]],b2,u);glowDot(x,q[0],q[1],1.5,n.a[2],Math.sin(u*Math.PI))}}})});
   const bar=(xx,n,al)=>{x.fillStyle=`rgba(${n.a[2]},.25)`;x.fillRect(xx-3,n.y-2,12,Math.max(1.5,n.h)+4);x.fillStyle=`rgba(${n.a[2]},1)`;x.fillRect(xx,n.y,6,Math.max(1.5,n.h));
     x.textAlign=al;x.fillStyle="#c3c8d4";const tx=al==="right"?xx-6:xx+12,cy=n.y+n.h/2;x.font=`9.5px ${MONO}`;x.fillText(n.a[0].toUpperCase(),tx,cy-6);x.fillStyle=`rgb(${n.a[2]})`;x.font=`600 11px ${MONO}`;x.fillText(Math.round(n.a[1])+" sh",tx,cy+7)};
   Ln.forEach(n=>bar(m.l,n,"right"));Rn.forEach(n=>bar(w-m.r-6,n,"left"))}
@@ -548,7 +551,8 @@ function ladder(el,tag,side,bid,ask,fair,ours,oursSize){const fl=(S.fills||[]).f
 
 /* ---------- model shell: 3D particle sphere + input/output wiring ---------- */
 const SPH=(()=>{const N=820,P=[],ga=Math.PI*(3-Math.sqrt(5));for(let i=0;i<N;i++){const y=1-2*(i+.5)/N,r=Math.sqrt(1-y*y),t=ga*i;P.push([Math.cos(t)*r,y,Math.sin(t)*r,Math.random()])}return P})();
-const SPK=SPH.filter((p,i)=>i%10===4);
+const RINGS=(()=>{const P=[],L=30;for(let b=0;b<L;b++){const lat=-1.4+2.8*(b+.5)/L,cy=Math.sin(lat),r=Math.cos(lat),n=Math.round(64*r)+6;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+b*.21;P.push([Math.cos(a)*r,cy,Math.sin(a)*r,Math.random(),lat,b])}}return P})();
+const SPK=RINGS.filter((p,i)=>i%7===3);
 let rot=0,sparks=[],lastFillCount=0,lastWin=null,shellVisible=true;
 const IN=[["spot","Spot vs open",C.gold],["tl","Time left",C.ink],["mom","Momentum",C.acc],["acc","Acceleration",C.gold],["vol","Volatility",C.up],["src","Price sources",C.down]];
 const OUT=[["pup","P(UP)",C.acc],["yes","YES bid",C.up],["no","NO bid",C.down],["lot","Lot size",C.gold],["pc","Pair cost",C.gold],["unp","Unpaired",C.ink]];
@@ -564,32 +568,37 @@ function drawShell(tms){if(!S||!shellVisible)return;const cv=$("cShell"),sh=$("s
   const pc=p>=.5?C.up:C.down;
   /* halo */
   const g=x.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.9);g.addColorStop(0,`rgba(${pc},.16)`);g.addColorStop(.5,`rgba(${C.acc},.06)`);g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.beginPath();x.arc(cx,cy,R*1.9,0,7);x.fill();
-  /* wiring (only when inputs sit left of the sphere) */
+  const dt=Math.min(.1,t-(drawShell.lt||t));drawShell.lt=t;
+  /* wiring (only when inputs sit left of the sphere): every input fans out to three bus stops, every stop feeds three points on the shell */
   const side=[...document.querySelectorAll("#nIn .orb")],outs=[...document.querySelectorAll("#nOut .orb")];
   const wide=side.length&&side[0].getBoundingClientRect().left<core.left;
+  const wire=(a,b,c,wd,al,sp,ph,np)=>{const m1=[(a[0]+b[0])/2,a[1]],m2=[(a[0]+b[0])/2,b[1]];x.strokeStyle=`rgba(${c},${al})`;x.lineWidth=wd;x.beginPath();x.moveTo(a[0],a[1]);x.bezierCurveTo(m1[0],m1[1],m2[0],m2[1],b[0],b[1]);x.stroke();
+    if(!RM)for(let k=0;k<np;k++){const u=((t*sp+ph+k/np)%1+1)%1,q=bez(a,m1,m2,b,u);glowDot(x,q[0],q[1],1.2+.9*(k===0),c,.95*Math.sin(u*Math.PI)+.05)}};
+  const tipAt=(ang,k=1.03)=>[cx+Math.cos(ang)*R*k,cy+Math.sin(ang)*R*k*.96];
   if(wide){const inR=$("nIn").getBoundingClientRect().right-r.left,outL=$("nOut").getBoundingClientRect().left-r.left,bl=inR+(cx-R-inR)*.42,br=outL-(outL-cx-R)*.42;
-    const bus=(bx,labels,al)=>{const y0=cy-R*1.25,y1=cy+R*1.25;x.strokeStyle="rgba(143,168,255,.35)";x.setLineDash([1,4]);x.beginPath();x.moveTo(Math.round(bx)+.5,y0);x.lineTo(Math.round(bx)+.5,y1);x.stroke();x.setLineDash([]);
-      return labels.map((l,i)=>{const yy=y0+(i+.5)/labels.length*(y1-y0);glowDot(x,bx,yy,2+1.4*pulse(5,i*.9+bx*.01),C.gold,.95);x.fillStyle="#6b7285";x.font=`8.5px ${MONO}`;x.textAlign=al;x.fillText(l.toUpperCase(),bx+(al==="left"?7:-7),yy-8);return[bx,yy]})};
+    const bus=(bx,labels,al)=>{const y0=cy-R*1.3,y1=cy+R*1.3;x.strokeStyle="rgba(143,168,255,.4)";x.setLineDash([1,4]);x.beginPath();x.moveTo(Math.round(bx)+.5,y0);x.lineTo(Math.round(bx)+.5,y1);x.stroke();x.setLineDash([]);
+      /* tick marks travelling down the bus */
+      if(!RM)for(let k=0;k<6;k++){const yy=y0+(((t*.5+k/6)%1))*(y1-y0);x.fillStyle="rgba(143,168,255,.55)";x.fillRect(bx-3,yy,6,1)}
+      return labels.map((l,i)=>{const yy=y0+(i+.5)/labels.length*(y1-y0);glowDot(x,bx,yy,2+1.6*pulse(6,i*.9+bx*.01),C.gold,.95);x.fillStyle="#6b7285";x.font=`8.5px ${MONO}`;x.textAlign=al;x.fillText(l.toUpperCase(),bx+(al==="left"?7:-7),yy-8);return[bx,yy]})};
     const LS=bus(bl,BUSL,"left"),RS=bus(br,BUSR,"right");
-    const wire=(a,b,c,wd,sp,ph)=>{const m1=[(a[0]+b[0])/2,a[1]],m2=[(a[0]+b[0])/2,b[1]];x.strokeStyle=`rgba(${c},.42)`;x.lineWidth=wd;x.beginPath();x.moveTo(a[0],a[1]);x.bezierCurveTo(m1[0],m1[1],m2[0],m2[1],b[0],b[1]);x.stroke();
-      if(!RM)for(let k=0;k<4;k++){const u=((t*sp+ph+k*.25)%1+1)%1,q=bez(a,m1,m2,b,u);glowDot(x,q[0],q[1],1.4+.8*(k===0),c,.9*Math.sin(u*Math.PI)+.1)}};
     const W_IN=[f?Math.abs(f.z_delta):0,.6,0,0,.5,.4];
-    side.forEach((o,i)=>{const q=o.getBoundingClientRect(),a=[q.left-r.left+q.width/2,q.top-r.top+q.height/2],c=IN[i][2],on=i!==2&&i!==3;
-      const bs=LS[i],ang=Math.PI+(i-2.5)*.28,tip=[cx+Math.cos(ang)*R*1.02,cy+Math.sin(ang)*R*1.02];
-      wire(a,bs,on?c:"120,128,150",on?1+Math.min(2,W_IN[i]):0.8,on?.35:.08,i*.17);wire(bs,tip,on?c:"120,128,150",on?.9:.6,on?.45:.08,i*.23)});
-    outs.forEach((o,i)=>{const q=o.getBoundingClientRect(),b=[q.left-r.left+q.width/2,q.top-r.top+q.height/2],c=OUT[i][2],bs=RS[i],ang=(i-2.5)*.28,tip=[cx+Math.cos(ang)*R*1.02,cy+Math.sin(ang)*R*1.02];
-      wire(tip,bs,c,1.1,.4,i*.19);wire(bs,b,c,1.2,.4,i*.11)})}
-  /* sphere */
-  rot+=RM?0:.004+.018*(1-tl/300);const tw=z*.55,tilt=.42+Math.sin(t*.2)*.06,ct=Math.cos(tilt),st=Math.sin(tilt),amp=.035+Math.min(.09,vol*.03);
-  const proj=(px,py,pz,k)=>{const a=rot+tw*py*Math.PI;const ca=Math.cos(a),sa=Math.sin(a);let X1=px*ca+pz*sa,Z1=-px*sa+pz*ca;let Y1=py*ct-Z1*st,Z2=py*st+Z1*ct;const s=1/(1+Z2*.32);return[cx+X1*R*k*s,cy+Y1*R*k*s,Z2,s]};
-  const pts=SPH.map(q=>{const lat=Math.asin(q[1]),k=1+amp*Math.sin(lat*7+t*1.7+q[0]*3);return[...proj(q[0],q[1],q[2],k),q[3]]}).sort((a,b)=>b[2]-a[2]);
-  /* spikes: length = model edge over the crowd, gold, outward */
-  const sl=.12+Math.min(.9,Math.abs(edge)*9);
-  SPK.forEach((q,i)=>{const a=proj(q[0],q[1],q[2],1.02),b=proj(q[0],q[1],q[2],1.02+sl*(.5+.5*Math.sin(t*1.3+i)));const al=a[2]<0?.95:.28;
-    x.strokeStyle=`rgba(${C.gold},${al*.7})`;x.lineWidth=1;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();x.fillStyle=`rgba(255,240,200,${al})`;x.beginPath();x.arc(b[0],b[1],1.5,0,7);x.fill()});
-  pts.forEach(q=>{const front=q[2]<0,al=front?.85:.22,rr=(front?1.5:1)*q[3];const c=q[4]<Math.abs(p-.5)*.5?pc:q[4]>.985?C.gold:"190,208,255";x.fillStyle=`rgba(${c},${al})`;x.beginPath();x.arc(q[0],q[1],rr,0,7);x.fill()});
+    side.forEach((o,i)=>{const q=o.getBoundingClientRect(),a=[q.left-r.left+q.width/2,q.top-r.top+q.height/2],on=i!==2&&i!==3,c=on?IN[i][2]:"120,128,150";
+      [-1,0,1].forEach(dj=>{const j=i+dj;if(j<0||j>=LS.length)return;const main=dj===0;wire(a,LS[j],c,main?(on?1.2+Math.min(2,W_IN[i]):.8):.6,main?.5:.2,on?(main?.7:.55):.12,i*.17+dj*.3,main?4:2)});
+      [-1,0,1].forEach(dk=>{const ang=Math.PI+(i-2.5)*.3+dk*.13;wire(LS[i],tipAt(ang),c,.7,.3,on?.8:.12,i*.23+dk*.4,2)})});
+    outs.forEach((o,i)=>{const q=o.getBoundingClientRect(),b=[q.left-r.left+q.width/2,q.top-r.top+q.height/2],c=OUT[i][2];
+      [-1,0,1].forEach(dk=>{const ang=(i-2.5)*.3+dk*.13;wire(tipAt(ang),RS[i],c,.7,.3,.8,i*.19+dk*.4,2)});
+      [-1,0,1].forEach(dj=>{const j=i+dj;if(j<0||j>=RS.length)return;const main=dj===0;wire(RS[j],b,c,main?1.3:.6,main?.5:.2,main?.7:.55,i*.11+dj*.3,main?4:2)})})}
+  /* sphere: dotted latitude bands that swirl with conviction (z) and spin faster as the window runs out */
+  rot+=RM?0:dt*(.55+1.3*(1-tl/300));const tw=z*.6,tilt=.42+Math.sin(t*.4)*.08,ct=Math.cos(tilt),st=Math.sin(tilt),amp=.035+Math.min(.09,vol*.03);
+  const proj=(px,py,pz,k,band)=>{const a=rot+tw*py*Math.PI+(band==null?0:Math.sin(t*1.6+band*.45)*.22);const ca=Math.cos(a),sa=Math.sin(a);let X1=px*ca+pz*sa,Z1=-px*sa+pz*ca;let Y1=py*ct-Z1*st,Z2=py*st+Z1*ct;const s=1/(1+Z2*.32);return[cx+X1*R*k*s,cy+Y1*R*k*s,Z2,s]};
+  const pts=RINGS.map(q=>{const k=1+amp*Math.sin(q[4]*7+t*2.4+q[0]*3);return[...proj(q[0],q[1],q[2],k,q[5]),q[3]]}).sort((a,b)=>b[2]-a[2]);
+  /* spikes: length = model edge over the crowd; they flicker like a live field */
+  const sl=.16+Math.min(1,Math.abs(edge)*10);
+  SPK.forEach((q,i)=>{const fl=.35+.65*Math.abs(Math.sin(t*2.6+i*1.7)),a=proj(q[0],q[1],q[2],1.03,q[5]),b=proj(q[0],q[1],q[2],1.03+sl*fl,q[5]);const al=a[2]<0?.95:.25,c=i%4===0?C.ink:C.gold;
+    x.strokeStyle=`rgba(${c},${al*.75})`;x.lineWidth=1;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke();x.fillStyle=`rgba(255,244,214,${al})`;x.beginPath();x.arc(b[0],b[1],1.6,0,7);x.fill()});
+  pts.forEach(q=>{const front=q[2]<0,al=front?.9:.2,rr=(front?1.45:.9)*q[3];const c=q[4]<Math.abs(p-.5)*.45?pc:q[4]>.975?C.gold:"196,212,255";x.fillStyle=`rgba(${c},${al})`;x.fillRect(q[0]-rr,q[1]-rr,rr*2,rr*2)});
   /* orbit ring */
-  {const n=72,rx=R*1.32,ry=R*.3,sp=RM?0:t*.35;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+sp,front=Math.sin(a)>0,px=cx+Math.cos(a)*rx,py=cy+R*.1+Math.sin(a)*ry;x.fillStyle=`rgba(${i%9===0?C.gold:C.acc},${front?(i%9===0?.95:.55):.16})`;x.beginPath();x.arc(px,py,i%9===0?1.8:1,0,7);x.fill()}}
+  {const n=90,rx=R*1.34,ry=R*.3,sp=RM?0:t*.9;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+sp,front=Math.sin(a)>0,px=cx+Math.cos(a)*rx,py=cy+R*.1+Math.sin(a)*ry;x.fillStyle=`rgba(${i%9===0?C.gold:C.acc},${front?(i%9===0?.95:.55):.16})`;x.beginPath();x.arc(px,py,i%9===0?1.9:1,0,7);x.fill()}}
   /* sparks for new fills */
   sparks=sparks.filter(s=>t-s.t0<1.6);sparks.forEach(s=>{const q=proj(s.v[0],s.v[1],s.v[2],1.04+(t-s.t0)*.25),a=1-(t-s.t0)/1.6;glowDot(x,q[0],q[1],2.6*a+1,s.c,a)});
   /* centre read-out */
@@ -614,7 +623,7 @@ function drawHelix(){const d=S.win_hist||[];const[x,w,h]=ctx("cHelix");grid(x,w,
   x.strokeStyle="rgba(255,255,255,.12)";x.setLineDash([2,4]);x.beginPath();x.moveTo(X(tn),mid+.5);x.lineTo(w-m.r,mid+.5);x.stroke();x.setLineDash([]);
   if(d.length<2){empty(x,w,h,"Waiting for fills…");$("hxTag").textContent="—";return}
   const mq=Math.max(10,...d.map(p=>Math.max(p.yes,p.no)));const at=t=>{let lo=0,hi=d.length-1;if(t<=d[0].t)return d[0];while(hi-lo>1){const k=(lo+hi)>>1;if(d[k].t<=t)lo=k;else hi=k}return d[lo]};
-  const om=2*Math.PI*Math.max(6,Math.min(20,w/45))/300,ph=RM?0:T*.9;
+  const om=2*Math.PI*Math.max(8,Math.min(34,w/26))/300,ph=RM?0:T*2.2;
   const strand=(key,sgn0,col,front)=>{let prev=null;for(let px=X(0);px<=X(Math.min(tn,d.at(-1).t))+.5;px+=1.5){const t=(px-m.l)/(w-m.l-m.r)*300,s=at(t),q=s[key],o=key==="yes"?s.no:s.yes,A=Amax*(.16+.84*Math.sqrt(q/mq)),ang=om*t-ph+(sgn0<0?Math.PI:0);
       const y=mid-A*Math.sin(ang),isF=Math.cos(ang)>0;if(prev&&isF===front){const excess=q-o>.5&&q>o;x.strokeStyle=excess?`rgba(220,226,240,${front?.55:.18})`:`rgba(${col},${front?1:.3})`;x.lineWidth=front?1.8:1.1;x.beginPath();x.moveTo(prev[0],prev[1]);x.lineTo(px,y);x.stroke()}prev=[px,y]}};
   strand("yes",1,C.up,false);strand("no",-1,C.down,false);strand("yes",1,C.up,true);strand("no",-1,C.down,true);
@@ -732,7 +741,8 @@ requestAnimationFrame(loop);
 /* live connection: WebSocket with polling fallback */
 let ws,lastMsg=0,poll=null;
 function setConn(ok,txt){const c=$("conn");c.className="pill "+(ok?"live":"bad");c.querySelector("span").textContent=txt}
-function onState(d){const first=!S;S=d;lastMsg=Date.now();render();if(RM||first){drawAll(true);drawShell(performance.now())}}
+const UIV=document.querySelector('meta[name="ui-version"]').content;
+function onState(d){if(d.ui&&UIV!=="__UI_VERSION__"&&d.ui!==UIV){location.reload();return}const first=!S;S=d;lastMsg=Date.now();render();if(RM||first){drawAll(true);drawShell(performance.now())}}
 function connect(){try{ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws")}catch(_){startPoll();return}
   ws.onmessage=e=>onState(JSON.parse(e.data));ws.onclose=()=>{startPoll();setTimeout(connect,3000)};ws.onerror=()=>{}}
 function startPoll(){if(poll)return;poll=setInterval(()=>{if(Date.now()-lastMsg<2500)return;fetch("api/state",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d)onState(d)}).catch(()=>{})},2000)}
@@ -743,6 +753,9 @@ async function post(u,b){const r=await fetch(u,{method:"POST",headers:{"Content-
 $("kill").onclick=async()=>{const k=$("kill"),on=S&&S.risk.killed;
   if(!on&&!k.dataset.arm){k.dataset.arm="1";k.classList.add("arm");k.textContent="Tap again to stop";setTimeout(()=>{delete k.dataset.arm;k.classList.remove("arm");render()},4000);return}
   delete k.dataset.arm;k.classList.remove("arm");try{await post("api/kill",{on:!on})}catch(e){$("rtxt").textContent="Kill switch request failed ("+e.message+"). Open the page from your key link once, then try again."}};
+function setMotion(off){RM=off;try{localStorage.setItem("ul_motion",off?"off":"on")}catch(_){}document.documentElement.classList.toggle("still",off);const b=$("mot");b.textContent=off?"Motion off":"Motion on";b.classList.toggle("off",off);
+  TK.forEach(o=>{o.nodes.forEach(n=>n.e.remove());o.nodes=[];o.off=0;o.el.style.transform="";if(off)o.el.innerHTML=o.pool.map(i=>`<span>${i.h}</span>`).join("")});if(!off)TK.forEach(o=>o.el.innerHTML="");if(S){render();drawAll(true);drawShell(performance.now())}}
+$("mot").onclick=()=>setMotion(!RM);if(RM)setMotion(true);
 $("clr").onclick=async()=>{try{await post("api/breaker/clear")}catch(_){}};
 </script>
 </body>
